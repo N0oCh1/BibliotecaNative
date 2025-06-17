@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "module": "ESNext",
+    "forceConsistentCasingInFileNames": true
+  },
+  "extends": "expo/tsconfig.base"
+}
