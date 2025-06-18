@@ -26,7 +26,8 @@ una vez intalado todo se copian esta url
 ![image](https://github.com/user-attachments/assets/1928f3a6-708d-4e01-8696-50f5680eff29)
 
 5. nos vamos a variables de entorno
-![image](https://github.com/user-attachments/assets/5ac2f5eb-2c6e-49ed-9f14-694ddc199ef4)
+
+![456109691-5ac2f5eb-2c6e-49ed-9f14-694ddc199ef4](https://github.com/user-attachments/assets/acdde22b-a842-4e3d-95f5-4007a262cc61)
 
 y agregamos una variable de systema nuevo 
 el nombre de la varible sera <ANDROID_HOME>
