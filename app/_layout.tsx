@@ -4,10 +4,16 @@ export default function RootLayout() {
   return (
     <Stack>
       <Stack.Screen
-        name="index"
+        name="login"
+        options={{
+          headerShown: false, // Hide the header for the tabs layout
+        }}
       />
       <Stack.Screen
-        name="about"
+        name="(tabs)"
+        options={{
+          headerShown: false, // Hide the header for the tabs layout
+        }}
       />
     </Stack>
   )
