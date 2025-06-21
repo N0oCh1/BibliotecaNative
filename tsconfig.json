@@ -2,6 +2,10 @@
   "compilerOptions": {
     "strict": true,
     "module": "ESNext",
+    "paths": {
+      "@firegase/auth": ["./node_modules/@firegase/auth/dist/index.d.ts"],
+      "@/*" : ["./*"]
+    },
     "forceConsistentCasingInFileNames": true
   },
   "extends": "expo/tsconfig.base"
