@@ -17,6 +17,7 @@ const firebaseConfig = {
   appId: Constants.expoConfig?.extra?.APP_ID || Constants.manifest2.extra.APP_ID
 };
 
+console.log("Firebase Config:", firebaseConfig);
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const auth = initializeAuth(app, {
