@@ -13,21 +13,29 @@ export default function Login() {
 
   const signIn = async() => {
     try{
+      console.log("Signing in with email:", email, "and password:", password);
       const user = await signInWithEmailAndPassword(auth, email!, password!);
       if(user){
         router.replace("/");
       }
     }catch (error) {
+      console.error("Error signing in:", error);
+      // Aquí puedes manejar el error de manera más específica si lo deseas
+      // Por ejemplo, podrías verificar el tipo de error y mostrar un mensaje diferente
      setError("Correo o contraseña incorrectos");
     }
   }
   const signUp = async() => {
     try{
+      console.log("Signing in with email:", email, "and password:", password);
       const user = await createUserWithEmailAndPassword(auth, email!, password!);
       if(user){
         router.replace("/");
       }
     }catch (error) {
+      console.error("Error signing up:", error);
+      // Aquí puedes manejar el error de manera más específica si lo deseas
+      // Por ejemplo, podrías verificar el tipo de error y mostrar un mensaje diferente
      setError("Correo o contraseña incorrectos");
     }
   }
@@ -41,8 +49,8 @@ export default function Login() {
       }}
     >
       <Text>Login Screen</Text>
-      <TextInput style={style.input} placeholder="correo" value={email} onChangeText={()=>{setEmail; setError('')}} />
-      <TextInput style={style.input} placeholder="contraseña" value={password} onChangeText={()=>{setPassword; setError('')}} secureTextEntry />
+      <TextInput style={style.input} placeholder="correo" value={email} onChangeText={(text)=>{setEmail(text); setError('')}} />
+      <TextInput style={style.input} placeholder="contraseña" value={password} onChangeText={(text)=>{setPassword(text); setError('')}} secureTextEntry />
 
       <Pressable onPress={signIn} style={style.Button}>
         <Text style={{ color: "white" }}>Inicia sesión</Text>
