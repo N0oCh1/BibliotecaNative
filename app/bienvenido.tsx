@@ -16,7 +16,7 @@ export default function WelcomeScreen() {
     return (
         <View style={styles.container}>
             <Image
-                source={require("../assets/heroBienvenido.png")}
+                source={require("../assets/bienvenido/heroBienvenido.png")}
                 style={styles.image}
                 resizeMode="cover"
             />
