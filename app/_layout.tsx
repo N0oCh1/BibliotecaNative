@@ -5,7 +5,7 @@ export default function RootLayout() {
     <Stack>
       {/* esto es lo que dice que pantalla inicia */}
       <Stack.Screen
-        name="index"
+        name="bienvenido"
         options={{
           headerShown: false, // Hide the header for the tabs layout
         }}

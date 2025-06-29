@@ -16,7 +16,7 @@ export default function Login() {
       console.log("Signing in with email:", email, "and password:", password);
       const user = await signInWithEmailAndPassword(auth, email!, password!);
       if(user){
-        router.replace("/");
+        router.replace("/(tabs)");
       }
     }catch (error) {
       console.error("Error signing in:", error);
@@ -30,7 +30,7 @@ export default function Login() {
       console.log("Signing in with email:", email, "and password:", password);
       const user = await createUserWithEmailAndPassword(auth, email!, password!);
       if(user){
-        router.replace("/");
+        router.replace("/(tabs)");
       }
     }catch (error) {
       console.error("Error signing up:", error);
