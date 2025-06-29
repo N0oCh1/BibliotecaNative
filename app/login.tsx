@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, StyleSheet } from "react-native";
 import React, { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { auth } from "../firebase"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously } from "firebase/auth";
 
 export default function Login() {
   const [email, setEmail] = useState<string>();
@@ -39,6 +39,20 @@ export default function Login() {
      setError("Correo o contraseña incorrectos");
     }
   }
+  const annonymus = async() =>{
+    try{
+      const annonymus = await signInAnonymously(auth)
+      if(annonymus){
+        router.replace("/(tabs)");
+      }
+    }
+    catch(error){
+      console.error("Error signing up:", error);
+      // Aquí puedes manejar el error de manera más específica si lo deseas
+      // Por ejemplo, podrías verificar el tipo de error y mostrar un mensaje diferente
+     setError("Correo o contraseña incorrectos");
+    }
+  }
     
   return (
 
@@ -62,6 +76,10 @@ export default function Login() {
         <Text style={{ color: "white" }}>Crear cuenta</Text>
       </Pressable>
       {error && <Text style={{ color: "red" }}>{error}</Text>}
+
+      <Pressable onPress={annonymus} style={style.Button}>
+        <Text style={{ color: "white" }}>Annonimo</Text>
+      </Pressable>
 
     </SafeAreaView>
   );
