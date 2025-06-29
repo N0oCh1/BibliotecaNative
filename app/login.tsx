@@ -41,6 +41,7 @@ export default function Login() {
   }
     
   return (
+
     <SafeAreaView
       style={{
         flex: 1,
@@ -48,8 +49,9 @@ export default function Login() {
         alignItems: "center",
       }}
     >
-      <Text>Login Screen</Text>
+      <Text style={style.titulo}>Login Screen</Text>
       <TextInput style={style.input} placeholder="correo" value={email} onChangeText={(text)=>{setEmail(text); setError('')}} />
+
       <TextInput style={style.input} placeholder="contraseña" value={password} onChangeText={(text)=>{setPassword(text); setError('')}} secureTextEntry />
 
       <Pressable onPress={signIn} style={style.Button}>
@@ -60,11 +62,18 @@ export default function Login() {
         <Text style={{ color: "white" }}>Crear cuenta</Text>
       </Pressable>
       {error && <Text style={{ color: "red" }}>{error}</Text>}
+
     </SafeAreaView>
   );
 }
 
+//estilos
 const style = StyleSheet.create({
+  titulo:{
+    fontSize:40,
+    fontWeight:"bold",
+    marginBottom: 70,
+  },
   container: {
     flex: 1,
     justifyContent: "center",
@@ -75,11 +84,13 @@ const style = StyleSheet.create({
     borderWidth: 1,
     borderRadius:8,
     width: "80%",
+    marginTop: 12,
   },
    Button:{
     paddingBlock:10,
     paddingInline:20,
     backgroundColor:"blue",
     borderRadius:10,
+    marginTop: 12,
   }
 })
