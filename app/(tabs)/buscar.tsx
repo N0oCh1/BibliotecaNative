@@ -1,9 +1,11 @@
 import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable } from "react-native";
 
-export default function AboutScreen() {
+export default function BuscarScreen() {
+  const router = useRouter()
   const [data, setData] = useState<Libro[]>();
   const [busqueda, setBusqueda] = useState<string>();
   const [loadingImages, setLoadingImages] = useState<{ [id: string]: boolean }>({});
@@ -24,6 +26,10 @@ export default function AboutScreen() {
     setLoadingImages((prev) => ({ ...prev, [id]: false }));
   };
 
+  const handlePress = (title:string, link:string) => {
+    router.push(`/libro/${title}?link=${link}`)
+  }
+
   return (
     <View>
       <View>
@@ -33,7 +39,7 @@ export default function AboutScreen() {
         <ScrollView>
           <View style={style.libroContainer}>
             {data.map((libro) => (
-              <View key={libro.id} style={style.libro}>
+              <Pressable key={libro.id} style={style.libro} onPress={()=>handlePress(libro.titulo, libro.link)}>
                 <View style={{ width: 200, height: 250, justifyContent: "center", alignItems: "center" }}>
                   {loadingImages[libro.id] && (
                     <ActivityIndicator size="large" color="#000" style={{ position: "absolute", zIndex: 1 }} />
@@ -46,7 +52,7 @@ export default function AboutScreen() {
                   />
                 </View>
                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>{libro.titulo}</Text>
-              </View>
+              </Pressable>
             ))}
           </View>
         </ScrollView>
