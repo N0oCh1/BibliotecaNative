@@ -26,8 +26,8 @@ export default function BuscarScreen() {
     setLoadingImages((prev) => ({ ...prev, [id]: false }));
   };
 
-  const handlePress = (title:string, link:string) => {
-    router.push(`/libro/${title}?link=${link}`)
+  const handlePress = (id:string) => {
+   router.push(`/libro/${id}`);
   }
 
   return (
@@ -39,7 +39,7 @@ export default function BuscarScreen() {
         <ScrollView>
           <View style={style.libroContainer}>
             {data.map((libro) => (
-              <Pressable key={libro.id} style={style.libro} onPress={()=>handlePress(libro.titulo, libro.link)}>
+              <Pressable key={libro.id} style={style.libro} onPress={()=>handlePress(libro.id)}>
                 <View style={{ width: 200, height: 250, justifyContent: "center", alignItems: "center" }}>
                   {loadingImages[libro.id] && (
                     <ActivityIndicator size="large" color="#000" style={{ position: "absolute", zIndex: 1 }} />
