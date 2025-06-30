@@ -11,12 +11,16 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ObtenerLibroPorId } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
+import { useNavigation } from "expo-router";
+import { useLayoutEffect } from "react";
+
 
 export default function DetalleLibro() {
   const { libro } = useLocalSearchParams<{ libro: string }>();
   const router = useRouter();
 
   const [detalle, setDetalle] = useState<Libro | null>(null);
+  const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -31,6 +35,12 @@ export default function DetalleLibro() {
     obtener();
   }, [libro]);
 
+   useLayoutEffect(() => {
+    if (detalle?.titulo) {
+      navigation.setOptions({ title: detalle.titulo });
+    }
+  }, [detalle]);
+  
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#000" />;
   if (!detalle) {
     return (
@@ -66,12 +76,44 @@ export default function DetalleLibro() {
   );
 }
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#fff" },
-  title: { fontSize: 24, fontWeight: "bold", marginBottom: 10 },
-  authors: { fontSize: 16, marginBottom: 4 },
-  published: { fontSize: 14, color: "#555", marginBottom: 10 },
-  image: { width: "100%", height: 300, marginVertical: 20 },
-  description: { fontSize: 16, lineHeight: 22, marginBottom: 20 },
+  container: {
+    padding: 24,
+    backgroundColor: "#fdfdfd",
+    alignItems: "center",
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#1a1a1a",
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  authors: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 6,
+    textAlign: "center",
+  },
+  published: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 12,
+    textAlign: "center",
+  },
+  image: {
+    width: 200,
+    height: 300,
+    borderRadius: 12,
+    marginBottom: 20,
+    backgroundColor: "#eaeaea",
+  },
+  description: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: "#2c2c2c",
+    textAlign: "justify",
+    marginBottom: 30,
+  },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
@@ -85,4 +127,3 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 });
-
