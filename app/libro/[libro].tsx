@@ -20,7 +20,14 @@ export default function DetalleLibro() {
   const router = useRouter();
 
   const [detalle, setDetalle] = useState<Libro | null>(null);
+
   const navigation = useNavigation();
+  useLayoutEffect(() => {
+    if (detalle?.titulo) {
+      navigation.setOptions({ title: detalle.titulo });
+    }
+  }, [detalle]);
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,12 +42,6 @@ export default function DetalleLibro() {
     obtener();
   }, [libro]);
 
-   useLayoutEffect(() => {
-    if (detalle?.titulo) {
-      navigation.setOptions({ title: detalle.titulo });
-    }
-  }, [detalle]);
-  
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#000" />;
   if (!detalle) {
     return (
@@ -70,8 +71,6 @@ export default function DetalleLibro() {
           ? detalle.descripcion.replace(/<[^>]+>/g, "")
           : "Sin descripción disponible."}
       </Text>
-
-      <Button title="Volver a la búsqueda" onPress={() => router.back()} />
     </ScrollView>
   );
 }
