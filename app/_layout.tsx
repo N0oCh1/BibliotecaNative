@@ -18,6 +18,9 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen
+        name="libro/[libro]"
+      />
+      <Stack.Screen
         name="(tabs)"
         options={{
           headerShown: false, // Hide the header for the tabs layout

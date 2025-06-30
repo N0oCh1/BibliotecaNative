@@ -5,4 +5,5 @@ export type Libro = {
   autor:string[];
   imagen:string;
   editorial:string;
+  link:string;
 }

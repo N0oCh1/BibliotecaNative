@@ -11,7 +11,8 @@ const ObtenerLibro = async(busqueda?: string) =>{
       descripcion:item.volumeInfo.description,
       autor:item.volumeInfo.authors,
       imagen:item.volumeInfo.imageLinks.thumbnail,
-      editorial:item.volumeInfo.publisher
+      editorial:item.volumeInfo.publisher,
+      link:item.selfLink
     }))
   }
   catch{
