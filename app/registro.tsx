@@ -143,100 +143,100 @@ export default function Registro() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: "center",//alinea verticalmente al centro
-    alignItems: "flex-start",//alinea horizontalmente al centro
-    marginTop: 120,
+    container: { 
+        flex: 1, 
+        justifyContent: "center",//alinea verticalmente al centro
+        alignItems: "flex-start",//alinea horizontalmente al centro
+        marginTop: 120,
+    },
+    content:{
+      flex: 1,
+      paddingTop:150,
+      paddingHorizontal: 20,
+      paddingBottom: 20,
     },
     inputContainerpadre: {
         flexDirection: "column",
         alignItems: "flex-start",
         marginBottom: 20,
     },
-  inputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "#397EE6",
-    marginTop: -15,
-    marginBottom: 20,
-    width: "110%",
-  },
-  title: { 
-    fontSize: 32, 
-    fontWeight: "bold", 
-    marginBottom: 30,
-    color: "#424242",
+    inputContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        borderBottomWidth: 1,
+        borderBottomColor: "#397EE6",
+        marginTop: -15,
+        marginBottom: 20,
+        width: "110%",
+    },
+    title: { 
+        fontSize: 32, 
+        fontWeight: "bold", 
+        marginBottom: 30,
+        color: "#424242",
     },
     subtitulo:{
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 0,
-    color: "#616161",
+        fontSize: 16,
+        fontWeight: "bold",
+        marginBottom: 0,
+        color: "#616161",
     },
-  input: {
-    width: "80%",
-    marginTop: 12,
-    padding: 10,
-  },
-  image:{
-    width: width,
-    height: 500,
-    resizeMode: "cover",
-    position: "absolute",
-    top: -150,
-    left: 0,
-  },
-  content:{
-    flex: 1,
-    paddingTop:150,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  icon:{
-    marginRight:0,
-    marginBottom: -12,
-    width: 15,
-    height:15,
-  },
+    input: {
+        width: "80%",
+        marginTop: 12,
+        padding: 10,
+    },
+    image:{
+        width: width,
+        height: 500,
+        resizeMode: "cover",
+        position: "absolute",
+        top: -150,
+        left: 0,
+    },
+    icon:{
+        marginRight:0,
+        marginBottom: -12,
+        width: 15,
+        height:15,
+    },
     contenedorBoton: {
-    justifyContent: "center", // ← añade esto
-    width: "100%",
+        justifyContent: "center", // ← añade esto
+        width: "100%",
     },
     button: {
-    backgroundColor: "#397EE6",
-    paddingVertical: 12, // más natural
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
+        backgroundColor: "#397EE6",
+        paddingVertical: 12, // más natural
+        borderRadius: 10,
+        alignItems: "center",
+        justifyContent: "center",
 
     },
-  buttonText: { 
-    color: "white", 
-    fontSize: 16 
-  },
-  contenedorlink:{
-    flexDirection: "row",
-    marginTop: 10,
-    width: "100%",
-    justifyContent: "center",
-  },
-  subtitulolink:{
-    color: "#616161",
-  },
-  link:{
-    marginTop: 0,
-    color: "#397EE6",
-  },
-  ojoicon:{
-    width: 20,
-    height: 20,
-    marginLeft: -30,
-    marginTop: 10,
-  },
-  error: { 
-    marginTop: 10, 
-    color: "red" 
+    buttonText: { 
+        color: "white", 
+        fontSize: 16 
+    },
+    contenedorlink:{
+        flexDirection: "row",
+        marginTop: 10,
+        width: "100%",
+        justifyContent: "center",
+    },
+    subtitulolink:{
+        color: "#616161",
+    },
+    link:{
+        marginTop: 0,
+        color: "#397EE6",
+    },
+    ojoicon:{
+        width: 20,
+        height: 20,
+        marginLeft: -30,
+        marginTop: 10,
+    },
+    error: { 
+        marginTop: 10, 
+        color: "red", 
   },
 });
