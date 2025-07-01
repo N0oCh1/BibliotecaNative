@@ -18,6 +18,12 @@ export default function RootLayout() {
         }}
       />
       <Stack.Screen
+        name="registro"
+        options={{
+          headerShown: false,
+        }}
+        />
+      <Stack.Screen
         name="libro/[libro]"
       />
       <Stack.Screen
