@@ -2,7 +2,7 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar } from "react-native";
 
 export default function BuscarScreen() {
   const router = useRouter()
@@ -31,7 +31,10 @@ export default function BuscarScreen() {
   }
 
   return (
-    <View>
+    <View style={style.container}>
+      <StatusBar
+      barStyle={"dark-content"}
+      />
       <View>
         <TextInput style={style.busqueda} onChangeText={setBusqueda} placeholder="Buscar libro" />
       </View>
@@ -62,6 +65,9 @@ export default function BuscarScreen() {
 }
 
 const style = StyleSheet.create({
+  container:{
+    marginTop:50
+  },
   libroContainer: {
     display:"flex",
     alignItems:"center",
