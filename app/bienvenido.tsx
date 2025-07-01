@@ -32,7 +32,7 @@ export default function WelcomeScreen() {
                     <Text style={styles.title}>Bienvenido</Text>
                 </View>
                 <Pressable
-                    onPress={() => router.replace("/login2")}
+                    onPress={() => router.replace("/login")}
                     style={{ alignSelf: "flex-end", marginTop: 20 }}
                 >
                     <View style={styles.contenedorBoton}>
