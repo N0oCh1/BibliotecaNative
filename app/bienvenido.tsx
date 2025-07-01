@@ -29,7 +29,7 @@ export default function WelcomeScreen() {
             <SafeAreaView style={styles.content}>
                 <View style={{ marginBottom: "auto" }}>
                     {/* Texto de bienvenida */}
-                    <Text style={styles.title}>Bienvenido Saramanbiche</Text>
+                    <Text style={styles.title}>Bienvenido</Text>
                 </View>
                 <Pressable
                     onPress={() => router.replace("/login")}
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
     },
     image: {
-        width: width,
+        width: "100%",
         height: 500, // Ajusta según cuánto quieras que ocupe
         resizeMode: "cover", // Cubre todo el área sin distorsión
         position: "absolute", // Para que quede detrás del contenido si quieres
@@ -67,15 +67,15 @@ const styles = StyleSheet.create({
         resizeMode: "contain", // 🔥 Esto es lo clave para evitar que se corte
     },
     title: {
-        fontSize: 32,
+        fontSize: 40,
         fontWeight: "bold",
-        marginTop: 0,
+        marginTop: 40,
         marginLeft: 0,
         textAlign: "left",
     },
     subtitle: {
         fontSize: 14,
-      color: "#9E9E9E",
+        color: "#9E9E9E",
         fontWeight: "bold",
         textAlign: "center",
     },
