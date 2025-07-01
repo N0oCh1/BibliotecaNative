@@ -26,89 +26,97 @@ export default function Registro() {
     };
 
      return (
-    <View style={styles.hero}>
-        <Image
-            source={require("../assets/bienvenido/heroBienvenido.png")}
-            style={styles.image}
-            resizeMode="cover"
-        />
-        <StatusBar
-            translucent
-            backgroundColor="transparent"
-            barStyle="light-content"
-        />
+    <View style={styles.content}>
 
-        
-            <SafeAreaView style={styles.container}>
+            
+            <Image
+                source={require("../assets/bienvenido/heroBienvenido.png")}
+                style={styles.image}
+                resizeMode="cover"
+            />
+            <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle="light-content"
+            />
 
-            <Text style={styles.title}>Registrarse</Text>
+            
+                <SafeAreaView style={styles.container}>
 
-            <View style={styles.inputContainerpadre}>
+                <Text style={styles.title}>Registrarse</Text>
 
-                <Text style={styles.subtitulo}>Correo</Text>
-                <View style={styles.inputContainer}>
-                    <Image
-                    source={require("../assets/registrar/imagen-correo.png")}
-                    style={styles.icon}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="alguien@gmail.com"
-                        value={email}
-                        onChangeText={(text) => {
-                        setEmail(text);
-                        setError(null);
-                        }}
-                    />
+                <View style={styles.inputContainerpadre}>
+
+                    <Text style={styles.subtitulo}>Correo</Text>
+                    <View style={styles.inputContainer}>
+                        <Image
+                        source={require("../assets/registrar/imagen-correo.png")}
+                        style={styles.icon}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="alguien@gmail.com"
+                            value={email}
+                            onChangeText={(text) => {
+                            setEmail(text);
+                            setError(null);
+                            }}
+                        />
+                    </View>
+
+                    <Text style={styles.subtitulo}>Contraseña</Text>
+                    <View style={styles.inputContainer}>
+                        <Image
+                        source={require("../assets/registrar/imagen-llave.png")}
+                        style={styles.icon}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Contraseña"
+                            value={password}
+                            onChangeText={(text) => {
+                            setPassword(text);
+                            setError(null);
+                            }}
+                            secureTextEntry
+                        />
+                    </View>
+
+                    <Text style={styles.subtitulo}>Repite la contraseña</Text>
+                    <View style={styles.inputContainer}>
+                        <Image
+                        source={require("../assets/registrar/imagen-llave.png")}
+                        style={styles.icon}
+                        />
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Repite la contraseña"
+                            value={password}
+                            onChangeText={(text) => {
+                            setPassword(text);
+                            setError(null);
+                            }}
+                            secureTextEntry
+                        />
+                    </View>
                 </View>
 
-                <Text style={styles.subtitulo}>Contraseña</Text>
-                <View style={styles.inputContainer}>
-                    <Image
-                    source={require("../assets/registrar/imagen-llave.png")}
-                    style={styles.icon}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Contraseña"
-                        value={password}
-                        onChangeText={(text) => {
-                        setPassword(text);
-                        setError(null);
-                        }}
-                        secureTextEntry
-                    />
+
+
+                <View style={styles.contenedorBoton}>        
+                    <Pressable onPress={registrar} style={styles.button}>
+                        <Text style={styles.buttonText}>Crear Cuenta</Text>
+                    </Pressable>
+                </View>
+                <View style={styles.contenedorlink}>
+                        <Text style={styles.subtitulolink}>¿Ya tienes una cuenta?</Text>
+                        <Text style={styles.link} onPress={() => router.push("/login")}>
+                            Inicia sesión
+                        </Text>
                 </View>
 
-                <Text style={styles.subtitulo}>Repite la contraseña</Text>
-                <View style={styles.inputContainer}>
-                    <Image
-                    source={require("../assets/registrar/imagen-llave.png")}
-                    style={styles.icon}
-                    />
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Repite la contraseña"
-                        value={password}
-                        onChangeText={(text) => {
-                        setPassword(text);
-                        setError(null);
-                        }}
-                        secureTextEntry
-                    />
-                </View>
-            </View>
-
-
-
-            <View style={styles.contenedorBoton}>        
-                <Pressable onPress={registrar} style={styles.button}>
-                    <Text style={styles.buttonText}>Registrarse</Text>
-                </Pressable>
-            </View>
-
-            {error && <Text style={styles.error}>{error}</Text>}
-            </SafeAreaView>
+                {error && <Text style={styles.error}>{error}</Text>}
+                </SafeAreaView>
     </View>
   );
 }
@@ -157,7 +165,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
   },
-  hero:{
+  content:{
     flex: 1,
     paddingTop:200,
     paddingHorizontal: 20,
@@ -171,15 +179,33 @@ const styles = StyleSheet.create({
   },
   contenedorBoton:{
     alignItems: "center",
+    flexDirection: "column",
 
   },
   button: {
     marginTop: 20,
-    backgroundColor: "blue",
+    backgroundColor: "#397EE6",
     paddingVertical: 12,
     paddingHorizontal: 30,
     borderRadius: 10,
   },
-  buttonText: { color: "white", fontSize: 16 },
-  error: { marginTop: 10, color: "red" },
+  buttonText: { 
+    color: "white", 
+    fontSize: 16 
+  },
+  contenedorlink:{
+    flexDirection: "row",
+    marginTop: 10,
+  },
+  subtitulolink:{
+    color: "#616161",
+  },
+  link:{
+    marginTop: 0,
+    color: "#397EE6",
+  },
+  error: { 
+    marginTop: 10, 
+    color: "red" 
+  },
 });
