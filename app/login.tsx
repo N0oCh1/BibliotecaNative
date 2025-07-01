@@ -212,7 +212,7 @@ export default function Login() {
                             </TouchableOpacity>
 
                             <TouchableOpacity
-                                onPress={() => router.push("/signup")}
+                                onPress={() => router.push("/registro")}
                             >
                                 <Text style={styles.register}>
                                     ¿No tienes una cuenta?{" "}
