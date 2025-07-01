@@ -6,7 +6,7 @@ import { auth } from "../firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { KeyboardAvoidingView, Platform } from "react-native";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 
 export default function Registro() {
@@ -151,8 +151,8 @@ export default function Registro() {
                                         Inicia sesión
                                     </Text>
                             
-                        </View>
-                        {error && <Text style={styles.error}>{error}</Text>}
+                            </View>
+                            {error && <Text style={styles.error}>{error}</Text>}
                     </SafeAreaView>
             </View>
         </KeyboardAvoidingView>
@@ -164,51 +164,52 @@ const styles = StyleSheet.create({
         flex: 1, 
         justifyContent: "center",//alinea verticalmente al centro
         alignItems: "flex-start",//alinea horizontalmente al centro
-        marginTop: 120,
+        marginTop: width * 0.25, 
     },
     content:{
       flex: 1,
-      paddingTop:150,
-      paddingHorizontal: 20,
-      paddingBottom: 20,
+      paddingTop: width *0.45,
+      paddingHorizontal: width * 0.05,
+      paddingBottom: width * 0.05,
     },
     inputContainerpadre: {
         flexDirection: "column",
         alignItems: "flex-start",
-        marginBottom: 20,
+        marginBottom: width * 0.15,
+        width: "96%",
     },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        borderBottomWidth: 1,
+        borderBottomWidth: width * 0.002, // Ajusta el grosor de la línea
         borderBottomColor: "#397EE6",
-        marginTop: -15,
-        marginBottom: 20,
-        width: "110%",
+        marginTop: -width * 0.02, // Espacio entre el título y el input
+        marginBottom: width * 0.05, // Espacio entre el input y el siguiente título
+        width: "100%",
     },
     title: { 
-        fontSize: 32, 
+        fontSize: width * 0.09, 
         fontWeight: "bold", 
-        marginBottom: 30,
+        marginBottom: width * 0.06, // espacio entre el título y el primer input
         color: "#424242",
     },
     subtitulo:{
-        fontSize: 16,
+        fontSize: width * 0.042,
         fontWeight: "bold",
         marginBottom: 0,
         color: "#616161",
     },
     input: {
         width: "80%",
-        marginTop: 12,
-        padding: 10,
+        marginTop: width * 0.04,
+        padding: width * 0.025,
     },
     image:{
         width: width,
-        height: 500,
+        height: width * 1.25,
         resizeMode: "cover",
         position: "absolute",
-        top: -150,
+        top: -width * 0.35,
         left: 0,
     },
     icon:{
@@ -220,7 +221,7 @@ const styles = StyleSheet.create({
     contenedorBoton: {
         justifyContent: "center", // ← añade esto
         width: "100%",
-        marginTop: 50,
+        marginTop: width * 0.05, // espacio entre el botón y los inputs
     },
     button: {
         backgroundColor: "#397EE6",
@@ -232,11 +233,11 @@ const styles = StyleSheet.create({
     },
     buttonText: { 
         color: "white", 
-        fontSize: 16 
+        fontSize: width * 0.045, 
     },
     contenedorlink:{
         flexDirection: "row",
-        marginTop: 10,
+        marginTop: width * 0.02,
         width: "100%",
         justifyContent: "center",
     },
@@ -250,8 +251,8 @@ const styles = StyleSheet.create({
     ojoicon:{
         width: 20,
         height: 20,
-        marginLeft: -30,
-        marginTop: 10,
+        marginLeft: width * 0.07,
+        marginTop: width * 0.05,
     },
     error: { 
         marginTop: 10, 
