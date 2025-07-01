@@ -172,7 +172,7 @@ export default function Login() {
                         <Text style={styles.buttonText}>Iniciar sesión</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.push("/signup")}>
+                    <TouchableOpacity onPress={() => router.push("/registro")}>
                         <Text style={styles.register}>
                             ¿No tienes una cuenta?{" "}
                             <Text style={styles.registerLink}>Registrarse</Text>
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 10,
         alignItems: "center",
-        marginTop: 10,
+        marginTop: -60,
     },
     buttonText: {
         color: "#fff",

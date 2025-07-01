@@ -18,6 +18,10 @@ export default function Registro() {
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [mostrarRepitePassword, setMostrarRepitePassword] = useState(false);
 
+    //para el ojo activo
+    const [ojoActivoPassword, setOjoActivoPassword] = useState(false);
+    const [ojoActivoRepitePassword, setOjoActivoRepitePassword] = useState(false);
+
 
     const registrar = async () => {
         try{
@@ -88,9 +92,16 @@ export default function Registro() {
                                     }}
                                     secureTextEntry={!mostrarPassword}
                                 />
-                                <Pressable onPress={() => setMostrarPassword(!mostrarPassword)}>
+                                <Pressable onPress={() =>{ 
+                                    setMostrarPassword(!mostrarPassword);
+                                    setOjoActivoPassword(!ojoActivoPassword);
+                                }}>
                                     <Image
-                                        source={require("../assets/registrar/img-ojo.png")}
+                                        source={
+                                            ojoActivoPassword
+                                            ? require("../assets/registrar/img-ojo-azul.png")
+                                            : require("../assets/registrar/img-ojo.png")
+                                        }
                                         style={styles.ojoicon}
                                     />
                                 </Pressable>
@@ -112,9 +123,15 @@ export default function Registro() {
                                     }}
                                     secureTextEntry={!mostrarRepitePassword}
                                 />
-                                <Pressable onPress={() => setMostrarRepitePassword(!mostrarRepitePassword)}>
+                                <Pressable onPress={() =>{ 
+                                    setMostrarRepitePassword(!mostrarRepitePassword)
+                                    setOjoActivoRepitePassword(!ojoActivoRepitePassword);}}>
                                     <Image
-                                        source={require("../assets/registrar/img-ojo.png")}
+                                        source={
+                                            ojoActivoRepitePassword
+                                            ? require("../assets/registrar/img-ojo-azul.png")
+                                            : require("../assets/registrar/img-ojo.png")
+                                        }
                                         style={styles.ojoicon}
                                     />
                                 </Pressable>
@@ -203,6 +220,7 @@ const styles = StyleSheet.create({
     contenedorBoton: {
         justifyContent: "center", // ← añade esto
         width: "100%",
+        marginTop: 50,
     },
     button: {
         backgroundColor: "#397EE6",
