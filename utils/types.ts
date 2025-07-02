@@ -7,3 +7,8 @@ export type Libro = {
   editorial:string;
   link:string;
 }
+
+export type Credenciale = { 
+  usuario: string,
+  contrasena: string
+}
