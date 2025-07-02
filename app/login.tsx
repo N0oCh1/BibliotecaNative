@@ -11,10 +11,11 @@ import {
     Platform,
     ScrollView,
     Dimensions,
+    Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInAnonymously, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -47,6 +48,18 @@ export default function Login() {
             setError("Correo o contraseña incorrectos");
         }
     };
+
+    const Anonimus = async () => {
+        try{
+            const user = await signInAnonymously(auth);
+            if(user){
+                router.replace("/(tabs)")
+            }
+        }catch(error){
+            console.error(error)
+            setError("hubo un error de servidor")
+        }
+    }
 
     return (
         <View style={styles.container}>
@@ -221,6 +234,9 @@ export default function Login() {
                                     </Text>
                                 </Text>
                             </TouchableOpacity>
+                            <Pressable onPress={Anonimus} style={styles.anonimus}>
+                                <Text style={styles.register}>Anonimus</Text>
+                            </Pressable>
                         </View>
                     </ScrollView>
                 </SafeAreaView>
@@ -235,6 +251,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
+    },
+    anonimus:{
+        paddingBlock:4,
+        paddingInline:8,
+        backgroundColor:"#0062ff"
     },
     header: {
         width: "100%",
