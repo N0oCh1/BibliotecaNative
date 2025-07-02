@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -11,11 +11,12 @@ import {
     Platform,
     ScrollView,
     Dimensions,
-    Pressable,
+    Keyboard,
+    Pressable
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { signInAnonymously, signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInAnonymously } from "firebase/auth";
 import { auth } from "../firebase";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -32,6 +33,23 @@ export default function Login() {
     const [checked, setChecked] = useState(false);
     const [emailFocused, setEmailFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
+
+    // Estado para detectar si el teclado está visible
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    
+    useEffect(() => {
+            const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+                setKeyboardVisible(true);
+            });
+            const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+                setKeyboardVisible(false);
+            });
+    
+            return () => {
+                keyboardDidHideListener?.remove();
+                keyboardDidShowListener?.remove();
+            };
+        }, []);
 
     const router = useRouter();
 
@@ -62,167 +80,180 @@ export default function Login() {
     }
 
     return (
-        <View style={styles.container}>
-            <ImageBackground
-                source={require("../assets/bienvenido/heroBienvenido.png")}
-                style={styles.header}
-            />
-            <KeyboardAvoidingView
-                style={{ flex: 1 }}
-                behavior={Platform.OS === "ios" ? "padding" : "height"}
-                keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
-            >
-                <SafeAreaView style={{ flex: 1 }}>
+        <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
+                <ImageBackground
+                    source={require("../assets/bienvenido/heroBienvenido.png")}
+                    style={[
+                        styles.header,
+                        keyboardVisible && styles.imageKeyboardVisible,
+                    ]}
+                />
+                <KeyboardAvoidingView
+                    style={{ flex: 1 }}
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
+                >
                     <ScrollView
-                        contentContainerStyle={{ flexGrow: 1 }}
+                        contentContainerStyle={styles.flexWrapper}
                         keyboardShouldPersistTaps="handled"
                     >
-                        <View style={styles.form}>
-                            <Text style={styles.title}>Iniciar sesión</Text>
+                        <View style={styles.flexWrapper}>
+                            <View style={styles.form}>
+                                <Text style={styles.title}>Iniciar sesión</Text>
 
-                            <Text style={styles.label}>Correo</Text>
-                            <View
-                                style={[
-                                    styles.inputContainer,
-                                    {
-                                        borderBottomColor: emailFocused
-                                            ? "#397EE6"
-                                            : "#ccc",
-                                    },
-                                ]}
-                            >
-                                <Image
-                                    source={require("../assets/login/mail-02 - 24px (1).png")}
-                                    style={styles.icon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="alguien@gmail.com"
-                                    placeholderTextColor="#BDBDBD"
-                                    value={email}
-                                    onChangeText={(text) => {
-                                        setEmail(text);
-                                        setError(null);
-                                    }}
-                                    keyboardType="email-address"
-                                    onFocus={() => setEmailFocused(true)}
-                                    onBlur={() => setEmailFocused(false)}
-                                />
-                            </View>
-
-                            <Text style={styles.label}>Contraseña</Text>
-                            <View
-                                style={[
-                                    styles.inputContainer,
-                                    {
-                                        borderBottomColor: passwordFocused
-                                            ? "#397EE6"
-                                            : "#ccc",
-                                    },
-                                ]}
-                            >
-                                <Image
-                                    source={require("../assets/login/lock - 24px (2).png")}
-                                    style={styles.icon}
-                                />
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="ingrese su contraseña"
-                                    placeholderTextColor="#BDBDBD"
-                                    value={password}
-                                    onChangeText={(text) => {
-                                        setPassword(text);
-                                        setError(null);
-                                    }}
-                                    secureTextEntry={secure}
-                                    onFocus={() => setPasswordFocused(true)}
-                                    onBlur={() => setPasswordFocused(false)}
-                                />
-                                <TouchableOpacity
-                                    onPress={() => setSecure(!secure)}
-                                >
-                                    <MaterialIcons
-                                        name={
-                                            secure
-                                                ? "visibility"
-                                                : "visibility-off"
-                                        }
-                                        size={20}
-                                        color="#888"
-                                    />
-                                </TouchableOpacity>
-                            </View>
-
-                            <View style={styles.options}>
+                                <Text style={styles.label}>Correo</Text>
                                 <View
-                                    style={{
-                                        flexDirection: "row",
-                                        alignItems: "center",
-                                    }}
+                                    style={[
+                                        styles.inputContainer,
+                                        {
+                                            borderBottomColor: emailFocused
+                                                ? "#397EE6"
+                                                : "#ccc",
+                                        },
+                                    ]}
                                 >
-                                    <TouchableOpacity
-                                        style={[
-                                            styles.checkbox,
-                                            checked && styles.checkboxChecked,
-                                        ]}
-                                        onPress={() => setChecked(!checked)}
-                                    >
-                                        {checked && (
-                                            <MaterialIcons
-                                                name="check"
-                                                size={14}
-                                                color="white"
-                                            />
-                                        )}
-                                    </TouchableOpacity>
-                                    <Text
-                                        style={[
-                                            styles.recuerdame,
-                                            {
-                                                color: checked
-                                                    ? "#616161"
-                                                    : "#9E9E9E",
-                                            },
-                                        ]}
-                                    >
-                                        recuerdame
-                                    </Text>
+                                    <Image
+                                        source={require("../assets/login/mail-02 - 24px (1).png")}
+                                        style={styles.icon}
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="alguien@gmail.com"
+                                        placeholderTextColor="#BDBDBD"
+                                        value={email}
+                                        onChangeText={(text) => {
+                                            setEmail(text);
+                                            setError(null);
+                                        }}
+                                        keyboardType="email-address"
+                                        onFocus={() => setEmailFocused(true)}
+                                        onBlur={() => setEmailFocused(false)}
+                                    />
                                 </View>
-                                <TouchableOpacity>
-                                    <Text style={styles.forgot}>
-                                        ¿Olvidó su contraseña?
-                                    </Text>
-                                </TouchableOpacity>
-                            </View>
 
-                            <View
-                                style={{
-                                    height: height * 0.06,
-                                    justifyContent: "center",
-                                }}
-                            >
-                                {error && (
-                                    <View style={styles.errorBox}>
+                                <Text style={styles.label}>Contraseña</Text>
+                                <View
+                                    style={[
+                                        styles.inputContainer,
+                                        {
+                                            borderBottomColor: passwordFocused
+                                                ? "#397EE6"
+                                                : "#ccc",
+                                        },
+                                    ]}
+                                >
+                                    <Image
+                                        source={require("../assets/login/lock - 24px (2).png")}
+                                        style={styles.icon}
+                                    />
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="ingrese su contraseña"
+                                        placeholderTextColor="#BDBDBD"
+                                        value={password}
+                                        onChangeText={(text) => {
+                                            setPassword(text);
+                                            setError(null);
+                                        }}
+                                        secureTextEntry={secure}
+                                        onFocus={() => setPasswordFocused(true)}
+                                        onBlur={() => setPasswordFocused(false)}
+                                    />
+                                    <TouchableOpacity
+                                        onPress={() => setSecure(!secure)}
+                                    >
                                         <MaterialIcons
-                                            name="error-outline"
+                                            name={
+                                                secure
+                                                    ? "visibility"
+                                                    : "visibility-off"
+                                            }
                                             size={20}
-                                            color="#D32F2F"
+                                            color="#888"
                                         />
-                                        <Text style={styles.errorText}>
-                                            {error}
+                                    </TouchableOpacity>
+                                </View>
+
+                                <View style={styles.options}>
+                                    <View
+                                        style={{
+                                            flexDirection: "row",
+                                            alignItems: "center",
+                                        }}
+                                    >
+                                        <TouchableOpacity
+                                            style={[
+                                                styles.checkbox,
+                                                checked &&
+                                                    styles.checkboxChecked,
+                                            ]}
+                                            onPress={() => setChecked(!checked)}
+                                        >
+                                            {checked && (
+                                                <MaterialIcons
+                                                    name="check"
+                                                    size={14}
+                                                    color="white"
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                        <Text
+                                            style={[
+                                                styles.recuerdame,
+                                                {
+                                                    color: checked
+                                                        ? "#616161"
+                                                        : "#9E9E9E",
+                                                },
+                                            ]}
+                                        >
+                                            recuerdame
                                         </Text>
                                     </View>
-                                )}
-                            </View>
+                                    <TouchableOpacity>
+                                        <Text style={styles.forgot}>
+                                            ¿Olvidó su contraseña?
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
 
-                            <TouchableOpacity
-                                onPress={signIn}
-                                style={styles.button}
-                            >
-                                <Text style={styles.buttonText}>
-                                    Iniciar sesión
-                                </Text>
-                            </TouchableOpacity>
+                                <View
+                                    style={{
+                                        height: height * 0.06,
+                                        justifyContent: "center",
+                                    }}
+                                >
+                                    {error && (
+                                        <View style={styles.errorBox}>
+                                            <MaterialIcons
+                                                name="error-outline"
+                                                size={20}
+                                                color="#D32F2F"
+                                            />
+                                            <Text style={styles.errorText}>
+                                                {error}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                                <Pressable
+                                    onPress={annonymus}
+                                    style={styles.Button}
+                                >
+                                    <Text style={{ color: "white" }}>
+                                        Annonimo
+                                    </Text>
+                                </Pressable>
+
+                                <TouchableOpacity
+                                    onPress={signIn}
+                                    style={styles.button}
+                                >
+                                    <Text style={styles.buttonText}>
+                                        Iniciar sesión
+                                    </Text>
+                                </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={() => router.push("/signup")}
@@ -239,9 +270,9 @@ export default function Login() {
                             </Pressable>
                         </View>
                     </ScrollView>
-                </SafeAreaView>
-            </KeyboardAvoidingView>
-        </View>
+                </KeyboardAvoidingView>
+            </View>
+        </SafeAreaView>
     );
 }
 
@@ -266,11 +297,12 @@ const styles = StyleSheet.create({
         left: 0,
     },
     form: {
+        flex: 1,
+        justifyContent: "center", // o "flex-end", según tu diseño
         marginTop: height * 0.35,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         paddingHorizontal: width * 0.05,
-        flexGrow: 1,
         zIndex: 10,
         paddingBottom: height * 0.05,
     },
@@ -374,5 +406,19 @@ const styles = StyleSheet.create({
         resizeMode: "contain",
         tintColor: "#888",
         marginRight: width * 0.01,
+    },
+    flexWrapper: {
+        flex: 1,
+        justifyContent: "flex-end",
+    },
+    imageKeyboardVisible: {
+        top: -width * 0.8,
+    },
+    Button: {
+        paddingBlock: 10,
+        paddingInline: 20,
+        backgroundColor: "blue",
+        borderRadius: 10,
+        marginTop: 12,
     },
 });
