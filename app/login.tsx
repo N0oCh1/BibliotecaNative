@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
@@ -11,10 +11,12 @@ import {
     Platform,
     ScrollView,
     Dimensions,
+    Keyboard,
+    Pressable
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signInAnonymously } from "firebase/auth";
 import { auth } from "../firebase";
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -32,6 +34,23 @@ export default function Login() {
     const [emailFocused, setEmailFocused] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
 
+    // Estado para detectar si el teclado está visible
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+    
+    useEffect(() => {
+            const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
+                setKeyboardVisible(true);
+            });
+            const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
+                setKeyboardVisible(false);
+            });
+    
+            return () => {
+                keyboardDidHideListener?.remove();
+                keyboardDidShowListener?.remove();
+            };
+        }, []);
+
     const router = useRouter();
 
     const signIn = async () => {
@@ -47,13 +66,29 @@ export default function Login() {
             setError("Correo o contraseña incorrectos");
         }
     };
+    const annonymus = async () => {
+        try {
+            const annonymus = await signInAnonymously(auth);
+            if (annonymus) {
+                router.replace("/(tabs)");
+            }
+        } catch (error) {
+            console.error("Error signing up:", error);
+            // Aquí puedes manejar el error de manera más específica si lo deseas
+            // Por ejemplo, podrías verificar el tipo de error y mostrar un mensaje diferente
+            setError("Correo o contraseña incorrectos");
+        }
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.container}>
                 <ImageBackground
                     source={require("../assets/bienvenido/heroBienvenido.png")}
-                    style={styles.header}
+                    style={[
+                        styles.header,
+                        keyboardVisible && styles.imageKeyboardVisible,
+                    ]}
                 />
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
@@ -203,6 +238,14 @@ export default function Login() {
                                         </View>
                                     )}
                                 </View>
+                                <Pressable
+                                    onPress={annonymus}
+                                    style={styles.Button}
+                                >
+                                    <Text style={{ color: "white" }}>
+                                        Annonimo
+                                    </Text>
+                                </Pressable>
 
                                 <TouchableOpacity
                                     onPress={signIn}
@@ -256,7 +299,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: width * 0.05,
         zIndex: 10,
         paddingBottom: height * 0.05,
-    },    
+    },
     title: {
         fontSize: width * 0.09,
         fontWeight: "bold",
@@ -361,5 +404,15 @@ const styles = StyleSheet.create({
     flexWrapper: {
         flex: 1,
         justifyContent: "flex-end",
+    },
+    imageKeyboardVisible: {
+        top: -width * 0.8,
+    },
+    Button: {
+        paddingBlock: 10,
+        paddingInline: 20,
+        backgroundColor: "blue",
+        borderRadius: 10,
+        marginTop: 12,
     },
 });
