@@ -66,19 +66,18 @@ export default function Login() {
             setError("Correo o contraseña incorrectos");
         }
     };
-    const annonymus = async () => {
-        try {
-            const annonymus = await signInAnonymously(auth);
-            if (annonymus) {
-                router.replace("/(tabs)");
+
+    const Anonimus = async () => {
+        try{
+            const user = await signInAnonymously(auth);
+            if(user){
+                router.replace("/(tabs)")
             }
-        } catch (error) {
-            console.error("Error signing up:", error);
-            // Aquí puedes manejar el error de manera más específica si lo deseas
-            // Por ejemplo, podrías verificar el tipo de error y mostrar un mensaje diferente
-            setError("Correo o contraseña incorrectos");
+        }catch(error){
+            console.error(error)
+            setError("hubo un error de servidor")
         }
-    };
+    }
 
     return (
         <SafeAreaView style={styles.container}>
@@ -256,17 +255,19 @@ export default function Login() {
                                     </Text>
                                 </TouchableOpacity>
 
-                                <TouchableOpacity
-                                    onPress={() => router.push("/registro")}
-                                >
-                                    <Text style={styles.register}>
-                                        ¿No tienes una cuenta?{" "}
-                                        <Text style={styles.registerLink}>
-                                            Registrarse
-                                        </Text>
+                            <TouchableOpacity
+                                onPress={() => router.push("/signup")}
+                            >
+                                <Text style={styles.register}>
+                                    ¿No tienes una cuenta?{" "}
+                                    <Text style={styles.registerLink}>
+                                        Registrarse
                                     </Text>
-                                </TouchableOpacity>
-                            </View>
+                                </Text>
+                            </TouchableOpacity>
+                            <Pressable onPress={Anonimus} style={styles.anonimus}>
+                                <Text style={styles.register}>Anonimus</Text>
+                            </Pressable>
                         </View>
                     </ScrollView>
                 </KeyboardAvoidingView>
@@ -281,6 +282,11 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: "#fff",
+    },
+    anonimus:{
+        paddingBlock:4,
+        paddingInline:8,
+        backgroundColor:"#0062ff"
     },
     header: {
         width: "100%",
