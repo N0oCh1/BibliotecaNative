@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from "react-native";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { db } from "../../firebase";
+import { db } from "@/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
 
@@ -86,56 +86,46 @@ export default function createBook() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Agregar Nuevo Libro</Text>
-           {" "}
+      <Text style={styles.title}>Agregar Nuevo Libro</Text>
       <Controller
         control={control}
         name="title"
         render={({ field: { onChange, value } }) => (
           <>
-                       {" "}
             <TextInput
               placeholder="Título"
               style={styles.input}
               onChangeText={onChange}
               value={value}
             />
-                       {" "}
             {errors.title && (
               <Text style={styles.error}>{errors.title.message}</Text>
             )}
-                     {" "}
           </>
         )}
       />
-           {" "}
       <Controller
         control={control}
         name="autor"
         render={({ field: { onChange, value } }) => (
           <>
-                       {" "}
             <TextInput
               placeholder="Autor"
               style={styles.input}
               onChangeText={onChange}
               value={value}
             />
-                       {" "}
             {errors.autor && (
               <Text style={styles.error}>{errors.autor.message}</Text>
             )}
-                     {" "}
           </>
         )}
       />
-           {" "}
       <Controller
         control={control}
         name="descripcion"
         render={({ field: { onChange, value } }) => (
           <>
-                       {" "}
             <TextInput
               placeholder="Descripción"
               style={[styles.input, { height: 100 }]}
@@ -143,46 +133,39 @@ export default function createBook() {
               onChangeText={onChange}
               value={value}
             />
-                       {" "}
             {errors.descripcion && (
               <Text style={styles.error}>{errors.descripcion.message}</Text>
             )}
-                     {" "}
           </>
         )}
       />
-           {" "}
       <Controller
         control={control}
         name="categoria"
         render={({ field: { onChange, value } }) => (
           <>
-                       {" "}
             <TextInput
               placeholder="Categoría"
               style={styles.input}
               onChangeText={onChange}
               value={value}
             />
-                       {" "}
             {errors.categoria && (
               <Text style={styles.error}>{errors.categoria.message}</Text>
             )}
-                     {" "}
           </>
         )}
       />
-            <Button title="Seleccionar Imagen" onPress={pickearImagen} />
-      <Text>  </Text>
-            {imagen && <Image source={{ uri: imagen }} style={styles.image} />}
-           {" "}
+      <Button title="Seleccionar Imagen" onPress={pickearImagen} />
+
+      {imagen && <Image source={{ uri: imagen }} style={styles.image} />}
+
       {carga ? (
         <ActivityIndicator size="large" color="#0077b6" />
       ) : (
         
         <Button title="Agregar Libro" onPress={handleSubmit(formSubmit)} />
       )}
-         {" "}
     </ScrollView>
   );
 }
