@@ -18,6 +18,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="info" color={color} />,
         }}
       />
+       <Tabs.Screen
+        name="crear"
+        options={{
+          title: 'Añadir',
+          tabBarIcon: ({ color }) => <FontAwesome size={28} name="upload" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
