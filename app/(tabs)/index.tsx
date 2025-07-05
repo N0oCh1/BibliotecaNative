@@ -1,15 +1,18 @@
 import React from "react";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
-import { Link, useRouter } from "expo-router";
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
+import { Link, useFocusEffect, useRouter } from "expo-router";
 import { Pressable, Text, View,StyleSheet } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
+import { getAuth } from "firebase/auth";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
+  const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const route = useRouter();
+  const auth = getAuth();
   const guardarAlgo = async() =>{
     try {
       const docRef = await addDoc(collection(db, "users"), {
@@ -38,6 +41,17 @@ export default function HomeScreen() {
     route.push("/login")
   }
   
+  useFocusEffect(()=>{
+    const getUsuario  = async () =>{
+      if (auth.currentUser?.uid) {
+        const user = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
+        setUsuario(user.data()?.usuario)
+      } else {
+        console.warn("No user is currently logged in.");
+      }
+    }
+    getUsuario()
+  })
   return (
     <View
       style={{
@@ -46,8 +60,9 @@ export default function HomeScreen() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Link href="/about"><Text>Go to About</Text></Link>
+      {usuario && 
+        <Text style={{fontSize:20, fontWeight:"bold"}}>Bienvenido: {usuario}</Text>
+      }
         <Pressable 
           style={[style.Button, {backgroundColor: pressed ? "white" : "blue"}]}
           onPressIn={() => setPressed(true)}
