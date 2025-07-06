@@ -1,12 +1,57 @@
 import React from "react";
-import { Link, useRouter } from "expo-router";
+import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
+import { Link, useFocusEffect, useRouter } from "expo-router";
 import { Pressable, Text, View,StyleSheet } from "react-native";
 import { useState } from "react";
+import { app } from "@/firebase";
+import { removeCredencial } from "@/utils/hooks/useCredential";
+import { getAuth } from "firebase/auth";
 
-export default function Index() {
+export default function HomeScreen() {
+  const db = getFirestore(app)
+  const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const route = useRouter();
+  const auth = getAuth();
+  const guardarAlgo = async() =>{
+    try {
+      const docRef = await addDoc(collection(db, "users"), {
+        first: "Alan",
+        middle: "Mathison",
+        last: "Turing",
+        born: 1912
+      });
+
+      console.log("Document written with ID: ", docRef.id);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+    }
+  }
+  const obenerAlgo = async() =>{
+    try{
+      const response = await getDocs(collection(db, "users"))
+      response.forEach(item=>console.log(item.id, item.data()))
+    } catch(e){
+      console.error(e);
+    }
+  }
+  const cerrarSesion = async() =>{ 
+    setPressed(false); 
+    await removeCredencial()
+    route.push("/login")
+  }
   
+  useFocusEffect(()=>{
+    const getUsuario  = async () =>{
+      if (auth.currentUser?.uid) {
+        const user = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
+        setUsuario(user.data()?.usuario)
+      } else {
+        console.warn("No user is currently logged in.");
+      }
+    }
+    getUsuario()
+  })
   return (
     <View
       style={{
@@ -15,14 +60,33 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
-      <Link href="/about"><Text>Go to About</Text></Link>
+      {usuario && 
+        <Text style={{fontSize:20, fontWeight:"bold"}}>Bienvenido: {usuario}</Text>
+      }
         <Pressable 
           style={[style.Button, {backgroundColor: pressed ? "white" : "blue"}]}
           onPressIn={() => setPressed(true)}
-          onPressOut={() => {setPressed(false); route.push("/login")}}  
+          onPressOut={() => cerrarSesion()}  
         > 
           <Text style={{color: pressed?"blue": "#ffffff"}}>LogOut</Text>
+        </Pressable>
+
+        <Pressable
+          style={style.Button}
+          onPress={guardarAlgo}
+        >
+          <Text style={{color:"white"}}>
+            Prueba guardar algo
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={style.Button}
+          onPress={obenerAlgo}
+        >
+          <Text style={{color:"white"}}>
+            Prueba leer algo
+          </Text>
         </Pressable>
       
     </View>
