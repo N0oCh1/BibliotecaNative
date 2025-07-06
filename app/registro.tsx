@@ -155,17 +155,22 @@ export default function Registro() {
           </View>
 
           <View style={styles.contenedorBoton}>
+            
             <Pressable onPress={registrar} style={styles.button}>
               <Text style={styles.buttonText}>Crear Cuenta</Text>
             </Pressable>
           </View>
+          
           <View style={styles.contenedorlink}>
             <Text style={styles.subtitulolink}>¿Ya tienes una cuenta? </Text>
             <Text style={styles.link} onPress={() => router.push("/login")}>
               Inicia sesión
+            
             </Text>
           </View>
+
           {error && <Text style={styles.error}>{error}</Text>}
+          
         </SafeAreaView>
       </View>
     </KeyboardAvoidingView>
@@ -230,7 +235,7 @@ const styles = StyleSheet.create({
   contenedorBoton: {
     justifyContent: "center",
     width: "100%",
-    marginTop: width * 0.05,
+    marginTop: -width * 0.05,
   },
   button: {
     backgroundColor: "#397EE6",
@@ -259,7 +264,7 @@ const styles = StyleSheet.create({
   ojoicon: {
     width: 20,
     height: 20,
-    marginLeft: width * 0.07,
+    marginLeft: width * 0.09,
     marginTop: width * 0.05,
   },
   error: {
