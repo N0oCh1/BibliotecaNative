@@ -1,7 +1,21 @@
 import { Stack } from "expo-router";
-import React from "react";
+import React, { useState} from "react";
+import SplashScreen from "./splashScreen";
+
 
 export default function RootLayout() {
+const [isAppReady, setIsAppReady] = useState(false);
+
+  
+  if (!isAppReady) {
+    return (
+        <SplashScreen
+            onFinish={(isCancelled) => !isCancelled && setIsAppReady(true)}
+        />
+    );
+      
+  }
+
   return (
     <Stack>
       {/* esto es lo que dice que pantalla inicia */}
