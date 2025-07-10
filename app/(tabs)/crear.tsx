@@ -10,25 +10,29 @@ import {
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  Alert,
 } from "react-native";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { db } from "@/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
 
+// Esquema de validación mejorado
 const validacion = yup.object().shape({
-  title: yup.string().required("Titulo requerido"),
-  autor: yup.string().required("Autor requerido"),
-  descripcion: yup.string().min(10, "Mínimo 10 caracteres"),
-  categoria: yup.string().required("Categoría requerida"),
+  title: yup.string().trim().required("Título requerido"),
+  autor: yup.string().trim().required("Autor requerido"),
+  descripcion: yup
+    .string()
+    .trim()
+    .min(10, "Mínimo 10 caracteres")
+    .required("Descripción requerida"),
+  categoria: yup.string().trim().required("Categoría requerida"),
 });
 
 export default function createBook() {
-  //uri de la imagen pickeada
   const [imagen, setImagen] = useState<string | null>(null);
-  // estado de carga
   const [carga, setCarga] = useState(false);
-  //validacion Yup
+
   const {
     control,
     handleSubmit,
@@ -38,47 +42,39 @@ export default function createBook() {
     resolver: yupResolver(validacion),
   });
 
-  //image picker
+  // Seleccionar imagen de galería
   const pickearImagen = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
     });
-    if (!result.canceled) setImagen(result.assets[0].uri);
-    //guarda la URI de la imagen pickeada
+    if (!result.canceled) {
+      setImagen(result.assets[0].uri);
+    }
   };
 
-  /*const subirImagen = async (imagenUri: string): Promise<string> => {
-    const data = new FormData();
-    data.append('file',{
-        uri: imagenUri,
-        type: 'imagen/jepg',
-        name: 'upload.jpg'
-    } as any);
-    data.append('upload_present', ' t')
-}
-}*/
-
+  // Enviar formulario
   const formSubmit = async (data: any) => {
+    if (!imagen) {
+      Alert.alert("Falta imagen", "Por favor selecciona una imagen del libro.");
+      return;
+    }
+
     try {
       setCarga(true);
-      
-     console.log("Firestore DB:", db);
+
       const docRef = await addDoc(collection(db, "Libros"), {
         ...data,
+        imagen, // Puedes guardar la URI de la imagen aquí o subirla luego
         createAt: Timestamp.now(),
         addedBy: "user-id-placeholder",
-        
-      }
-      
-    );
-      
+      });
 
       reset();
       setImagen(null);
-      alert("libro agregado con exitosamente");
+      Alert.alert("Éxito", "Libro agregado exitosamente.");
     } catch (error) {
-        console.log("Error al agregar libro:", error);
-      alert("Error al agregar libro");
+      console.log("Error al agregar libro:", error);
+      Alert.alert("Error", "Ocurrió un error al agregar el libro.");
     } finally {
       setCarga(false);
     }
@@ -87,6 +83,8 @@ export default function createBook() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Agregar Nuevo Libro</Text>
+
+      {/* Campo: Título */}
       <Controller
         control={control}
         name="title"
@@ -104,6 +102,8 @@ export default function createBook() {
           </>
         )}
       />
+
+      {/* Campo: Autor */}
       <Controller
         control={control}
         name="autor"
@@ -121,6 +121,8 @@ export default function createBook() {
           </>
         )}
       />
+
+      {/* Campo: Descripción */}
       <Controller
         control={control}
         name="descripcion"
@@ -139,6 +141,8 @@ export default function createBook() {
           </>
         )}
       />
+
+      {/* Campo: Categoría */}
       <Controller
         control={control}
         name="categoria"
@@ -156,14 +160,15 @@ export default function createBook() {
           </>
         )}
       />
-      <Button title="Seleccionar Imagen" onPress={pickearImagen} />
 
+      {/* Imagen */}
+      <Button title="Seleccionar Imagen" onPress={pickearImagen} />
       {imagen && <Image source={{ uri: imagen }} style={styles.image} />}
 
+      {/* Botón de envío */}
       {carga ? (
         <ActivityIndicator size="large" color="#0077b6" />
       ) : (
-        
         <Button title="Agregar Libro" onPress={handleSubmit(formSubmit)} />
       )}
     </ScrollView>
@@ -199,7 +204,4 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 8,
   },
-  buttom:{
-    margin: 5
-  }
 });
