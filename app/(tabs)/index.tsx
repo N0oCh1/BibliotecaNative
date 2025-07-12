@@ -5,14 +5,14 @@ import { Pressable, Text, View,StyleSheet } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
-import { getAuth } from "firebase/auth";
+import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const route = useRouter();
-  const auth = getAuth();
+  const auth = CurrentUser();
   const guardarAlgo = async() =>{
     try {
       const docRef = await addDoc(collection(db, "users"), {
@@ -38,13 +38,14 @@ export default function HomeScreen() {
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
+    await removeCurrentUser()
     route.push("/login")
   }
   
   useFocusEffect(()=>{
     const getUsuario  = async () =>{
-      if (auth.currentUser?.uid) {
-        const user = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
+      if (auth) {
+        const user = await getDoc(doc(db, "usuarios", (await auth).localId));
         setUsuario(user.data()?.usuario)
       } else {
         console.warn("No user is currently logged in.");

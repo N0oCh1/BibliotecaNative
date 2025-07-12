@@ -7,6 +7,8 @@ import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
 import { auth, db } from '@/firebase';
 import { AntDesign, Fontisto, MaterialIcons } from '@expo/vector-icons';
+import { singUp } from "@/api/useSesion";
+import { setDocument } from "@/api/useFirestore";
 
 const { width, height } = Dimensions.get("window");
 
@@ -45,11 +47,12 @@ export default function Registro() {
 
   const registrar = async () => {
     try {
-      const user = await createUserWithEmailAndPassword(auth, email, password);
-      const uid = user.user.uid
+      const user = await singUp(email, password);
+      const uid = user.localId;
 
       if (user) {
-        await setDoc(doc(db, "usuarios", uid), { usuario: usuario })
+        const body = {fields:{usuario:{stringValue:usuario}}};
+        await setDocument("usuarios", body, uid)
         router.replace("/(tabs)");
       }
     } catch (error) {
