@@ -21,6 +21,7 @@ import { auth } from "../firebase";
 import { MaterialIcons } from "@expo/vector-icons";
 import { setCredencial } from "@/utils/hooks/useCredential";
 import Checkbox from "expo-checkbox";
+import { singIn } from "@/api/useSesion";
 
 
 export const options = {
@@ -57,11 +58,7 @@ export default function Login() {
 
   const signIn = async () => {
     try {
-      const user = await signInWithEmailAndPassword(
-        auth,
-        email!,
-        password!
-      );
+      const user = await singIn(email!, password!);
       if (user) {
         recordar ? 
         setCredencial({
