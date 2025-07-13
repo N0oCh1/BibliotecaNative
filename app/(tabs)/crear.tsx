@@ -15,6 +15,8 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { db } from "@/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
+import { setDocument } from "@/api/useFirestore";
+import { CurrentUser } from "@/utils/hooks/useAuthentication";
 
 const validacion = yup.object().shape({
   title: yup.string().required("Titulo requerido"),
@@ -61,17 +63,19 @@ export default function createBook() {
   const formSubmit = async (data: any) => {
     try {
       setCarga(true);
+      const user = CurrentUser();
       
      console.log("Firestore DB:", db);
-      const docRef = await addDoc(collection(db, "Libros"), {
-        ...data,
-        createAt: Timestamp.now(),
-        addedBy: "user-id-placeholder",
-        
-      }
-      
-    );
-      
+     const bookData = {fields:{
+      autor:{stringValue:data.autor},
+      categoria:{stringValue:data.categoria},
+      descripcion:{stringValue:data.descripcion},
+      titulo:{stringValue:data.title},
+      createAt: {timestampValue: new Date().toISOString()},
+      addedBy: {stringValue: (await user).localId},
+     }}
+
+    const docRef = await setDocument("Libros", bookData)
 
       reset();
       setImagen(null);

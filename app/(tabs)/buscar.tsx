@@ -2,7 +2,7 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar } from "react-native";
+import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, SafeAreaView } from "react-native";
 
 export default function BuscarScreen() {
   const router = useRouter()
@@ -40,7 +40,7 @@ export default function BuscarScreen() {
       </View>
       {data &&
         <ScrollView>
-          <View style={style.libroContainer}>
+          <SafeAreaView style={style.libroContainer}>
             {data.map((libro) => (
               <Pressable key={libro.id} style={style.libro} onPress={()=>handlePress(libro.id)}>
                 <View style={{ width: 200, height: 250, justifyContent: "center", alignItems: "center" }}>
@@ -57,7 +57,7 @@ export default function BuscarScreen() {
                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>{libro.titulo}</Text>
               </Pressable>
             ))}
-          </View>
+          </SafeAreaView>
         </ScrollView>
       }
     </View>
