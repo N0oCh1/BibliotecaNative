@@ -2,12 +2,12 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   Button,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ObtenerLibroPorId } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
@@ -41,7 +41,8 @@ export default function DetalleLibro() {
 
     obtener();
   }, [libro]);
-
+  console.log(detalle)
+  
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#000" />;
   if (!detalle) {
     return (

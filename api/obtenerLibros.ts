@@ -3,22 +3,26 @@ import type {Libro}  from "@/utils/types"
 
 const URL = "https://www.googleapis.com/books/v1/volumes"
 
-const ObtenerLibro = async(busqueda?: string) =>{
+const ObtenerLibro = async(busqueda?: string) :Promise<Libro[]> =>{
   try{
     const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${busqueda ? busqueda : "Harry Potter"}`).then(res=>res.json()).then(data=>data.items)
-    return response.map((item:any) : Libro =>({
-      id: item.id,
-      titulo: item.volumeInfo.title,
-      descripcion:item.volumeInfo.description,
-      autor:item.volumeInfo.authors,
-      imagen:item.volumeInfo.imageLinks.thumbnail,
-      editorial:item.volumeInfo.publisher,
-      link:item.selfLink
-    }))
+    const libros = response.map((item:any) : Libro =>{
+      const url = item.volumeInfo.imageLinks.thumbnail
+      return{
+        id: item.id,
+        titulo: item.volumeInfo.title,
+        descripcion:item.volumeInfo.description,
+        autor:item.volumeInfo.authors,
+        imagen: url.replace(/^http:\/\//, "https://"),
+        editorial:item.volumeInfo.publisher,
+        link:item.selfLink
+      }
+    })
+    return libros
   }
   catch{
     throw new Error("Error del API")
-    return false
+    return []
   }
 }
 
@@ -39,7 +43,7 @@ const ObtenerLibroPorId = async (id: string): Promise<Libro | null> => {
       titulo: item.volumeInfo.title,
       descripcion: item.volumeInfo.description,
       autor: item.volumeInfo.authors,
-      imagen: item.volumeInfo.imageLinks?.thumbnail,
+      imagen: item.volumeInfo.imageLinks?.thumbnail.replace(/^http:\/\//, "https://"),
       editorial: item.volumeInfo.publisher,
       link: item.selfLink,
     };

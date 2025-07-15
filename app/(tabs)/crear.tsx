@@ -15,7 +15,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { db } from "@/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
-import { setDocument } from "@/api/useFirestore";
+import { getDocumentCondition, patchDocument, setDocument } from "@/api/useFirestore";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
 
 const validacion = yup.object().shape({
@@ -75,8 +75,10 @@ export default function createBook() {
       addedBy: {stringValue: (await user).localId},
      }}
 
-    const docRef = await setDocument("Libros", bookData)
+     
 
+
+    const docRef = await setDocument("Libros", bookData)
       reset();
       setImagen(null);
       alert("libro agregado con exitosamente");
@@ -87,6 +89,14 @@ export default function createBook() {
       setCarga(false);
     }
   };
+
+  const handleTest = async()=>{
+    const user = CurrentUser();
+    const getBookId =await getDocumentCondition("Libros", "addedBy", (await user).localId);
+    const test = await patchDocument(`usuarios`, (await user).localId, getBookId[0].name);
+    console.log(getBookId);
+    console.log(test);
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -170,6 +180,8 @@ export default function createBook() {
         
         <Button title="Agregar Libro" onPress={handleSubmit(formSubmit)} />
       )}
+
+      <Button title="Test" onPress={handleTest} />
     </ScrollView>
   );
 }

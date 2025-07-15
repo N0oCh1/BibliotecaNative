@@ -22,13 +22,14 @@ const singIn = async(email: string, password: string): Promise<SesionResponse> =
       })
     }).then(res=>res.json())
     setCurrentUser(response)
-    console.log(response)
+    if(response.error){
+      throw new Error(response.error.message)
+    }
     return response
 
   }
   catch(err){
-    console.error(err)
-    return {}as SesionResponse  
+    throw new Error("Error de autenticacion")
   }
 }
 
@@ -42,12 +43,15 @@ const singUp = async(email: string, password: string): Promise<SesionResponse> =
         returnSecureToken: true
       })
     }).then(res=>res.json())
+    if(response.error){
+      throw new Error(response.error.message)
+    }
     console.log(response)
     setCurrentUser(response)
     return response
   }catch(err){
     console.error(err)
-    return {} as SesionResponse
+    throw new Error("Error de autenticacion")
   }
 }
 

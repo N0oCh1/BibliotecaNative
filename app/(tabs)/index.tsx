@@ -1,7 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import { Link, useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, SafeAreaView } from "react-native";
+import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
@@ -14,6 +14,9 @@ export default function HomeScreen() {
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const [biblioteca, setBibilioteca] = useState<any>()
+  const [refresh, setRefresh] = useState<boolean>(false)
+
+
   const route = useRouter();
   const auth = CurrentUser();
   const guardarAlgo = async() =>{
@@ -44,18 +47,17 @@ export default function HomeScreen() {
     await removeCurrentUser()
     route.push("/login")
   }
-  
+  // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
-      let isActive = true; // Para evitar setState si se desmonta rápido
-
+      let isActive = true; 
       const getUsuario = async () => {
-        const authData = await auth; // Solo haces el await una vez
+        const authData = await auth; 
         if (authData) {
           const user = await getDocuments("usuarios", authData.localId);
+          console.log(user)
           if (isActive) {
             setUsuario(user.usuario.stringValue);
-            console.log("Datos de usuario", user);
           }
         } else {
           console.warn("No user is currently logged in.");
@@ -73,14 +75,19 @@ export default function HomeScreen() {
 
       getUsuario();
       getLibros();
-
       // Cleanup para evitar fugas de memoria
       return () => {
         isActive = false;
-        console.log("Pantalla perdió el foco");
       };
     }, []) // 🚨 IMPORTANTE: array vacío si no depende de variables del componente
   );
+
+  const handleRefresh = async() => {
+    setRefresh(true);
+    const user = await auth;
+    setUsuario(await getDocuments("usuarios", user.localId).then(data=>data.usuario.stringValue));
+    setRefresh(false)
+  }
 
   return (
     <SafeAreaView
@@ -90,7 +97,10 @@ export default function HomeScreen() {
         alignItems: "center",
       }}
     >
-      {usuario && 
+      <ScrollView
+        refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
+      >
+        {usuario && 
         <Text style={{fontSize:20, fontWeight:"bold"}}>Bienvenido: {usuario}</Text>
       }
         <Pressable 
@@ -118,7 +128,17 @@ export default function HomeScreen() {
             Prueba leer algo
           </Text>
         </Pressable>
+        {biblioteca && biblioteca.map((libro:any,index:number)=>{
+          return(
+            <View key={index}>
+              <Text>
+                {libro.fields.titulo.stringValue}
+              </Text>
+            </View>
+          )
+        })}
       
+      </ScrollView>
     </SafeAreaView>
   );
 }
