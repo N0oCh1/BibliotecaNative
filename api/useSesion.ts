@@ -26,10 +26,9 @@ const singIn = async(email: string, password: string): Promise<SesionResponse> =
       throw new Error(response.error.message)
     }
     return response
-
   }
   catch(err){
-    throw new Error("Error de autenticacion")
+    throw new Error("Error de creacion de usuarios")
   }
 }
 
@@ -46,7 +45,6 @@ const singUp = async(email: string, password: string): Promise<SesionResponse> =
     if(response.error){
       throw new Error(response.error.message)
     }
-    console.log(response)
     setCurrentUser(response)
     return response
   }catch(err){

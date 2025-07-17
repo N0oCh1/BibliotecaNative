@@ -13,6 +13,7 @@ const ObtenerLibro = async(busqueda?: string) :Promise<Libro[]> =>{
         titulo: item.volumeInfo.title,
         descripcion:item.volumeInfo.description,
         autor:item.volumeInfo.authors,
+        categoria:item.volumeInfo.categories,
         imagen: url.replace(/^http:\/\//, "https://"),
         editorial:item.volumeInfo.publisher,
         link:item.selfLink
@@ -43,6 +44,7 @@ const ObtenerLibroPorId = async (id: string): Promise<Libro | null> => {
       titulo: item.volumeInfo.title,
       descripcion: item.volumeInfo.description,
       autor: item.volumeInfo.authors,
+      categoria: item.volumeInfo.categories,
       imagen: item.volumeInfo.imageLinks?.thumbnail.replace(/^http:\/\//, "https://"),
       editorial: item.volumeInfo.publisher,
       link: item.selfLink,

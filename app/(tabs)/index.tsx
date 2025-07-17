@@ -8,6 +8,9 @@ import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 import { getDocumentCondition, getDocuments } from "@/api/useFirestore";
 import type { Libro } from "@/utils/types";
+import { obtenerUsuario } from "@/api/usuarios";
+import { getBiblioteca } from "@/api/biblioteca";
+import { Image } from "expo-image";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
@@ -54,7 +57,7 @@ export default function HomeScreen() {
       const getUsuario = async () => {
         const authData = await auth; 
         if (authData) {
-          const user = await getDocuments("usuarios", authData.localId);
+          const user = await obtenerUsuario();
           console.log(user)
           if (isActive) {
             setUsuario(user.usuario.stringValue);
@@ -63,18 +66,18 @@ export default function HomeScreen() {
           console.warn("No user is currently logged in.");
         }
       };
-
-      const getLibros = async () => {
-        const authData = await auth;
-        const libros = await getDocumentCondition("Libros", "addedBy", authData.localId);
-        if (isActive) {
-          setBibilioteca(libros);
-          console.log("Libros en la biblioteca", libros);
+      const obtenerBiblioteca = async() =>{
+        const auth = await CurrentUser()
+        try{
+          setBibilioteca(await getBiblioteca(auth.localId))
         }
-      };
-
+        catch(e){
+          console.log(e)
+          setBibilioteca(null)
+        }
+      }
       getUsuario();
-      getLibros();
+      obtenerBiblioteca();
       // Cleanup para evitar fugas de memoria
       return () => {
         isActive = false;
@@ -83,12 +86,16 @@ export default function HomeScreen() {
   );
 
   const handleRefresh = async() => {
-    setRefresh(true);
-    const user = await auth;
-    setUsuario(await getDocuments("usuarios", user.localId).then(data=>data.usuario.stringValue));
-    setRefresh(false)
-  }
 
+      setRefresh(true);
+      const user = await auth;
+      setUsuario(await getDocuments("usuarios", user.localId).then(data=>data.usuario.stringValue));
+      setBibilioteca(await getBiblioteca(user.localId))
+      setRefresh(false)
+
+  }
+  console.log("usuarios ", usuario)
+  console.log("biblioteca ", biblioteca)
   return (
     <SafeAreaView
       style={{
@@ -98,6 +105,7 @@ export default function HomeScreen() {
       }}
     >
       <ScrollView
+      style={{width:"100%", height:"100%", flex:1, marginTop:100}}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         {usuario && 
@@ -128,9 +136,11 @@ export default function HomeScreen() {
             Prueba leer algo
           </Text>
         </Pressable>
+        <Text>Tu Biblioteca</Text>
         {biblioteca && biblioteca.map((libro:any,index:number)=>{
           return(
             <View key={index}>
+              <Image style={{width:100, height:150, objectFit:"contain"}} source={{uri:libro.fields.imagen_url.stringValue}}/>
               <Text>
                 {libro.fields.titulo.stringValue}
               </Text>

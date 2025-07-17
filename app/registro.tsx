@@ -22,6 +22,7 @@ import { AntDesign, Fontisto, MaterialIcons } from "@expo/vector-icons";
 import { singUp } from "@/api/useSesion";
 import { setDocument } from "@/api/useFirestore";
 import { array } from "yup";
+import { agregarUsuario } from "@/api/usuarios";
 
 const { width, height } = Dimensions.get("window");
 
@@ -70,28 +71,7 @@ export default function Registro() {
       const uid = user.localId;
 
       if (user) {
-        const body = {
-          fields: {
-            usuario: { stringValue: usuario },
-            biblioteca: {
-              mapValue: {
-                fields: {
-                  libro_id_externo: {
-                    arrayValue: {
-                      values: [], // correcto
-                    },
-                  },
-                  libro_id_propio: {
-                    arrayValue: {
-                      values: [], // CORREGIDO: debe ser "values", no "value"
-                    },
-                  },
-                },
-              },
-            },
-          },
-        };
-        await setDocument("usuarios", body, uid);
+        await agregarUsuario(usuario);
         router.replace("/(tabs)");
       }
     } catch (error) {

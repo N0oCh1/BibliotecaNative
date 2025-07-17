@@ -17,21 +17,25 @@
     "expo": "^53.0.13",
     "expo-checkbox": "~4.1.4",
     "expo-constants": "~17.1.6",
+    "expo-file-system": "~18.1.11",
+    "expo-image": "~2.3.2",
     "expo-image-picker": "~16.1.4",
     "expo-linking": "~7.1.5",
     "expo-router": "~5.1.1",
     "expo-status-bar": "~2.2.3",
     "firebase": "9.23.0",
     "lottie-react-native": "^7.2.3",
+    "nanoid": "^5.1.5",
     "react": "19.0.0",
     "react-hook-form": "^7.59.0",
     "react-native": "^0.79.4",
+    "react-native-dropdown-picker": "^5.4.6",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.11.1",
     "react-native-vector-icons": "^10.2.0",
     "typescript": "~5.8.3",
     "yup": "^1.6.1",
-    "expo-image": "~2.3.2"
+    "expo-image-manipulator": "~13.1.7"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

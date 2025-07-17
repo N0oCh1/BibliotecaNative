@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -11,26 +11,37 @@ import {
   StyleSheet,
   ScrollView,
 } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker"; 
 import { yupResolver } from "@hookform/resolvers/yup";
 import { db } from "@/firebase";
 import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
 import { getDocumentCondition, patchDocument, setDocument } from "@/api/useFirestore";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
+import { grantPermission } from "@/utils/hooks/usePermission";
+import { librosBiblioteca } from "@/utils/types";
+import { addLibro } from "@/api/biblioteca";
 
 const validacion = yup.object().shape({
   title: yup.string().required("Titulo requerido"),
   autor: yup.string().required("Autor requerido"),
   descripcion: yup.string().min(10, "Mínimo 10 caracteres"),
+  formato: yup.string().required("Formato requerido"),
   categoria: yup.string().required("Categoría requerida"),
 });
 
 export default function createBook() {
   //uri de la imagen pickeada
-  const [imagen, setImagen] = useState<string | null>(null);
+  const [imagen, setImagen] = useState<ImagePicker.ImagePickerAsset |null>();
   // estado de carga
   const [carga, setCarga] = useState(false);
   //validacion Yup
+  const[open, setOpen] = useState<boolean>(false)
+  const[value, setValue] = useState<string>()
+  const[items, setItems] = useState<any>([
+    {label: 'Fisico', value:"fisico"},
+    {label: 'Digital', value:"digital"}
+  ])
   const {
     control,
     handleSubmit,
@@ -42,48 +53,43 @@ export default function createBook() {
 
   //image picker
   const pickearImagen = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-    });
-    if (!result.canceled) setImagen(result.assets[0].uri);
-    //guarda la URI de la imagen pickeada
+    try{
+      await grantPermission()
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 1,
+      });
+      if(result.canceled){
+        alert('No selecciono ninguna imagen')
+        return
+      }
+      alert('Imagen seleccionada')
+      setImagen(result.assets ? result.assets[0]:null)
+    }
+    catch(e){
+      alert('Error al seleccionar imagen')
+      console.log(e);
+    }
   };
-
-  /*const subirImagen = async (imagenUri: string): Promise<string> => {
-    const data = new FormData();
-    data.append('file',{
-        uri: imagenUri,
-        type: 'imagen/jepg',
-        name: 'upload.jpg'
-    } as any);
-    data.append('upload_present', ' t')
-}
-}*/
 
   const formSubmit = async (data: any) => {
     try {
-      setCarga(true);
-      const user = CurrentUser();
-      
+      setCarga(true);      
      console.log("Firestore DB:", db);
-     const bookData = {fields:{
-      autor:{stringValue:data.autor},
-      categoria:{stringValue:data.categoria},
-      descripcion:{stringValue:data.descripcion},
-      titulo:{stringValue:data.title},
-      createAt: {timestampValue: new Date().toISOString()},
-      addedBy: {stringValue: (await user).localId},
-     }}
-
+     const bookData:librosBiblioteca = {
+      titulo: data.title,
+      autor: data.autor,
+      descripcion: data.descripcion,
+      categoria:data.categoria,
+      formato:data.formato,
+      imagen: imagen?.uri
+     }
      
-
-
-    const docRef = await setDocument("Libros", bookData)
+    await addLibro(bookData)
       reset();
-      setImagen(null);
       alert("libro agregado con exitosamente");
     } catch (error) {
-        console.log("Error al agregar libro:", error);
+      console.log("Error al agregar libro:", error);
       alert("Error al agregar libro");
     } finally {
       setCarga(false);
@@ -170,10 +176,31 @@ export default function createBook() {
           </>
         )}
       />
+      <Controller
+        control={control}
+        name="formato"
+        render={({ field: { onChange, value } }) => (
+          <>
+            <DropDownPicker
+            open={open}
+            value={value}
+            items={items}
+            setItems={setItems}
+            onChangeValue={onChange}
+            setOpen={setOpen}
+            setValue={onChange}
+            placeholder="selecciona el formato"
+            listMode="SCROLLVIEW"
+            style={styles.input}
+            />
+            {errors.formato && (
+              <Text style={styles.error}>{errors.formato.message}</Text>
+            )}
+          </>
+        )}
+      />
+      {imagen && <Image source={{ uri: imagen.uri }} style={styles.image} />}
       <Button title="Seleccionar Imagen" onPress={pickearImagen} />
-
-      {imagen && <Image source={{ uri: imagen }} style={styles.image} />}
-
       {carga ? (
         <ActivityIndicator size="large" color="#0077b6" />
       ) : (
