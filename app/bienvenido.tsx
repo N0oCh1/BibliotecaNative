@@ -13,6 +13,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getCredencial } from "@/utils/hooks/useCredential";
 import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { singIn } from "@/api/useSesion";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -22,7 +23,7 @@ export default function WelcomeScreen() {
     const getSessions = async () => {
       const session = await getCredencial();
       if(session){
-        const user = await signInWithEmailAndPassword(auth, session.usuario, session.contrasena)
+        const user = await singIn(session.usuario, session.contrasena)
         if(user){
           router.replace("/(tabs)")
         }

@@ -19,11 +19,15 @@ export default {
       "supportsTablet": true
     },
     "android": {
+      "useCleartextTraffic": true,
+      "package": "com.N0oCh1.BibliotecaNative",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package" : "com.N0oCh1.BibliotecaNative",
+      "versionCode" : 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -34,7 +38,10 @@ export default {
       PROJECT_ID: process.env.PROJECT_ID,
       STORAGE_BUCKET: process.env.STORAGE_BUCKET,
       MESSAGING_SENDER_ID: process.env.MESSAGING_SENDER_ID,
-      APP_ID: process.env.APP_ID
+      APP_ID: process.env.APP_ID,
+      "eas": {
+        "projectId": "3432fb41-944e-4e18-9958-4584885f2d92"
+      }
     },
     "plugins": [
       "expo-router"

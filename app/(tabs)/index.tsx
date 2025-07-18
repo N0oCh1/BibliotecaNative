@@ -1,18 +1,27 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import { Link, useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet } from "react-native";
+import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
-import { getAuth } from "firebase/auth";
+import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
+import { getDocumentCondition, getDocuments } from "@/api/useFirestore";
+import type { Libro } from "@/utils/types";
+import { obtenerUsuario } from "@/api/usuarios";
+import { getBiblioteca } from "@/api/biblioteca";
+import { Image } from "expo-image";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
+  const [biblioteca, setBibilioteca] = useState<any>()
+  const [refresh, setRefresh] = useState<boolean>(false)
+
+
   const route = useRouter();
-  const auth = getAuth();
+  const auth = CurrentUser();
   const guardarAlgo = async() =>{
     try {
       const docRef = await addDoc(collection(db, "users"), {
@@ -38,29 +47,68 @@ export default function HomeScreen() {
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
+    await removeCurrentUser()
     route.push("/login")
   }
-  
-  useFocusEffect(()=>{
-    const getUsuario  = async () =>{
-      if (auth.currentUser?.uid) {
-        const user = await getDoc(doc(db, "usuarios", auth.currentUser.uid));
-        setUsuario(user.data()?.usuario)
-      } else {
-        console.warn("No user is currently logged in.");
+  // cargar datos al focucear la pagina principal
+    useFocusEffect(
+    useCallback(() => {
+      let isActive = true; 
+      const getUsuario = async () => {
+        const authData = await auth; 
+        if (authData) {
+          const user = await obtenerUsuario();
+          console.log(user)
+          if (isActive) {
+            setUsuario(user.usuario.stringValue);
+          }
+        } else {
+          console.warn("No user is currently logged in.");
+        }
+      };
+      const obtenerBiblioteca = async() =>{
+        const auth = await CurrentUser()
+        try{
+          setBibilioteca(await getBiblioteca(auth.localId))
+        }
+        catch(e){
+          console.log(e)
+          setBibilioteca(null)
+        }
       }
-    }
-    getUsuario()
-  })
+      getUsuario();
+      obtenerBiblioteca();
+      // Cleanup para evitar fugas de memoria
+      return () => {
+        isActive = false;
+      };
+    }, []) // 🚨 IMPORTANTE: array vacío si no depende de variables del componente
+  );
+
+  const handleRefresh = async() => {
+
+      setRefresh(true);
+      const user = await auth;
+      setUsuario(await getDocuments("usuarios", user.localId).then(data=>data.usuario.stringValue));
+      setBibilioteca(await getBiblioteca(user.localId))
+      setRefresh(false)
+
+  }
+  console.log("usuarios ", usuario)
+  console.log("biblioteca ", biblioteca)
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
       }}
     >
-      {usuario && 
+      <ScrollView
+      style={{width:"100%", height:"100%", flex:1, marginTop:100}}
+        refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
+      >
+        {usuario && 
         <Text style={{fontSize:20, fontWeight:"bold"}}>Bienvenido: {usuario}</Text>
       }
         <Pressable 
@@ -88,8 +136,20 @@ export default function HomeScreen() {
             Prueba leer algo
           </Text>
         </Pressable>
+        <Text>Tu Biblioteca</Text>
+        {biblioteca && biblioteca.map((libro:any,index:number)=>{
+          return(
+            <View key={index}>
+              <Image style={{width:100, height:150, objectFit:"contain"}} source={{uri:libro.fields.imagen_url.stringValue}}/>
+              <Text>
+                {libro.fields.titulo.stringValue}
+              </Text>
+            </View>
+          )
+        })}
       
-    </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 const style = StyleSheet.create({

@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   ActivityIndicator,
   ScrollView,
   StyleSheet,
   Button,
 } from "react-native";
+import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ObtenerLibroPorId } from "@/api/obtenerLibros";
-import type { Libro } from "@/utils/types";
+import type { Libro, librosBiblioteca } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
+import { addLibro } from "@/api/biblioteca";
 
 
 export default function DetalleLibro() {
@@ -41,7 +42,7 @@ export default function DetalleLibro() {
 
     obtener();
   }, [libro]);
-
+  
   if (loading) return <ActivityIndicator style={{ marginTop: 50 }} size="large" color="#000" />;
   if (!detalle) {
     return (
@@ -51,11 +52,30 @@ export default function DetalleLibro() {
       </View>
     );
   }
+  
+  const handleAgregar = async() =>{
+    const body: librosBiblioteca = {
+      titulo: detalle.titulo,
+      autor: detalle.autor[0],
+      descripcion: detalle.descripcion || "sin descripción",
+      categoria: detalle.categoria[0],
+      formato: "digital",
+      imagen: detalle.imagen,
+    }
+    console.log("libro a agregar" , body)
+    try{
+      await addLibro(body, detalle.imagen)
+      alert("se agrego el libro")
+    }
+    catch(e){
+      console.log(e);
+    }
+  }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{detalle.titulo}</Text>
-      <Text style={styles.authors}>Autor(es): {detalle.autor?.join(", ") || "Desconocido"}</Text>
+      <Text style={styles.authors}>Autor(es): {detalle.autor || "Desconocido"}</Text>
       <Text style={styles.published}>Editorial: {detalle.editorial || "Desconocido"}</Text>
 
       {detalle.imagen && (
@@ -64,8 +84,9 @@ export default function DetalleLibro() {
           style={styles.image}
           resizeMode="contain"
         />
+        
       )}
-
+      <Button title="agregar a biblioteca" onPress={()=>handleAgregar()}/>
       <Text style={styles.description}>
         {detalle.descripcion
           ? detalle.descripcion.replace(/<[^>]+>/g, "")

@@ -2,13 +2,15 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, Image, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, SafeAreaView, RefreshControl } from "react-native";
+import { Image } from "expo-image";
 
 export default function BuscarScreen() {
   const router = useRouter()
   const [data, setData] = useState<Libro[]>();
   const [busqueda, setBusqueda] = useState<string>();
   const [loadingImages, setLoadingImages] = useState<{ [id: string]: boolean }>({});
+  const [refresh, setRefresh] = useState<boolean>(false);
 
   // obtengo los libros de la api y cuando se escribe se busca
   useEffect(() => {
@@ -17,6 +19,7 @@ export default function BuscarScreen() {
     }
     fetchData();
   }, [setData, busqueda]);
+
 
   const handleLoadStart = (id: string) => {
     setLoadingImages((prev) => ({ ...prev, [id]: true }));
@@ -30,6 +33,11 @@ export default function BuscarScreen() {
    router.push(`/libro/${id}`);
   }
 
+  const handleRefresh = async() =>{
+    setRefresh(true);
+    setData(await ObtenerLibro(busqueda));
+    setRefresh(false)
+  }
   return (
     <View style={style.container}>
       <StatusBar
@@ -39,8 +47,10 @@ export default function BuscarScreen() {
         <TextInput style={style.busqueda} onChangeText={setBusqueda} placeholder="Buscar libro" />
       </View>
       {data &&
-        <ScrollView>
-          <View style={style.libroContainer}>
+        <ScrollView
+          refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
+        >
+          <SafeAreaView style={style.libroContainer}>
             {data.map((libro) => (
               <Pressable key={libro.id} style={style.libro} onPress={()=>handlePress(libro.id)}>
                 <View style={{ width: 200, height: 250, justifyContent: "center", alignItems: "center" }}>
@@ -57,7 +67,7 @@ export default function BuscarScreen() {
                 <Text style={{ fontSize: 16, fontWeight: "bold" }}>{libro.titulo}</Text>
               </Pressable>
             ))}
-          </View>
+          </SafeAreaView>
         </ScrollView>
       }
     </View>
