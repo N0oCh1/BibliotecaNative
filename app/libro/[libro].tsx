@@ -57,7 +57,7 @@ export default function DetalleLibro() {
     const body: librosBiblioteca = {
       titulo: detalle.titulo,
       autor: detalle.autor[0],
-      descripcion: detalle.descripcion,
+      descripcion: detalle.descripcion || "sin descripción",
       categoria: detalle.categoria[0],
       formato: "digital",
       imagen: detalle.imagen,
