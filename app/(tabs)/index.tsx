@@ -7,7 +7,7 @@ import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 import { getDocumentCondition, getDocuments } from "@/api/useFirestore";
-import type { Libro } from "@/utils/types";
+import type { Libro, LibroBibliotecaDetalle } from "@/utils/types";
 import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
@@ -16,34 +16,13 @@ export default function HomeScreen() {
   const db = getFirestore(app)
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
-  const [biblioteca, setBibilioteca] = useState<any>()
+  const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>()
   const [refresh, setRefresh] = useState<boolean>(false)
 
 
   const route = useRouter();
   const auth = CurrentUser();
-  const guardarAlgo = async() =>{
-    try {
-      const docRef = await addDoc(collection(db, "users"), {
-        first: "Alan",
-        middle: "Mathison",
-        last: "Turing",
-        born: 1912
-      });
-
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  }
-  const obenerAlgo = async() =>{
-    try{
-      const response = await getDocs(collection(db, "users"))
-      response.forEach(item=>console.log(item.id, item.data()))
-    } catch(e){
-      console.error(e);
-    }
-  }
+  
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
@@ -59,8 +38,9 @@ export default function HomeScreen() {
         if (authData) {
           const user = await obtenerUsuario();
           console.log(user)
+           setUsuario(user.usuario.stringValue);
           if (isActive) {
-            setUsuario(user.usuario.stringValue);
+           
           }
         } else {
           console.warn("No user is currently logged in.");
@@ -73,7 +53,7 @@ export default function HomeScreen() {
         }
         catch(e){
           console.log(e)
-          setBibilioteca(null)
+          setBibilioteca([])
         }
       }
       getUsuario();
@@ -138,11 +118,10 @@ export default function HomeScreen() {
                   <Text style={style.author}>{libro.fields.autor?.stringValue || "Sin autor"}</Text>
                 </View>
               </Pressable>
-        
+
             )
           })}
         </View>
-      
       </ScrollView>
     </SafeAreaView>
   );

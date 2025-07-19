@@ -96,14 +96,6 @@ export default function createBook() {
     }
   };
 
-  const handleTest = async()=>{
-    const user = CurrentUser();
-    const getBookId =await getDocumentCondition("Libros", "addedBy", (await user).localId);
-    const test = await patchDocument(`usuarios`, (await user).localId, getBookId[0].name);
-    console.log(getBookId);
-    console.log(test);
-  }
-
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Agregar Nuevo Libro</Text>
@@ -207,8 +199,6 @@ export default function createBook() {
         
         <Button title="Agregar Libro" onPress={handleSubmit(formSubmit)} />
       )}
-
-      <Button title="Test" onPress={handleTest} />
     </ScrollView>
   );
 }
