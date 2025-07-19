@@ -153,7 +153,6 @@ const style = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     paddingHorizontal: '2%',
-    paddingVertical: 20,
   },
 card: {
   width: '48%',
@@ -164,7 +163,7 @@ card: {
   alignItems: 'center',
   padding: '3%',
   backgroundColor: '#fff',
-  marginBottom: '2%',
+  marginBottom: '3%',
 },
 image: {
   width: '100%',
