@@ -123,25 +123,72 @@ export default function HomeScreen() {
           <Text style={{color: pressed?"blue": "#ffffff"}}>LogOut</Text>
         </Pressable>
 
-        
         <Text>Tu Biblioteca</Text>
-        {biblioteca && biblioteca.map((libro:any,index:number)=>{
-          const libroId = libro.name.split("/").pop();
-          return(
-            <Pressable key={index} onPress={()=>handleDetails(libroId)}>
-              <Image style={{width:100, height:150, objectFit:"contain"}} source={{uri:libro.fields.imagen_url.stringValue}}/>
-              <Text>
-                {libro.fields.titulo.stringValue}
-              </Text>
-            </Pressable>
-          )
-        })}
+        <View style={style.gridContainer}>
+          {biblioteca && biblioteca.map((libro:any,index:number)=>{
+            const libroId = libro.name.split("/").pop();
+            return(
+              <Pressable key={index} onPress={()=>handleDetails(libroId)} style={style.card}>
+                <Image
+                    style={style.image}
+                    source={{ uri: libro.fields.imagen_url.stringValue }}
+                />
+                <View style={style.descripcionLibro}>
+                  <Text style={style.title}>{libro.fields.titulo.stringValue}</Text>
+                  <Text style={style.author}>{libro.fields.autor?.stringValue || "Sin autor"}</Text>
+                </View>
+              </Pressable>
+        
+            )
+          })}
+        </View>
       
       </ScrollView>
     </SafeAreaView>
   );
 }
 const style = StyleSheet.create({
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    paddingHorizontal: '2%',
+    paddingVertical: 20,
+  },
+card: {
+  width: '48%',
+  borderWidth: 1,
+  borderColor: '#ccc',
+  borderRadius: 8,
+  overflow: 'hidden',
+  alignItems: 'center',
+  padding: '3%',
+  backgroundColor: '#fff',
+  marginBottom: '2%',
+},
+image: {
+  width: '100%',
+  height: 180,
+  resizeMode: 'cover',
+  borderRadius: 4,
+},
+
+ descripcionLibro: {
+    marginTop: '5%',
+    width: '100%',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  author: {
+    marginTop: 5, // Espacio entre título y autor
+    fontSize: 12,
+    textAlign: 'center',
+    color: '#666', 
+  },
   Button:{
     paddingBlock:10,
     paddingInline:20,
