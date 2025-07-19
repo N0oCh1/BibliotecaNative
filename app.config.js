@@ -19,6 +19,8 @@ export default {
       "supportsTablet": true
     },
     "android": {
+      "useCleartextTraffic": true,
+      "package": "com.N0oCh1.BibliotecaNative",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"

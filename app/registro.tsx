@@ -1,19 +1,33 @@
-import { View, Text, TextInput, Pressable, StyleSheet, Image, StatusBar, Dimensions } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  Image,
+  StatusBar,
+  Dimensions,
+} from "react-native";
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+} from "firebase/auth";
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
 import { addDoc, collection, doc, setDoc } from "firebase/firestore";
-import { auth, db } from '@/firebase';
-import { AntDesign, Fontisto, MaterialIcons } from '@expo/vector-icons';
+import { auth, db } from "@/firebase";
+import { AntDesign, Fontisto, MaterialIcons } from "@expo/vector-icons";
 import { singUp } from "@/api/useSesion";
 import { setDocument } from "@/api/useFirestore";
+import { array } from "yup";
+import { agregarUsuario } from "@/api/usuarios";
 
 const { width, height } = Dimensions.get("window");
 
 export default function Registro() {
-  const [usuario, setUsuario] = useState<string>("")
+  const [usuario, setUsuario] = useState<string>("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repitePassword, setRepitePassword] = useState("");
@@ -32,12 +46,18 @@ export default function Registro() {
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
 
     return () => {
       keyboardDidHideListener?.remove();
@@ -51,8 +71,7 @@ export default function Registro() {
       const uid = user.localId;
 
       if (user) {
-        const body = {fields:{usuario:{stringValue:usuario}}};
-        await setDocument("usuarios", body, uid)
+        await agregarUsuario(usuario);
         router.replace("/(tabs)");
       }
     } catch (error) {
@@ -69,10 +88,7 @@ export default function Registro() {
       <View style={styles.content}>
         <Image
           source={require("../assets/bienvenido/heroBienvenido.png")}
-          style={[
-            styles.image,
-            keyboardVisible && styles.imageKeyboardVisible
-          ]}
+          style={[styles.image, keyboardVisible && styles.imageKeyboardVisible]}
           resizeMode="cover"
         />
         <StatusBar
@@ -87,7 +103,6 @@ export default function Registro() {
           <View style={styles.inputContainerpadre}>
             <Text style={styles.subtitulo}>Usuario</Text>
             <View style={styles.inputContainer}>
-
               <AntDesign name="user" size={20} color={"#333333"} />
               <TextInput
                 style={styles.input}
@@ -127,11 +142,17 @@ export default function Registro() {
                 }}
                 secureTextEntry={!mostrarPassword}
               />
-              <Pressable onPress={() => {
-                setMostrarPassword(!mostrarPassword);
-                setOjoActivoPassword(!ojoActivoPassword);
-              }}>
-                <AntDesign name={"eyeo"} size={20} color={ojoActivoPassword ? "#0353ff" : "#5f5f5f"} />
+              <Pressable
+                onPress={() => {
+                  setMostrarPassword(!mostrarPassword);
+                  setOjoActivoPassword(!ojoActivoPassword);
+                }}
+              >
+                <AntDesign
+                  name={"eyeo"}
+                  size={20}
+                  color={ojoActivoPassword ? "#0353ff" : "#5f5f5f"}
+                />
               </Pressable>
             </View>
 
@@ -148,27 +169,38 @@ export default function Registro() {
                 }}
                 secureTextEntry={!mostrarRepitePassword}
               />
-              <Pressable onPress={() => {
-                setMostrarRepitePassword(!mostrarRepitePassword)
-                setOjoActivoRepitePassword(!ojoActivoRepitePassword);
-              }}>
-                <AntDesign name={"eyeo"} size={20} color={ojoActivoPassword ? "#0353ff" : "#5f5f5f"} />
+              <Pressable
+                onPress={() => {
+                  setMostrarRepitePassword(!mostrarRepitePassword);
+                  setOjoActivoRepitePassword(!ojoActivoRepitePassword);
+                }}
+              >
+                <AntDesign
+                  name={"eyeo"}
+                  size={20}
+                  color={ojoActivoPassword ? "#0353ff" : "#5f5f5f"}
+                />
               </Pressable>
             </View>
           </View>
 
           <View style={styles.contenedorBoton}>
+            
             <Pressable onPress={registrar} style={styles.button}>
               <Text style={styles.buttonText}>Crear Cuenta</Text>
             </Pressable>
           </View>
+          
           <View style={styles.contenedorlink}>
             <Text style={styles.subtitulolink}>¿Ya tienes una cuenta? </Text>
             <Text style={styles.link} onPress={() => router.push("/login")}>
               Inicia sesión
+            
             </Text>
           </View>
+
           {error && <Text style={styles.error}>{error}</Text>}
+          
         </SafeAreaView>
       </View>
     </KeyboardAvoidingView>
@@ -233,7 +265,7 @@ const styles = StyleSheet.create({
   contenedorBoton: {
     justifyContent: "center",
     width: "100%",
-    marginTop: width * 0.05,
+    marginTop: -width * 0.05,
   },
   button: {
     backgroundColor: "#397EE6",
@@ -262,7 +294,7 @@ const styles = StyleSheet.create({
   ojoicon: {
     width: 20,
     height: 20,
-    marginLeft: width * 0.07,
+    marginLeft: width * 0.09,
     marginTop: width * 0.05,
   },
   error: {

@@ -10,22 +10,22 @@ import {
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ObtenerLibroPorId } from "@/api/obtenerLibros";
-import type { Libro, librosBiblioteca } from "@/utils/types";
+import type { Libro, LibroBibliotecaDetalle, librosBiblioteca } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
-import { addLibro } from "@/api/biblioteca";
+import { addLibro, getLibro, removeLibro } from "@/api/biblioteca";
 
 
-export default function DetalleLibro() {
+export default function BibliotecaLibroScreen() {
   const { libro } = useLocalSearchParams<{ libro: string }>();
   const router = useRouter();
-
-  const [detalle, setDetalle] = useState<Libro | null>(null);
+  console.log("libro", libro);
+  const [detalle, setDetalle] = useState<LibroBibliotecaDetalle>();
 
   const navigation = useNavigation();
   useLayoutEffect(() => {
-    if (detalle?.titulo) {
-      navigation.setOptions({ title: detalle.titulo });
+    if (detalle?.titulo.stringValue) {
+      navigation.setOptions({ title: detalle.titulo.stringValue });
     }
   }, [detalle]);
 
@@ -35,7 +35,7 @@ export default function DetalleLibro() {
     if (!libro) return;
 
     const obtener = async () => {
-      const resultado = await ObtenerLibroPorId(libro);
+      const resultado = await getLibro(libro);
       setDetalle(resultado);
       setLoading(false);
     };
@@ -52,44 +52,57 @@ export default function DetalleLibro() {
       </View>
     );
   }
-  
-  const handleAgregar = async() =>{
-    const body: librosBiblioteca = {
-      titulo: detalle.titulo,
-      autor: detalle.autor[0],
-      descripcion: detalle.descripcion || "sin descripción",
-      categoria: detalle.categoria[0],
-      formato: "digital",
-      imagen: detalle.imagen,
+  const handleDeleted = async (libro: string) => {
+    const nombreArchivo = detalle.imagen_url.stringValue.split("/").pop() || ""
+    const nombreImagen = nombreArchivo.split("?")[0]; // Extraer el nombre del archivo sin parámetros de consulta
+    const result = await removeLibro(libro, nombreImagen);
+    if (result) {
+      alert("Libro eliminado de la biblioteca");
+      router.back();
+    } else {
+      alert("Error al eliminar el libro");
     }
-    console.log("libro a agregar" , body)
-    try{
-      await addLibro(body, detalle.imagen)
-      alert("se agrego el libro")
-    }
-    catch(e){
-      console.log(e);
-    }
-  }
-
+  };
+  // const handleAgregar = async() =>{
+  //   const body: librosBiblioteca = {
+  //     titulo: detalle.titulo,
+  //     autor: detalle.autor[0],
+  //     descripcion: detalle.descripcion || "sin descripción",
+  //     categoria: detalle.categoria[0],
+  //     formato: "digital",
+  //     imagen: detalle.imagen,
+  //   }
+  //   console.log("libro a agregar" , body)
+  //   try{
+  //     await addLibro(body, detalle.imagen)
+  //     alert("se agrego el libro")
+  //   }
+  //   catch(e){
+  //     console.log(e);
+  //   }
+  // }
+  console.log("detalle", detalle);
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{detalle.titulo}</Text>
-      <Text style={styles.authors}>Autor(es): {detalle.autor || "Desconocido"}</Text>
-      <Text style={styles.published}>Editorial: {detalle.editorial || "Desconocido"}</Text>
-
-      {detalle.imagen && (
+      <Text style={styles.title}>{detalle.titulo.stringValue}</Text>
+      <Text style={styles.authors}>Autor(es): {detalle.autor.stringValue || "Desconocido"}</Text>
+      {detalle.imagen_url.stringValue && (
         <Image
-          source={{ uri: detalle.imagen }}
+          source={{ uri: detalle.imagen_url.stringValue }}
           style={styles.image}
-          resizeMode="contain"
         />
         
       )}
-      <Button title="agregar a biblioteca" onPress={()=>handleAgregar()}/>
+      {detalle.formato.stringValue && (
+        <Text style={styles.published}>Formato: {detalle.formato.stringValue}</Text>
+      )}
+      <Button title="Borrar de la biblioteca" onPress={() => handleDeleted(libro)} />
+      <Text style={styles.published}>
+        Descripcion
+      </Text>
       <Text style={styles.description}>
-        {detalle.descripcion
-          ? detalle.descripcion.replace(/<[^>]+>/g, "")
+        {detalle.descripcion.stringValue
+          ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
           : "Sin descripción disponible."}
       </Text>
     </ScrollView>
