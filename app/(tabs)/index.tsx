@@ -109,7 +109,7 @@ export default function HomeScreen() {
       }}
     >
       <ScrollView
-      style={{width:"100%", height:"100%", flex:1, marginTop:100}}
+      style={{width:"100%", height:"100%", flex:1, marginTop:60}}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         {usuario && 
@@ -168,7 +168,7 @@ card: {
 },
 image: {
   width: '100%',
-  height: 180,
+  height: 190,
   resizeMode: 'cover',
   borderRadius: 4,
 },
