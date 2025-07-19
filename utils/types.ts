@@ -8,6 +8,27 @@ export type Libro = {
   link:string;
   categoria:string;
 }
+export type LibroBibliotecaDetalle =  {
+  prestamo: {
+    mapValue: {
+      fields: {
+        prestado: { booleanValue: boolean },
+        a_quien: { nullValue: null } | { stringValue: string },
+        puede_prestarse: { booleanValue: boolean },
+        fecha_devolucion: { nullValue: null } | { stringValue: string }
+      }
+    }
+  },
+  titulo: { stringValue: string },
+  quien_agrego: { stringValue: string },
+  descripcion: { stringValue: string },
+  categoria: { stringValue: string },
+  autor: { stringValue: string },
+  imagen_url: { stringValue: string },
+  fecha: { timestampValue: Date },
+  formato: { stringValue: string }
+};
+
 
 export type librosBiblioteca = {
   titulo: string;

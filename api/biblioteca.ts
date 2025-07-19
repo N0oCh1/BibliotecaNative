@@ -1,7 +1,7 @@
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
-import type { librosBiblioteca } from "@/utils/types";
+import type { LibroBibliotecaDetalle, librosBiblioteca } from "@/utils/types";
 import Constants from "expo-constants";
-import { subirImagen } from "./subirImagen";
+import { eliminarImagen, subirImagen } from "./subirImagen";
 
 const PROJECT_ID =
   Constants.expoConfig?.extra?.PROJECT_ID ||
@@ -80,4 +80,53 @@ const getBiblioteca = async (userId: string) => {
   }
 }
 
-export { addLibro, getBiblioteca }
+const getLibro = async (libroId: string) : Promise<LibroBibliotecaDetalle> => {
+
+  const auth = await CurrentUser();
+  const url = URL_FIREBASE + `/bibliotecas/${auth.localId}/libros/${libroId}`;
+  try {
+    const response = await fetch(url,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${auth.idToken}`,
+        },
+      }
+    ).then(res=>res.json()).then(data=>data.fields)
+    console.log(response);
+    if (response.error) {
+      throw new Error(response.error.message)
+    }
+    return response
+  }
+  catch (err) {
+    throw new Error("Error al obtener biblioteca")
+
+  }
+}
+
+const removeLibro = async (libroId: string, fileName:string) => {
+  try {
+      const auth = await CurrentUser();
+      await eliminarImagen(fileName);
+      const url =  URL_FIREBASE + `/bibliotecas/${auth.localId}/libros/${libroId}`;
+      const response = await fetch(url, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${auth.idToken}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Error al eliminar el libro");
+      }
+      alert("Libro eliminado de la biblioteca");
+      return true
+    } catch (error) {
+      console.error("Error al eliminar el libro:", error);
+      return false
+    }
+}
+
+export { addLibro, getBiblioteca, getLibro, removeLibro }
