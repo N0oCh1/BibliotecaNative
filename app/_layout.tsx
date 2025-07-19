@@ -42,7 +42,9 @@ const [isAppReady, setIsAppReady] = useState(false);
       />
       <Stack.Screen
         name="bibliotecaLibro/[libro]"
-
+      />
+      <Stack.Screen
+        name="bibliotecaAmigo/[id]"
       />
       <Stack.Screen
         name="(tabs)"
