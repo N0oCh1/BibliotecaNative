@@ -25,16 +25,18 @@ export default function BibliotecaAmigoScreen() {
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
   
-  navigation.setOptions({ title: `Biblioteca de ${usuario}` });
   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
-        setBibilioteca(await buscarBibliotecaAmigo(id));
+        navigation.setOptions({ title: `Biblioteca de ${usuario}` });
+        const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
+        setBibilioteca(bibliotecaAmigo);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
   console.log("Biblioteca de amigo:", biblioteca);
+  
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
