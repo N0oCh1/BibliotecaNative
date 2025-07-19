@@ -29,6 +29,10 @@ export type LibroBibliotecaDetalle =  {
   formato: { stringValue: string }
 };
 
+export type Amigos = {
+  id: string;
+  nombre: string;
+}
 
 export type librosBiblioteca = {
   titulo: string;

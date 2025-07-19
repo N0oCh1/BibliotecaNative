@@ -124,9 +124,54 @@ const removeLibro = async (libroId: string, fileName:string) => {
       alert("Libro eliminado de la biblioteca");
       return true
     } catch (error) {
-      console.error("Error al eliminar el libro:", error);
+      throw new Error("libro no encontrado: " + error);
       return false
     }
 }
 
-export { addLibro, getBiblioteca, getLibro, removeLibro }
+const buscarBibliotecaAmigo = async (idAmigo: string) : Promise<LibroBibliotecaDetalle[]> => {
+  const auth = await CurrentUser();
+  const url = URL_FIREBASE + `/bibliotecas/${idAmigo}/libros`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.idToken}`,
+      },
+    }).then(res => res.json()).then(data => data.documents);
+    if (response.error) {
+      throw new Error(response.error.message);
+    }
+    return response;
+  } catch (err) {
+    throw new Error("Error al obtener biblioteca del amigo");
+  }
+}
+const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBibliotecaDetalle> => {
+
+  const auth = await CurrentUser();
+  const url = URL_FIREBASE + `/bibliotecas/${idAmigo}/libros/${libroId}`;
+  try {
+    const response = await fetch(url,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${auth.idToken}`,
+        },
+      }
+    ).then(res=>res.json()).then(data=>data.fields)
+    console.log(response);
+    if (response.error) {
+      throw new Error(response.error.message)
+    }
+    return response
+  }
+  catch (err) {
+    throw new Error("Error al obtener biblioteca")
+
+  }
+}
+
+export { addLibro, getBiblioteca, getLibro, removeLibro, buscarBibliotecaAmigo,getLibroAmigo }
