@@ -103,7 +103,8 @@ container: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingBottom: 20,
+    paddingBottom: 50,
+    
   },
   libro: {
     width: "48%",
