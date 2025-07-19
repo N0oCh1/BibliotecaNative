@@ -1,6 +1,7 @@
 import { CurrentUser } from "@/utils/hooks/useAuthentication"
 import { nanoid } from "nanoid/non-secure"
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
+import { getDownloadURL, getStorage, ref, deleteObject } from "firebase/storage";
+import { getAuth } from "firebase/auth";
 
 const URL_STORAGE = "https://firebasestorage.googleapis.com/v0/b/bibliotecapty.firebasestorage.app"
 
@@ -47,4 +48,22 @@ const subirImagen = async(localURI: string|undefined) => {
   }
 }
 
-export { subirImagen }
+const eliminarImagen = async(nombre: string) => {
+  const auth = getAuth();
+  if (!auth.currentUser) {
+    throw new Error("Usuario no autenticado");
+  }
+  const storage = getStorage();
+  const fileRef = ref(storage, nombre);
+
+  try {
+    if(nombre !== "placeholder.png") {
+      await deleteObject(fileRef);
+    }
+    console.log("Imagen eliminada correctamente");
+  } catch (error) {
+    console.error("Error al eliminar la imagen:", error);
+  }
+}
+
+export { subirImagen, eliminarImagen }

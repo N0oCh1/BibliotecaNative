@@ -94,6 +94,10 @@ export default function HomeScreen() {
       setRefresh(false)
 
   }
+  const handleDetails = (id:string) =>{
+    route.push(`/bibliotecaLibro/${id}`);
+  }
+
   console.log("usuarios ", usuario)
   console.log("biblioteca ", biblioteca)
   return (
@@ -119,32 +123,17 @@ export default function HomeScreen() {
           <Text style={{color: pressed?"blue": "#ffffff"}}>LogOut</Text>
         </Pressable>
 
-        <Pressable
-          style={style.Button}
-          onPress={guardarAlgo}
-        >
-          <Text style={{color:"white"}}>
-            Prueba guardar algo
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={style.Button}
-          onPress={obenerAlgo}
-        >
-          <Text style={{color:"white"}}>
-            Prueba leer algo
-          </Text>
-        </Pressable>
+        
         <Text>Tu Biblioteca</Text>
         {biblioteca && biblioteca.map((libro:any,index:number)=>{
+          const libroId = libro.name.split("/").pop();
           return(
-            <View key={index}>
+            <Pressable key={index} onPress={()=>handleDetails(libroId)}>
               <Image style={{width:100, height:150, objectFit:"contain"}} source={{uri:libro.fields.imagen_url.stringValue}}/>
               <Text>
                 {libro.fields.titulo.stringValue}
               </Text>
-            </View>
+            </Pressable>
           )
         })}
       
