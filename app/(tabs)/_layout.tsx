@@ -22,6 +22,9 @@ export default function TabLayout() {
         name="amigos"
         options={{
           title: 'Amigos',
+          headerStyle: {
+            height: 55,
+          },
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="users" color={color} />,
         }}
       />
@@ -29,7 +32,10 @@ export default function TabLayout() {
         name="buscar"
         options={{
           title: 'Buscar',
-          headerShown:false,
+          headerStyle: {
+            height: 55,
+          },
+          headerShown:true,
           tabBarIcon: ({ color }) => <FontAwesome5 size={24} name="search" color={color} />,
         }}
       />
@@ -37,6 +43,9 @@ export default function TabLayout() {
         name="crear"
         options={{
           title: 'Añadir',
+                    headerStyle: {
+            height: 55,
+          },
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="upload" color={color} />,
         }}
       />

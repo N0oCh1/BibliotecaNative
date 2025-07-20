@@ -83,7 +83,7 @@ export default function BuscarScreen() {
 const style = StyleSheet.create({
 container: {
     flex: 1,
-    marginTop: 50,
+    marginTop: 10,
     paddingHorizontal: 12,
   },
   busquedaContainer: {

@@ -89,7 +89,7 @@ export default function HomeScreen() {
     >
       <View style={style.barraSuperior}>
         <Text style={style.barraTexto}>
-          {usuario ? `Bienvenido, ${usuario}` : 'Bienvenido'}
+          {usuario ===undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
         </Text>
         <Pressable
           style={[
