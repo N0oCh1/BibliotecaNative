@@ -12,6 +12,7 @@ import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "react-native";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
@@ -83,12 +84,18 @@ export default function HomeScreen() {
   console.log("biblioteca ", biblioteca)
   return (
     <SafeAreaView
-      edges={['top']}
-      style={{
-        flex: 1,
-        backgroundColor: "#fff",
-      }}
+    edges={['top']}
+    style={{
+      flex: 1,
+      backgroundColor: "#fff",
+    }}
     >
+    <StatusBar
+    barStyle="dark-content"
+    backgroundColor="#fff"
+      translucent={true}
+    />
+
       <View style={style.barraSuperior}>
         <Text style={style.barraTexto}>
           {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
