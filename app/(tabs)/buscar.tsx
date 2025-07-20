@@ -116,6 +116,13 @@ container: {
     alignItems: "center",
     padding: "3%",
     backgroundColor: "#fff",
+    // Sombra sutil para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    // Sombra sutil para Android
+    elevation: 2,
   },
   imagen: {
     width: "100%",
