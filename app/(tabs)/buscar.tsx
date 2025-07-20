@@ -2,7 +2,7 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, RefreshControl } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, RefreshControl } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -40,26 +40,28 @@ export default function BuscarScreen() {
     setRefresh(false)
   }
   return (
-    <View style={style.container}>
-      <StatusBar
-      barStyle={"light-content"}
-      />
-      {data &&
+    <SafeAreaView 
+      edges={['top']}
+      style={style.container}
+    >
+      <View style={style.barraSuperior}>
+        <Text style={style.barraTexto}>Buscar</Text>
+        <View style={style.busquedaContainer}>
+          <TextInput 
+            style={style.busqueda} 
+            onChangeText={setBusqueda} 
+            placeholder="Buscar libro" 
+          />
+        </View>
+      </View>
+      
+      {data && (
         <ScrollView
+          style={style.scrollContent}
           refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
         >
-          <SafeAreaView 
-          edges={['top']}
-          style={style.libroContainer}>
-            <View style={style.barraSuperior}>
-              <Text style={style.barraTexto}>Buscar</Text>
-            </View>            
-            <View style={style.busquedaContainer} >
-              <TextInput style={style.busqueda} 
-              onChangeText={setBusqueda} 
-              placeholder="Buscar libro" />
-            </View>
-            
+          <Text style={style.textoh1}>Descubre nuevos libros</Text>
+          <View style={style.libroContainer}>
             {data.map((libro) => (
               <Pressable key={libro.id} style={style.libro} onPress={() => handlePress(libro.id)}>
                 <View style={{ width: "100%", height: 190, justifyContent: "center", alignItems: "center" }}>
@@ -79,21 +81,22 @@ export default function BuscarScreen() {
                 </View>
               </Pressable>
             ))}
-          </SafeAreaView>
-
+          </View>
         </ScrollView>
-      }
-    </View>
+      )}
+    </SafeAreaView>
   );
 }
 
 const style = StyleSheet.create({
-container: {
+  container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
-    barraSuperior: {
+  barraSuperior: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     height: 56,
     width: "100%",
     backgroundColor: "#fff",
@@ -108,29 +111,43 @@ container: {
     shadowRadius: 4,
     elevation: 4,
   },
-    barraTexto:{
+  barraTexto:{
     color: "#0056b3",
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: "bold",
   },
-  busquedaContainer: {
-    width: "100%",
-    alignItems: "center",
-    marginBottom: 10,
+  textoh1: {
+    fontSize: 20,
+    marginBottom: 5,
     marginTop: 10,
+    color: "#0056b3",
+    fontWeight: "bold",
+    marginLeft: 10,
+  },
+  busquedaContainer: {
+    width: "80%",
+    alignItems: "center",
+    paddingVertical: 0,
+    backgroundColor: "#fff", // Fondo gris claro para contraste
   },
   busqueda: {
     width: "90%",
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: "#005cb3",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
+    marginLeft: 10,
+  },
+  scrollContent: {
+    flex: 1,
   },
   libroContainer: {
-  flexDirection: "row",
-  flexWrap: "wrap",
-  justifyContent: "space-between",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    paddingHorizontal: '2%',
+    paddingTop: 10,
   },
   libro: {
     width: "46%",

@@ -93,7 +93,7 @@ export default function HomeScreen() {
     <StatusBar
     barStyle="dark-content"
     backgroundColor="#fff"
-      translucent={true}
+    translucent={false}
     />
 
       <View style={style.barraSuperior}>
