@@ -126,6 +126,15 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     marginBottom: 20,
     backgroundColor: "#eaeaea",
+    borderWidth: 1,
+    borderColor: "#ccc",
+    // Sombra sutil para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Sombra sutil para Android
+    elevation: 7,
   },
   description: {
     fontSize: 16,
