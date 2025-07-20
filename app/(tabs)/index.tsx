@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
 import { Link, useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
+import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
@@ -11,6 +11,7 @@ import type { Libro, LibroBibliotecaDetalle } from "@/utils/types";
 import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const db = getFirestore(app)
@@ -82,14 +83,15 @@ export default function HomeScreen() {
   console.log("biblioteca ", biblioteca)
   return (
     <SafeAreaView
+      edges={['top']}
       style={{
         flex: 1,
-        backgroundColor: "#fff", // Opcional, para mejor contraste
+        backgroundColor: "#fff",
       }}
     >
       <View style={style.barraSuperior}>
         <Text style={style.barraTexto}>
-          {usuario ===undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
+          {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
         </Text>
         <Pressable
           style={[
@@ -103,7 +105,7 @@ export default function HomeScreen() {
         </Pressable>
       </View>
       <ScrollView
-        style={{ width: "100%", flex: 1, paddingTop: 8 }}
+        style={{ width: "100%", flex: 1, paddingTop: 8, marginBottom: 10 }}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
@@ -155,30 +157,30 @@ const style = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: '2%',
   },
-card: {
-  width: '48%',
-  borderWidth: 1,
-  borderColor: '#ccc',
-  borderRadius: 8,
-  overflow: 'hidden',
-  alignItems: 'center',
-  padding: '3%',
-  backgroundColor: '#fff',
-  marginBottom: '3%',
-  // Sombra sutil para iOS
-  shadowColor: "#000",
-  shadowOffset: { width: 0, height: 1 },
-  shadowOpacity: 0.08,
-  shadowRadius: 2,
-  // Sombra sutil para Android
-  elevation: 2,
-},
-image: {
-  width: '100%',
-  height: 190,
-  resizeMode: 'cover',
-  borderRadius: 4,
-},
+  card: {
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    overflow: 'hidden',
+    alignItems: 'center',
+    padding: '3%',
+    backgroundColor: '#fff',
+    marginBottom: '3%',
+    // Sombra sutil para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    // Sombra sutil para Android
+    elevation: 2,
+  },
+  image: {
+    width: '100%',
+    height: 190,
+    resizeMode: 'cover',
+    borderRadius: 4,
+  },
 
  descripcionLibro: {
     marginTop: '5%',

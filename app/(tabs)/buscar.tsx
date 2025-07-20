@@ -2,8 +2,9 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, SafeAreaView, RefreshControl } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, RefreshControl } from "react-native";
 import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BuscarScreen() {
   const router = useRouter()
@@ -41,18 +42,24 @@ export default function BuscarScreen() {
   return (
     <View style={style.container}>
       <StatusBar
-      barStyle={"dark-content"}
+      barStyle={"light-content"}
       />
-      <View style={style.busquedaContainer} >
-        <TextInput style={style.busqueda} 
-        onChangeText={setBusqueda} 
-        placeholder="Buscar libro" />
-      </View>
       {data &&
         <ScrollView
           refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
         >
-          <SafeAreaView style={style.libroContainer}>
+          <SafeAreaView 
+          edges={['top']}
+          style={style.libroContainer}>
+            <View style={style.barraSuperior}>
+              <Text style={style.barraTexto}>Buscar</Text>
+            </View>            
+            <View style={style.busquedaContainer} >
+              <TextInput style={style.busqueda} 
+              onChangeText={setBusqueda} 
+              placeholder="Buscar libro" />
+            </View>
+            
             {data.map((libro) => (
               <Pressable key={libro.id} style={style.libro} onPress={() => handlePress(libro.id)}>
                 <View style={{ width: "100%", height: 190, justifyContent: "center", alignItems: "center" }}>
@@ -83,13 +90,34 @@ export default function BuscarScreen() {
 const style = StyleSheet.create({
 container: {
     flex: 1,
-    marginTop: 10,
-    paddingHorizontal: 12,
+  },
+    barraSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 56,
+    width: "100%",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    //sombras
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+    barraTexto:{
+    color: "#0056b3",
+    fontSize: 18,
+    fontWeight: "bold",
   },
   busquedaContainer: {
     width: "100%",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop: 10,
   },
   busqueda: {
     width: "90%",
@@ -100,22 +128,21 @@ container: {
     paddingVertical: 8,
   },
   libroContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    paddingBottom: 50,
-    
+  flexDirection: "row",
+  flexWrap: "wrap",
+  justifyContent: "space-between",
   },
   libro: {
-    width: "48%",
+    width: "46%",
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     overflow: "hidden",
     alignItems: "center",
-    padding: "3%",
+    padding: "2%",
     backgroundColor: "#fff",
+    marginHorizontal: '2%',
     // Sombra sutil para iOS
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
