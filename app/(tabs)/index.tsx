@@ -84,26 +84,29 @@ export default function HomeScreen() {
     <SafeAreaView
       style={{
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: "#fff", // Opcional, para mejor contraste
       }}
     >
+      <View style={style.barraSuperior}>
+        <Text style={style.barraTexto}>
+          {usuario ? `Bienvenido, ${usuario}` : 'Bienvenido'}
+        </Text>
+        <Pressable
+          style={[
+            style.Button,
+            { backgroundColor: pressed ? "white" : "#0056b3" }
+          ]}
+          onPressIn={() => setPressed(true)}
+          onPressOut={() => cerrarSesion()}
+        >
+          <Text style={{ color: pressed ? "#0056b3" : "#ffffff", fontWeight: "bold" }}>LogOut</Text>
+        </Pressable>
+      </View>
       <ScrollView
-      style={{width:"100%", height:"100%", flex:1, marginTop:60}}
+        style={{ width: "100%", flex: 1, paddingTop: 8 }}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
-        {usuario && 
-        <Text style={{fontSize:20, fontWeight:"bold"}}>Bienvenido: {usuario}</Text>
-      }
-        <Pressable 
-          style={[style.Button, {backgroundColor: pressed ? "white" : "blue"}]}
-          onPressIn={() => setPressed(true)}
-          onPressOut={() => cerrarSesion()}  
-        > 
-          <Text style={{color: pressed?"blue": "#ffffff"}}>LogOut</Text>
-        </Pressable>
-
-        <Text>Tu Biblioteca</Text>
+        <Text style={style.tituloH1}>Tu Biblioteca</Text>
         <View style={style.gridContainer}>
           {biblioteca && biblioteca.map((libro:any,index:number)=>{
             const libroId = libro.name.split("/").pop();
@@ -127,6 +130,25 @@ export default function HomeScreen() {
   );
 }
 const style = StyleSheet.create({
+  barraSuperior: {
+    width: "100%",
+    height: 56, // o 60, como prefieras
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fff", // Mejor blanco para sombra visible
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    // Sombra para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    // Sombra para Android
+    elevation: 4,
+  },
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -143,6 +165,13 @@ card: {
   padding: '3%',
   backgroundColor: '#fff',
   marginBottom: '3%',
+  // Sombra sutil para iOS
+  shadowColor: "#000",
+  shadowOffset: { width: 0, height: 1 },
+  shadowOpacity: 0.08,
+  shadowRadius: 2,
+  // Sombra sutil para Android
+  elevation: 2,
 },
 image: {
   width: '100%',
@@ -161,6 +190,14 @@ image: {
     fontWeight: '600',
     textAlign: 'center',
   },
+  tituloH1:{
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginLeft: 10,
+    marginBottom: 10,
+    marginTop: 1,
+  },
   author: {
     marginTop: 5, // Espacio entre título y autor
     fontSize: 12,
@@ -168,10 +205,15 @@ image: {
     color: '#666', 
   },
   Button:{
-    paddingBlock:10,
-    paddingInline:20,
-    backgroundColor:"blue",
-    borderRadius:10,
+    paddingVertical:6,
+    paddingHorizontal:16,
+    marginLeft:10,
+    borderRadius: 4,
+  },
+  barraTexto:{
+    color: "#0056b3",
+    fontSize: 18,
+    fontWeight: "bold",
   }
 
 });
