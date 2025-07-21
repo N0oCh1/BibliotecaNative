@@ -22,6 +22,7 @@ export default function TabLayout() {
         name="amigos"
         options={{
           title: 'Amigos',
+          headerShown:false,
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="users" color={color} />,
         }}
       />
@@ -37,6 +38,7 @@ export default function TabLayout() {
         name="crear"
         options={{
           title: 'Añadir',
+          headerShown:false,
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="upload" color={color} />,
         }}
       />

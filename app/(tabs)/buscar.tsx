@@ -2,8 +2,9 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, StatusBar, SafeAreaView, RefreshControl } from "react-native";
+import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, RefreshControl } from "react-native";
 import { Image } from "expo-image";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BuscarScreen() {
   const router = useRouter()
@@ -39,20 +40,28 @@ export default function BuscarScreen() {
     setRefresh(false)
   }
   return (
-    <View style={style.container}>
-      <StatusBar
-      barStyle={"dark-content"}
-      />
-      <View style={style.busquedaContainer} >
-        <TextInput style={style.busqueda} 
-        onChangeText={setBusqueda} 
-        placeholder="Buscar libro" />
+    <SafeAreaView 
+      edges={['top']}
+      style={style.container}
+    >
+      <View style={style.barraSuperior}>
+        <Text style={style.barraTexto}>Buscar</Text>
+        <View style={style.busquedaContainer}>
+          <TextInput 
+            style={style.busqueda} 
+            onChangeText={setBusqueda} 
+            placeholder="Buscar libro" 
+          />
+        </View>
       </View>
-      {data &&
+      
+      {data && (
         <ScrollView
+          style={style.scrollContent}
           refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
         >
-          <SafeAreaView style={style.libroContainer}>
+          <Text style={style.textoh1}>Descubre nuevos libros</Text>
+          <View style={style.libroContainer}>
             {data.map((libro) => (
               <Pressable key={libro.id} style={style.libro} onPress={() => handlePress(libro.id)}>
                 <View style={{ width: "100%", height: 190, justifyContent: "center", alignItems: "center" }}>
@@ -72,50 +81,92 @@ export default function BuscarScreen() {
                 </View>
               </Pressable>
             ))}
-          </SafeAreaView>
-
+          </View>
         </ScrollView>
-      }
-    </View>
+      )}
+    </SafeAreaView>
   );
 }
 
 const style = StyleSheet.create({
-container: {
+  container: {
     flex: 1,
-    marginTop: 50,
-    paddingHorizontal: 12,
+    backgroundColor: "#fff",
+  },
+  barraSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    height: 56,
+    width: "100%",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    //sombras
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  barraTexto:{
+    color: "#0056b3",
+    fontSize: 25,
+    fontWeight: "bold",
+  },
+  textoh1: {
+    fontSize: 20,
+    marginBottom: 5,
+    marginTop: 10,
+    color: "#0056b3",
+    fontWeight: "bold",
+    marginLeft: 10,
   },
   busquedaContainer: {
-    width: "100%",
+    width: "80%",
     alignItems: "center",
-    marginBottom: 20,
+    paddingVertical: 0,
+    backgroundColor: "#fff", // Fondo gris claro para contraste
   },
   busqueda: {
     width: "90%",
     borderWidth: 1,
-    borderColor: "#000",
+    borderColor: "#005cb3",
     borderRadius: 10,
     paddingHorizontal: 10,
     paddingVertical: 8,
+    marginLeft: 10,
+  },
+  scrollContent: {
+    flex: 1,
   },
   libroContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    paddingBottom: 50,
-    
+    paddingHorizontal: '2%',
+    paddingTop: 10,
   },
   libro: {
-    width: "48%",
+    width: "46%",
     marginBottom: 10,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
     overflow: "hidden",
     alignItems: "center",
-    padding: "3%",
+    padding: "2%",
     backgroundColor: "#fff",
+    marginHorizontal: '2%',
+    // Sombra sutil para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 2,
+    // Sombra sutil para Android
+    elevation: 2,
   },
   imagen: {
     width: "100%",

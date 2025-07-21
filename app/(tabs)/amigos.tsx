@@ -7,6 +7,7 @@ import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import { useFocusEffect, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
 import { Amigos } from "@/utils/types";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AmigosScreen() {
   const route = useRouter();
@@ -31,7 +32,6 @@ export default function AmigosScreen() {
   
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
-
     try{
       const amigos = await buscarAmigo(data.search);
       if (amigos && amigos.length > 0) {
@@ -47,44 +47,49 @@ export default function AmigosScreen() {
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   }
   return (
-    <View>
-      <Text>user id del usuario logiado: {userId}</Text>
-      <View style={styles.searchContainer}>
-        <Controller
-        control={control}
-        name="search"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            placeholder="ingresa el ID del amigo"
-            inputMode="search"
-            onChangeText={onChange}
-            value={value}
-            style={styles.input}
-          />
-        )}
-        />
-        <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
-          <Text style={styles.buttonText}><AntDesign name="search1" size={24} color="white" /></Text>
-        </Pressable>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: "#fff" }}>
+      <View style={styles.barraSuperior}>
+        <Text style={styles.barraTexto}>Amigos</Text>
       </View>
-      <ScrollView>
-        {detalleAmigos && detalleAmigos.length > 0 ? (
-          detalleAmigos.map((amigo, index) => (
-            <View key={index} style={{ padding: 10 }}>
-              <Text>{amigo.nombre}</Text>
-              <Button
-                title="Ver Biblioteca"
-                onPress={() => {
-                  verBiblioteca(amigo.id, amigo.nombre);
-                }}
+      <View style={styles.container}>
+        <Text>user id del usuario logiado: {userId}</Text>
+        <View style={styles.searchContainer}>
+          <Controller
+            control={control}
+            name="search"
+            render={({ field: { onChange, value } }) => (
+              <TextInput
+                placeholder="ingresa el ID del amigo"
+                inputMode="search"
+                onChangeText={onChange}
+                value={value}
+                style={styles.input}
               />
-            </View>
-          ))
-        ) : (
-          <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
-        )}
-      </ScrollView>
-    </View>
+            )}
+          />
+          <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
+            <Text style={styles.buttonText}><AntDesign name="search1" size={24} color="white" /></Text>
+          </Pressable>
+        </View>
+        <ScrollView>
+          {detalleAmigos && detalleAmigos.length > 0 ? (
+            detalleAmigos.map((amigo, index) => (
+              <View key={index} style={{ padding: 10 }}>
+                <Text>{amigo.nombre}</Text>
+                <Button
+                  title="Ver Biblioteca"
+                  onPress={() => {
+                    verBiblioteca(amigo.id, amigo.nombre);
+                  }}
+                />
+              </View>
+            ))
+          ) : (
+            <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -92,6 +97,23 @@ export default function AmigosScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+  },
+  barraSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    height: 56,
+    width: "100%",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    //sombras
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   searchContainer: {
     flexDirection: "row",
@@ -118,4 +140,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
+    barraTexto:{
+    color: "#0056b3",
+    fontSize: 18,
+    fontWeight: "bold",
+  }
 });
