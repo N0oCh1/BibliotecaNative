@@ -60,7 +60,6 @@ const eliminarImagen = async(nombre: string) => {
     if(nombre !== "placeholder.png") {
       await deleteObject(fileRef);
     }
-    console.log("Imagen eliminada correctamente");
   } catch (error) {
     console.error("Error al eliminar la imagen:", error);
   }

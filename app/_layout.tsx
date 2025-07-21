@@ -41,6 +41,9 @@ const [isAppReady, setIsAppReady] = useState(false);
         name="libro/[libro]"
       />
       <Stack.Screen
+        name="libroAmigo/[libro]"
+      />
+      <Stack.Screen
         name="bibliotecaLibro/[libro]"
       />
       <Stack.Screen

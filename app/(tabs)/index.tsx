@@ -1,13 +1,12 @@
-import React, { useCallback, useEffect } from "react";
-import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "firebase/firestore";
-import { Link, useFocusEffect, useRouter } from "expo-router";
+import React, { useCallback } from "react";
+import { getFirestore } from "firebase/firestore";
+import { useFocusEffect, useRouter } from "expo-router";
 import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
 import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
-import { getDocumentCondition, getDocuments } from "@/api/useFirestore";
-import type { Libro, LibroBibliotecaDetalle } from "@/utils/types";
+import type {  LibroBibliotecaDetalle } from "@/utils/types";
 import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
@@ -32,16 +31,11 @@ export default function HomeScreen() {
   // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
-      let isActive = true; 
       const getUsuario = async () => {
         const authData = await auth; 
         if (authData) {
           const user = await obtenerUsuario();
-          console.log(user)
-           setUsuario(user.usuario.stringValue);
-          if (isActive) {
-           
-          }
+          setUsuario(user.fields.usuario.stringValue);
         } else {
           console.warn("No user is currently logged in.");
         }
@@ -52,16 +46,12 @@ export default function HomeScreen() {
           setBibilioteca(await getBiblioteca(auth.localId))
         }
         catch(e){
-          console.log(e)
           setBibilioteca([])
         }
       }
       getUsuario();
       obtenerBiblioteca();
       // Cleanup para evitar fugas de memoria
-      return () => {
-        isActive = false;
-      };
     }, []) // 🚨 IMPORTANTE: array vacío si no depende de variables del componente
   );
 
@@ -69,7 +59,7 @@ export default function HomeScreen() {
 
       setRefresh(true);
       const user = await auth;
-      setUsuario(await getDocuments("usuarios", user.localId).then(data=>data.usuario.stringValue));
+      setUsuario(await obtenerUsuario().then(data=>data.fields.usuario.stringValue));
       setBibilioteca(await getBiblioteca(user.localId))
       setRefresh(false)
 
@@ -77,9 +67,6 @@ export default function HomeScreen() {
   const handleDetails = (id:string) =>{
     route.push(`/bibliotecaLibro/${id}`);
   }
-
-  console.log("usuarios ", usuario)
-  console.log("biblioteca ", biblioteca)
   return (
     <SafeAreaView
       style={{
@@ -111,6 +98,7 @@ export default function HomeScreen() {
               <Pressable key={index} onPress={()=>handleDetails(libroId)} style={style.card}>
                 <Image
                     style={style.image}
+                    contentFit="contain"
                     source={{ uri: libro.fields.imagen_url.stringValue }}
                 />
                 <View style={style.descripcionLibro}>
@@ -147,7 +135,6 @@ card: {
 image: {
   width: '100%',
   height: 190,
-  resizeMode: 'cover',
   borderRadius: 4,
 },
 

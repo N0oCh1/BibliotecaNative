@@ -94,7 +94,6 @@ const getLibro = async (libroId: string) : Promise<LibroBibliotecaDetalle> => {
         },
       }
     ).then(res=>res.json()).then(data=>data.fields)
-    console.log(response);
     if (response.error) {
       throw new Error(response.error.message)
     }
@@ -162,7 +161,6 @@ const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBi
         },
       }
     ).then(res=>res.json()).then(data=>data.fields)
-    console.log(response);
     if (response.error) {
       throw new Error(response.error.message)
     }

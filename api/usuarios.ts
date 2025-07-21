@@ -36,13 +36,13 @@ const agregarUsuario = async (usuario:string)=>{
 
 const obtenerUsuario = async()=>{
   const auth = await CurrentUser()
-  const url = URL_FIREBASE + `/usuarios/${(await auth).localId}`
+  const url = URL_FIREBASE + `/usuarios/${auth.localId}`
   try{
     const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${(await auth).idToken}`
+        "Authorization": `Bearer ${auth.idToken}`
       }
     }).then(res=>res.json())
     if(response.error){
@@ -58,7 +58,7 @@ const obtenerUsuario = async()=>{
 
 const agregarAmigo = async (idAmigo:string)=>{
   const auth = await CurrentUser()
-  const url = URL_FIREBASE+ `/usuarios/${(await auth).localId}?updateMask.fieldPaths=amigos`
+  const url = URL_FIREBASE+ `/usuarios/${auth.localId}?updateMask.fieldPaths=amigos`
   try{
     const response = await fetch(url, {
     method: "PATCH",

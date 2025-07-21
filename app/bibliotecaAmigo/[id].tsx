@@ -4,6 +4,7 @@ import {
   useFocusEffect,
   useLocalSearchParams,
   useNavigation,
+  useRouter,
 } from "expo-router";
 import { useCallback, useState } from "react";
 import { Image } from "expo-image";
@@ -21,7 +22,7 @@ export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
   const id = useLocalSearchParams<{ id: string }>().id;
   const usuario = useLocalSearchParams<{ username: string }>().username;
-
+  const router = useRouter();
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
   
@@ -35,13 +36,17 @@ export default function BibliotecaAmigoScreen() {
       obtenerBibliotecaAmigo();
     }, [id])
   );
-  console.log("Biblioteca de amigo:", biblioteca);
   
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
     setBibilioteca(updatedBiblioteca);
     setRefresh(false);
+  };
+  console.log("idAnigo", id);
+  const handleDetails = (libroId: string) => {
+    router.push({ pathname: `/libroAmigo/${libroId}`, params: { idAmigo: id } });
+
   };
   return (
     <SafeAreaView
@@ -63,7 +68,7 @@ export default function BibliotecaAmigoScreen() {
             biblioteca.map((libro: any, index: number) => {
               const libroId = libro.name.split("/").pop();
               return (
-                <Pressable key={index} style={style.card}>
+                <Pressable key={index} style={style.card} onPress={() => handleDetails(libroId)}>
                   <Image
                     style={style.image}
                     source={{ uri: libro.fields.imagen_url.stringValue }}

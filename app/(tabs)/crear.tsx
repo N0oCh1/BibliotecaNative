@@ -1,4 +1,4 @@
-import React, { use, useState } from "react";
+import React, {  useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -14,10 +14,7 @@ import {
 import DropDownPicker from "react-native-dropdown-picker"; 
 import { yupResolver } from "@hookform/resolvers/yup";
 import { db } from "@/firebase";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
 import * as yup from "yup";
-import { getDocumentCondition, patchDocument, setDocument } from "@/api/useFirestore";
-import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import { grantPermission } from "@/utils/hooks/usePermission";
 import { librosBiblioteca } from "@/utils/types";
 import { addLibro } from "@/api/biblioteca";
@@ -37,7 +34,6 @@ export default function createBook() {
   const [carga, setCarga] = useState(false);
   //validacion Yup
   const[open, setOpen] = useState<boolean>(false)
-  const[value, setValue] = useState<string>()
   const[items, setItems] = useState<any>([
     {label: 'Fisico', value:"fisico"},
     {label: 'Digital', value:"digital"}
