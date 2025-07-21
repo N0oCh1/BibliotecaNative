@@ -1,20 +1,16 @@
 import React, { useCallback } from "react";
-import { getFirestore } from "firebase/firestore";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
 import { useState } from "react";
-import { app } from "@/firebase";
 import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 import type {  LibroBibliotecaDetalle } from "@/utils/types";
 import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "react-native";
 
 export default function HomeScreen() {
-  const db = getFirestore(app)
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>()
@@ -71,7 +67,6 @@ export default function HomeScreen() {
   }
   return (
     <SafeAreaView
-    edges={['top']}
     style={{
       flex: 1,
       backgroundColor: "#fff",

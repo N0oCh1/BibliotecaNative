@@ -43,9 +43,8 @@ export default function BibliotecaAmigoScreen() {
     setBibilioteca(updatedBiblioteca);
     setRefresh(false);
   };
-  console.log("idAnigo", id);
   const handleDetails = (libroId: string) => {
-    router.push({ pathname: `/libroAmigo/${libroId}`, params: { idAmigo: id } });
+    router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
 
   };
   return (

@@ -27,7 +27,6 @@ export default function LibroAmigoScreen() {
       navigation.setOptions({ title: detalle.titulo.stringValue });
     }
   }, [detalle]);
-  console.log("libro, y idAmigo", libro, idAmigo);
   useEffect(
     ()=>{
       if (!libro) return;
@@ -37,7 +36,6 @@ export default function LibroAmigoScreen() {
           setDetalle(resultado);
           setLoading(false);
         } catch (error) {
-          console.error("Error al obtener el libro:", error);
           setLoading(false);
         }
         finally {
