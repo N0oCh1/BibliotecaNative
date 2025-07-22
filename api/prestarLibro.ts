@@ -35,8 +35,13 @@ const enviarSolicitud = async (idLibro: string, idOwner : string) => {
   if(!auth) {
     throw new Error("Usuario no autenticado");
   }
+  // creo todas las constantes necesarias para la solicitud
+  // url para enviar la solicitud de préstamo
   const url = `${URL_FIREBASE}/prestamos/${auth.localId}/prestamo?documentId=${id_del_prestamo}`;
+  // url para actualizar la biblioteca del dueño del libro con el prestamo a enviar
   const urlToUpdate = `${URL_FIREBASE}/bibliotecas/${idOwner}/libros/${idLibro}?updateMask.fieldPaths=prestamo`;
+  
+  // datos que se enviaran a prestamos
   const body = {
     fields:{
       dueno_libro:{stringValue: idOwner},
@@ -46,9 +51,12 @@ const enviarSolicitud = async (idLibro: string, idOwner : string) => {
       ubicacion: { stringValue: "test" },
       estado_devolucion: { stringValue: "pendiente" },
       fecha_solicitud: { timestampValue: new Date().toISOString() },
-      fecha_devolucion: { timestampValue: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString() }, // todo: cambiar cuando este el form
+      //todo: cambiar cuando este el form
+      //todo: el numero te dice los dias que dura el prestamo
+      fecha_devolucion: { timestampValue: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString() }, 
     }
   }
+  // datos que se enviaran a la biblioteca del dueño del libro
   const bodyUpdate = {
       fields: {
       prestamo: {
@@ -64,10 +72,12 @@ const enviarSolicitud = async (idLibro: string, idOwner : string) => {
     }
   }
   try{
+    // Verificar si el usuario ya tiene un libro prestado
     const libroPrestado = await obtenerPrestamosDelUsuario(auth.localId);
     if(libroPrestado.some((prestamo: any) => prestamo.fields.libro.stringValue === idLibro)) {
       throw new Error("Ya tienes este libro prestado");
     }
+    // bloque de envio y actualizacion de la solicitud
     const prestamo_res = await fetch(url,{
       method: "POST",
       headers: {
