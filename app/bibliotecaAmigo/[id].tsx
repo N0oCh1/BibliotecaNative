@@ -17,6 +17,7 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
+import { Modal, TextInput, Button } from "react-native";
 
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
@@ -25,7 +26,12 @@ export default function BibliotecaAmigoScreen() {
   const router = useRouter();
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
-  
+  const [modalVisible, setModalVisible] = useState(false);
+  const [libroSeleccionado, setLibroSeleccionado] = useState<any>(null);
+  const [mensaje, setMensaje] = useState("");
+  const [tiempoPrestamo, setTiempoPrestamo] = useState("");
+  const [ubicacionEncuentro, setUbicacionEncuentro] = useState("");
+
   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
@@ -37,6 +43,8 @@ export default function BibliotecaAmigoScreen() {
     }, [id])
   );
   
+  console.log("Biblioteca de amigo:", biblioteca);
+
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
@@ -47,6 +55,15 @@ export default function BibliotecaAmigoScreen() {
     router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
 
   };
+
+ 
+const handleSolicitarLibro = (libro: any) => {
+  setLibroSeleccionado(libro);
+  setModalVisible(true);
+};
+
+  
+
   return (
     <SafeAreaView
       style={{
@@ -80,11 +97,74 @@ export default function BibliotecaAmigoScreen() {
                       {libro.fields.autor?.stringValue || "Sin autor"}
                     </Text>
                   </View>
+
+                  <Pressable
+                    style={style.solicitarButton}
+                    onPress={() => handleSolicitarLibro(libro)}
+                  >
+                    <Text style={style.solicitarText}>Solicitar</Text>
+                  </Pressable>
                 </Pressable>
               );
             })}
         </View>
       </ScrollView>
+      <Modal
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={style.modalContainer}>
+    <View style={style.modalContent}>
+      <Text style={style.modalTitle}>
+        Solicitar: {libroSeleccionado?.fields.titulo.stringValue}
+      </Text>
+
+      <TextInput
+        placeholder="Tiempo de préstamo (ej. 7 días)"
+        value={tiempoPrestamo}
+        onChangeText={setTiempoPrestamo}
+        style={style.input}
+      />
+
+      <TextInput
+        placeholder="Ubicación de encuentro"
+        value={ubicacionEncuentro}
+        onChangeText={setUbicacionEncuentro}
+        style={style.input}
+      />
+
+      <TextInput
+        placeholder="Mensaje opcional"
+        value={mensaje}
+        onChangeText={setMensaje}
+        style={style.input}
+      />
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Button title="Cancelar" onPress={() => setModalVisible(false)} />
+        <Button
+          title="Enviar"
+          onPress={() => {
+            console.log("Solicitud enviada:", {
+              libro: libroSeleccionado,
+              tiempoPrestamo,
+              ubicacionEncuentro,
+              mensaje,
+            });
+            // Aquí podrías llamar a tu API
+            setModalVisible(false);
+            setMensaje("");
+            setTiempoPrestamo("");
+            setUbicacionEncuentro("");
+          }}
+        />
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 }
@@ -135,4 +215,42 @@ const style = StyleSheet.create({
     backgroundColor: "blue",
     borderRadius: 10,
   },
+
+  solicitarButton: {
+    marginTop: 10,
+    backgroundColor: "#007bff",
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 5,
+  },
+  solicitarText: {
+    color: "#fff",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  modalContainer: {
+  flex: 1,
+  justifyContent: "center",
+  alignItems: "center",
+  backgroundColor: "rgba(0,0,0,0.5)",
+},
+modalContent: {
+  backgroundColor: "white",
+  padding: 20,
+  borderRadius: 10,
+  width: "80%",
+},
+modalTitle: {
+  fontSize: 18,
+  fontWeight: "bold",
+  marginBottom: 10,
+},
+input: {
+  borderWidth: 1,
+  borderColor: "#ccc",
+  borderRadius: 5,
+  padding: 10,
+  marginBottom: 10,
+},
+
 });
