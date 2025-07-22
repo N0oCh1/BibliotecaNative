@@ -87,6 +87,11 @@ export default function AmigosScreen() {
           ) : (
             <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
           )}
+          <View>
+            <View>
+              <Text>Libro Prestado</Text>
+            </View>
+          </View>
         </ScrollView>
       </View>
     </SafeAreaView>

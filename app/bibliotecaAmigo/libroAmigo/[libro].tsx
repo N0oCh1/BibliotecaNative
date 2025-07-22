@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import { Image } from "expo-image";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import type { LibroBibliotecaDetalle } from "@/utils/types";
+import type { LibroBibliotecaDetalle, librosBiblioteca } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { addLibro, getLibro, getLibroAmigo, removeLibro } from "@/api/biblioteca";
+import { enviarSolicitud } from "@/api/prestarLibro";
 
 
 export default function LibroAmigoScreen() {
@@ -59,6 +60,37 @@ export default function LibroAmigoScreen() {
       </View>
     );
   }
+  // agregar el libro del amigo a mi biblioteca cuando es el formato es digital
+  const handleAgregarBiblioteca = async () => {
+    if (detalle.formato.stringValue !== "digital") {
+      alert("Solo puedes agregar libros digitales a tu biblioteca");
+      return;
+    }
+    const body : librosBiblioteca = {
+      titulo: detalle.titulo.stringValue,
+      autor: detalle.autor.stringValue,
+      imagen: detalle.imagen_url.stringValue,
+      formato: detalle.formato.stringValue,
+      descripcion: detalle.descripcion.stringValue,
+      categoria: detalle.categoria.stringValue,
+    }
+    try{
+      await addLibro(body, body.imagen);
+      alert("Libro agregado a tu biblioteca");
+    } catch (error) {
+      alert("Error al agregar el libro a tu biblioteca");
+    }
+  }
+
+  const handleTestPrestamos = async () => {
+    try{
+      await enviarSolicitud(libro, idAmigo);
+      alert("Solicitud de préstamo enviada");
+    } catch (error) {
+      alert(error);
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{detalle.titulo.stringValue}</Text>
@@ -74,8 +106,8 @@ export default function LibroAmigoScreen() {
         <Text style={styles.published}>Formato: {detalle.formato.stringValue}</Text>
       )}
       {detalle.formato.stringValue === "fisico" 
-        ? <Button title="Solicitar prestado" /> 
-        : <Button title="Agregar a tu biblioteca" />
+        ? <Button title="Solicitar prestado" onPress={()=>{handleTestPrestamos()}}/> 
+        : <Button title="Agregar a tu biblioteca" onPress={()=>{handleAgregarBiblioteca()}}/>
       }
       <Text style={styles.published}>
         Descripcion
