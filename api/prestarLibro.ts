@@ -48,6 +48,7 @@ const enviarSolicitud = async (idLibro: string, idOwner : string) => {
       libro: { stringValue: idLibro },
       usuario:{stringValue: auth.localId},
       estado: { stringValue: "pendiente" },
+      //todo: adatos de formulario
       ubicacion: { stringValue: "test" },
       estado_devolucion: { stringValue: "pendiente" },
       fecha_solicitud: { timestampValue: new Date().toISOString() },
