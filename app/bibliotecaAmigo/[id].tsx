@@ -1,5 +1,6 @@
 import { buscarBibliotecaAmigo } from "@/api/biblioteca";
 import { LibroBibliotecaDetalle } from "@/utils/types";
+import { Picker } from "@react-native-picker/picker";
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -18,6 +19,8 @@ import {
   StyleSheet,
 } from "react-native";
 import { Modal, TextInput, Button } from "react-native";
+import { enviarSolicitud } from "@/api/prestarLibro";
+
 
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
@@ -61,6 +64,34 @@ const handleSolicitarLibro = (libro: any) => {
   setLibroSeleccionado(libro);
   setModalVisible(true);
 };
+
+
+const handleEnviarSolicitud = async () => {
+  if (!libroSeleccionado) return;
+
+  try {
+    const libroId = libroSeleccionado.name.split("/").pop();
+    const idOwner = libroSeleccionado.fields.dueno.stringValue;
+
+    await enviarSolicitud(libroId, idOwner, {
+      ubicacion: ubicacionEncuentro,
+      tiempo: tiempoPrestamo,
+      mensaje,
+    });
+
+    // Limpiar y cerrar modal
+    setModalVisible(false);
+    setMensaje("");
+    setTiempoPrestamo("");
+    setUbicacionEncuentro("");
+  } catch (error) {
+    console.error("Error al enviar solicitud:", error);
+    alert(error || "Ocurrió un error al enviar la solicitud.");
+  }
+};
+
+
+
 
   
 
@@ -120,13 +151,20 @@ const handleSolicitarLibro = (libro: any) => {
       <Text style={style.modalTitle}>
         Solicitar: {libroSeleccionado?.fields.titulo.stringValue}
       </Text>
+<View style={style.input}>
 
-      <TextInput
-        placeholder="Tiempo de préstamo (ej. 7 días)"
-        value={tiempoPrestamo}
-        onChangeText={setTiempoPrestamo}
-        style={style.input}
-      />
+  <Picker
+    selectedValue={tiempoPrestamo}
+    onValueChange={(itemValue) => setTiempoPrestamo(itemValue)}
+  >
+    <Picker.Item label="Selecciona tiempo de préstamo" value="" />
+    <Picker.Item label="3 días" value="3" />
+    <Picker.Item label="7 días" value="7" />
+    <Picker.Item label="14 días" value="14" />
+    <Picker.Item label="30 días" value="30" />
+  </Picker>
+</View>
+
 
       <TextInput
         placeholder="Ubicación de encuentro"
@@ -245,12 +283,14 @@ modalTitle: {
   fontWeight: "bold",
   marginBottom: 10,
 },
+
 input: {
   borderWidth: 1,
   borderColor: "#ccc",
   borderRadius: 5,
-  padding: 10,
+  paddingHorizontal: 10,
   marginBottom: 10,
 },
+
 
 });
