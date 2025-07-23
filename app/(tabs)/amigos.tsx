@@ -79,6 +79,8 @@ export default function AmigosScreen() {
     reset();
   };
   const verBiblioteca = (id: string, username: string) => {
+  
+  const verBiblioteca = (id: string, username:string) => {
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   };
   function calcularTiempoFaltante(timestamp:string) {
@@ -224,5 +226,5 @@ const styles = StyleSheet.create({
     color: "#0056b3",
     fontSize: 18,
     fontWeight: "bold",
-  },
-});
+  }
+});}
