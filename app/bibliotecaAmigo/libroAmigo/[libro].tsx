@@ -13,7 +13,7 @@ import type { LibroBibliotecaDetalle, librosBiblioteca } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { addLibro, getLibro, getLibroAmigo, removeLibro } from "@/api/biblioteca";
-import { enviarSolicitud } from "@/api/prestarLibro";
+import { FormularioPrestamo } from "@/components/FormularioPrestamo";
 
 
 export default function LibroAmigoScreen() {
@@ -21,8 +21,9 @@ export default function LibroAmigoScreen() {
   const [detalle, setDetalle] = useState<LibroBibliotecaDetalle>();
   const navigation = useNavigation();
   const [loading, setLoading] = useState(true);
-  const libro = useLocalSearchParams<{ libro: string}>().libro;
+  const idLibro = useLocalSearchParams<{ libro: string}>().libro;
   const idAmigo = useLocalSearchParams<{ idAmigo: string }>().idAmigo;
+  const [modalVisible, setModalVisible] = useState<boolean>(false)
   useLayoutEffect(() => {
     if (detalle?.titulo.stringValue) {
       navigation.setOptions({ title: detalle.titulo.stringValue });
@@ -30,10 +31,10 @@ export default function LibroAmigoScreen() {
   }, [detalle]);
   useEffect(
     ()=>{
-      if (!libro) return;
+      if (!idLibro) return;
       const obtener = async () => {
         try{
-          const resultado = await getLibroAmigo(idAmigo, libro);
+          const resultado = await getLibroAmigo(idAmigo, idLibro);
           setDetalle(resultado);
           setLoading(false);
         } catch (error) {
@@ -45,7 +46,7 @@ export default function LibroAmigoScreen() {
         
       };
       obtener();
-    },[libro]
+    },[idLibro]
   )
 
   if (loading) {
@@ -82,13 +83,8 @@ export default function LibroAmigoScreen() {
     }
   }
 
-  const handleTestPrestamos = async () => {
-    try{
-      await enviarSolicitud(libro, idAmigo);
-      alert("Solicitud de préstamo enviada");
-    } catch (error) {
-      alert(error);
-    }
+  const handleTestPrestamos =  () => {
+    setModalVisible(true)
   }
 
   return (
@@ -117,6 +113,17 @@ export default function LibroAmigoScreen() {
           ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
           : "Sin descripción disponible."}
       </Text>
+
+      <FormularioPrestamo
+        detalleLibro={{
+          idLibro: idLibro,
+          idOwner: idAmigo,
+          titulo: detalle.titulo.stringValue,
+        }}
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+      />
+
     </ScrollView>
   );
 }

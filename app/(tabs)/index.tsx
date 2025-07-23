@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, SafeAreaView, ScrollView, RefreshControl } from "react-native";
+import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
@@ -67,6 +68,7 @@ export default function HomeScreen() {
   }
   return (
     <SafeAreaView
+    edges={['top', 'bottom']}
     style={{
       flex: 1,
       backgroundColor: "#fff",
@@ -78,7 +80,7 @@ export default function HomeScreen() {
     translucent={false}
     />
 
-      <View style={style.barraSuperior}>
+      <View  style={style.barraSuperior}>
         <Text style={style.barraTexto}>
           {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
         </Text>

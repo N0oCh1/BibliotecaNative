@@ -1,4 +1,5 @@
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
+import { Prestamos } from "@/utils/types";
 import Constants from "expo-constants";
 import { nanoid } from "nanoid/non-secure";
 
@@ -8,25 +9,31 @@ const PROJECT_ID =
 
 const URL_FIREBASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
-const obtenerPrestamosDelUsuario = async (idUsuario: string) => {
+const obtenerPrestamosDelUsuario = async (
+  idUsuario: string
+): Promise<Prestamos[]> => {
   const auth = await CurrentUser();
   if (!auth) {
     throw new Error("Usuario no autenticado");
   }
-  const url = `${URL_FIREBASE}/prestamos/${idUsuario}/prestamo`;
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${auth.idToken}`,
-    },
-  });
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Error al obtener los préstamos: ${error}`);
+  try {
+    const url = `${URL_FIREBASE}/prestamos/${idUsuario}/prestamo`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.idToken}`,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Error al obtener los préstamos: ${error}`);
+    }
+    const data = await response.json();
+    return data.documents;
+  } catch {
+    return [];
   }
-  const data = await response.json();
-  return data.documents;
 };
 
 const enviarSolicitud = async (
@@ -56,21 +63,17 @@ const enviarSolicitud = async (
       libro: { stringValue: idLibro },
       usuario: { stringValue: auth.localId },
       estado: { stringValue: "pendiente" },
-      //todo: adatos de formulario
-      
-ubicacion: { stringValue: datosFormulario.ubicacion },
-
+      ubicacion: { stringValue: datosFormulario.ubicacion },
       estado_devolucion: { stringValue: "pendiente" },
       fecha_solicitud: { timestampValue: new Date().toISOString() },
-      //todo: cambiar cuando este el form
-      //todo: el numero te dice los dias que dura el prestamo
-      
-fecha_devolucion: {
-  timestampValue: new Date(
-    new Date().setDate(new Date().getDate() + parseInt(datosFormulario.tiempo))
-  ).toISOString(),
-},
-
+      fecha_devolucion: {
+        timestampValue: new Date(
+          new Date().setDate(
+            new Date().getDate() + parseInt(datosFormulario.tiempo)
+          )
+        ).toISOString(),
+      },
+      mensaje: { stringValue: datosFormulario.mensaje || "no tiene mensaje" },
     },
   };
   // datos que se enviaran a la biblioteca del dueño del libro
@@ -92,6 +95,7 @@ fecha_devolucion: {
     // Verificar si el usuario ya tiene un libro prestado
     const libroPrestado = await obtenerPrestamosDelUsuario(auth.localId);
     if (
+      libroPrestado &&
       libroPrestado.some(
         (prestamo: any) => prestamo.fields.libro.stringValue === idLibro
       )
@@ -132,4 +136,100 @@ fecha_devolucion: {
   }
 };
 
-export { enviarSolicitud, obtenerPrestamosDelUsuario };
+const obtenerSolicitudes = async (): Promise<Prestamos[]> => {
+  const auth = await CurrentUser();
+  try {
+    if (!auth) {
+      throw new Error("Usuario no autenticado");
+    }
+    const urlIdPrestamo = `${URL_FIREBASE}/bibliotecas/${auth.localId}/libros`;
+    const libros = await fetch(urlIdPrestamo, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.idToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => data.documents);
+    const libroPrestado = libros.filter(
+      (item: any) =>
+        item.fields.formato.stringValue === "fisico" &&
+        item.fields.prestamo.mapValue.fields.prestado.booleanValue === true
+    );
+    const informacionPrestamo = await Promise.all(
+      libroPrestado.map(async (item: any) => {
+        const prestamo = await fetch(
+          `${URL_FIREBASE}/prestamos/${item.fields.prestamo.mapValue.fields.a_quien.stringValue}/prestamo/${item.fields.prestamo.mapValue.fields.prestamo.stringValue}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${auth.idToken}`,
+            },
+          }
+        ).then((res) => res.json());
+        return prestamo;
+      })
+    );
+    return informacionPrestamo || [];
+  } catch (error) {
+    throw new Error("Error al obtener solicitudes");
+  }
+};
+
+const aceptarSolicitud = async (idAmigo: string, idPrestamo: string) => {
+  const auth = await CurrentUser();
+  if (!auth) {
+    throw new Error("Usuario no autenticado");
+  }
+  try {
+    const url = `${URL_FIREBASE}/prestamos/${idAmigo}/prestamo/${idPrestamo}?updateMask.fieldPaths=estado`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          estado: { stringValue: "aceptado" },
+        },
+      }),
+    }).then((res) => res.json());
+    if (response.error) {
+      throw new Error("Error");
+    }
+  } catch (erro) {
+    throw new Error("Error al aceptar solicitud");
+  }
+};
+
+const rechazarSolicitud = async (idAmigo: string, idPrestamo: string) => {
+  const auth = await CurrentUser();
+  if (!auth) {
+    throw new Error("Usuario no autenticado");
+  }
+  try {
+    const url = `${URL_FIREBASE}/prestamos/${idAmigo}/prestamo/${idPrestamo}?updateMask.fieldPaths=estado`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          estado: { stringValue: "rechazado" },
+        },
+      }),
+    }).then((res) => res.json());
+    if (response.error) {
+      throw new Error("Error");
+    }
+  } catch (erro) {
+    throw new Error("Error al rechazar soliocitud");
+  }
+};
+
+export { enviarSolicitud, obtenerPrestamosDelUsuario, obtenerSolicitudes, aceptarSolicitud, rechazarSolicitud };

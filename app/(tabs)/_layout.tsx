@@ -22,7 +22,7 @@ export default function TabLayout() {
         name="amigos"
         options={{
           title: 'Amigos',
-          headerShown:false,
+          headerShown:true,
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="users" color={color} />,
         }}
       />
@@ -38,7 +38,7 @@ export default function TabLayout() {
         name="prestamos"
         options={{
           title: 'Prestamos',
-          headerShown:false,
+          headerShown:true,
           tabBarIcon: ({ color }) => <AntDesign size={24} name="find" color={color} />,
         }}
       />

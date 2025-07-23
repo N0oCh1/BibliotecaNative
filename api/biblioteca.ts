@@ -2,6 +2,7 @@ import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import type { LibroBibliotecaDetalle, librosBiblioteca } from "@/utils/types";
 import Constants from "expo-constants";
 import { eliminarImagen, subirImagen } from "./subirImagen";
+import { obtenerUsuario } from "./usuarios";
 
 const PROJECT_ID =
   Constants.expoConfig?.extra?.PROJECT_ID ||
@@ -22,7 +23,7 @@ const addLibro = async (libro: librosBiblioteca, imagen?:string) => {
       categoria:{stringValue:libro.categoria},
       descripcion: { stringValue: libro.descripcion },
       formato: { stringValue: libro.formato },
-      quien_agrego: { stringValue: (await auth).localId },
+      quien_agrego: { stringValue: (await obtenerUsuario().then(data=>data.fields.usuario.stringValue))},
       imagen_url: { stringValue: url_imagen },
       fecha: { timestampValue: new Date().toISOString() },
       prestamo: {
@@ -148,7 +149,6 @@ const buscarBibliotecaAmigo = async (idAmigo: string) : Promise<LibroBibliotecaD
   }
 }
 const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBibliotecaDetalle> => {
-
   const auth = await CurrentUser();
   const url = URL_FIREBASE + `/bibliotecas/${idAmigo}/libros/${libroId}`;
   try {
@@ -161,13 +161,13 @@ const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBi
         },
       }
     ).then(res=>res.json()).then(data=>data.fields)
-    if (response.error) {
-      throw new Error(response.error.message)
+    if (!response) {
+      throw new Error("hubo un error")
     }
     return response
   }
   catch (err) {
-    throw new Error("Error al obtener biblioteca")
+    throw new Error("Error al obtener biblioteca " + err)
 
   }
 }
