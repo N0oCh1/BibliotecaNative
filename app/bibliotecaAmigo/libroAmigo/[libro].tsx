@@ -102,7 +102,7 @@ export default function LibroAmigoScreen() {
         <Text style={styles.published}>Formato: {detalle.formato.stringValue}</Text>
       )}
       {detalle.formato.stringValue === "fisico" 
-        ? <Button title="Solicitar prestado" onPress={()=>{handleTestPrestamos()}}/> 
+        ? <Button title="Solicitar prestado" onPress={()=>{setModalVisible(true)}}/> 
         : <Button title="Agregar a tu biblioteca" onPress={()=>{handleAgregarBiblioteca()}}/>
       }
       <Text style={styles.published}>
@@ -125,6 +125,7 @@ export default function LibroAmigoScreen() {
       />
 
     </ScrollView>
+    
   );
 }
 const styles = StyleSheet.create({
@@ -178,4 +179,45 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
+  
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)", // fondo semitransparente
+    padding: 20,
+  },
+  modalContent: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  solicitarButton: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 15,
+    overflow: "hidden",
+  },
+  solicitarText: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+  },
+
 });

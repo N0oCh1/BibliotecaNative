@@ -1,6 +1,6 @@
-import { buscarBibliotecaAmigo } from "@/api/biblioteca";
+import { buscarBibliotecaAmigo, getLibroAmigo } from "@/api/biblioteca";
 import { LibroBibliotecaDetalle } from "@/utils/types";
-import { Picker } from "@react-native-picker/picker";
+
 import {
   useFocusEffect,
   useLocalSearchParams,
@@ -18,10 +18,8 @@ import {
   ScrollView,
   StyleSheet,
 } from "react-native";
-import { Modal, TextInput, Button } from "react-native";
+
 import { enviarSolicitud } from "@/api/prestarLibro";
-
-
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
   const id = useLocalSearchParams<{ id: string }>().id;
@@ -35,14 +33,21 @@ export default function BibliotecaAmigoScreen() {
       const obtenerBibliotecaAmigo = async () => {
         navigation.setOptions({ title: `Biblioteca de ${usuario}` });
         const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
-        setBibilioteca(bibliotecaAmigo);
+
+        const detalles = await Promise.all(
+          bibliotecaAmigo.map(async (libro: any) => {
+            const libroId = libro.name.split("/").pop();
+            const detalle = await getLibroAmigo(id, libroId);
+            return { ...libro, detalle };
+          })
+        );
+        setBibilioteca(detalles);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
-  
-  console.log("Biblioteca de amigo:", biblioteca);
 
+  console.log("Biblioteca de amigo:", biblioteca);
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
