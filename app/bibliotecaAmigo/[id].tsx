@@ -1,4 +1,4 @@
-import { buscarBibliotecaAmigo } from "@/api/biblioteca";
+import { buscarBibliotecaAmigo, getLibroAmigo } from "@/api/biblioteca";
 import { LibroBibliotecaDetalle } from "@/utils/types";
 import { Picker } from "@react-native-picker/picker";
 import {
@@ -20,8 +20,6 @@ import {
 } from "react-native";
 import { Modal, TextInput, Button } from "react-native";
 import { enviarSolicitud } from "@/api/prestarLibro";
-
-
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
   const id = useLocalSearchParams<{ id: string }>().id;
@@ -35,17 +33,29 @@ export default function BibliotecaAmigoScreen() {
   const [tiempoPrestamo, setTiempoPrestamo] = useState("");
   const [ubicacionEncuentro, setUbicacionEncuentro] = useState("");
 
+  const cacheLibrosAmigo = new Map<string, LibroBibliotecaDetalle>();
+
   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
         navigation.setOptions({ title: `Biblioteca de ${usuario}` });
         const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
-        setBibilioteca(bibliotecaAmigo);
+
+        const detalles = await Promise.all(
+          bibliotecaAmigo.map(async (libro: any) => {
+            const libroId = libro.name.split("/").pop();
+            const detalle = await getLibroAmigo(id, libroId);
+            cacheLibrosAmigo.set(libroId, detalle);
+            return { ...libro, detalle };
+          })
+        );
+
+        setBibilioteca(detalles);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
-  
+
   console.log("Biblioteca de amigo:", biblioteca);
 
   const handleRefresh = async () => {
@@ -55,45 +65,61 @@ export default function BibliotecaAmigoScreen() {
     setRefresh(false);
   };
   const handleDetails = (libroId: string) => {
-    router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
-
+    router.push({
+      pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`,
+      params: { idAmigo: id },
+    });
   };
 
- 
-const handleSolicitarLibro = (libro: any) => {
-  setLibroSeleccionado(libro);
-  setModalVisible(true);
-};
+  const handleSolicitarLibro = async (libro: any) => {
+    const libroId = libro.name.split("/").pop();
+    const idAmigo = libro.fields.dueno.stringValue;
 
+    try {
+      let detalleLibro: LibroBibliotecaDetalle;
 
-const handleEnviarSolicitud = async () => {
-  if (!libroSeleccionado) return;
+      if (cacheLibrosAmigo.has(libroId)) {
+        detalleLibro = cacheLibrosAmigo.get(libroId)!;
+      } else {
+        detalleLibro = await getLibroAmigo(idAmigo, libroId);
+        cacheLibrosAmigo.set(libroId, detalleLibro);
+      }
 
-  try {
-    const libroId = libroSeleccionado.name.split("/").pop();
-    const idOwner = libroSeleccionado.fields.dueno.stringValue;
+      if (detalleLibro.formato?.stringValue !== "físico") {
+        alert("Solo puedes solicitar préstamos de libros físicos.");
+        return;
+      }
 
-    await enviarSolicitud(libroId, idOwner, {
-      ubicacion: ubicacionEncuentro,
-      tiempo: tiempoPrestamo,
-      mensaje,
-    });
+      setLibroSeleccionado(libro);
+      setModalVisible(true);
+    } catch (error) {
+      console.error("Error al verificar el formato del libro:", error);
+      alert("No se pudo verificar el formato del libro.");
+    }
+  };
 
-    // Limpiar y cerrar modal
-    setModalVisible(false);
-    setMensaje("");
-    setTiempoPrestamo("");
-    setUbicacionEncuentro("");
-  } catch (error) {
-    console.error("Error al enviar solicitud:", error);
-    alert(error || "Ocurrió un error al enviar la solicitud.");
-  }
-};
+  const handleEnviarSolicitud = async () => {
+    if (!libroSeleccionado) return;
+    try {
+      const libroId = libroSeleccionado.name.split("/").pop();
+      const idOwner = libroSeleccionado.fields.dueno.stringValue;
 
+      await enviarSolicitud(libroId, idOwner, {
+        ubicacion: ubicacionEncuentro,
+        tiempo: tiempoPrestamo,
+        mensaje,
+      });
 
-
-
-  
+      // Limpiar y cerrar modal
+      setModalVisible(false);
+      setMensaje("");
+      setTiempoPrestamo("");
+      setUbicacionEncuentro("");
+    } catch (error) {
+      console.error("Error al enviar solicitud:", error);
+      alert(error || "Ocurrió un error al enviar la solicitud.");
+    }
+  };
 
   return (
     <SafeAreaView
@@ -112,97 +138,102 @@ const handleEnviarSolicitud = async () => {
         <Text>Biblioteca</Text>
         <View style={style.gridContainer}>
           {biblioteca &&
-            biblioteca.map((libro: any, index: number) => {
-              const libroId = libro.name.split("/").pop();
-              return (
-                <Pressable key={index} style={style.card} onPress={() => handleDetails(libroId)}>
-                  <Image
-                    style={style.image}
-                    source={{ uri: libro.fields.imagen_url.stringValue }}
-                  />
-                  <View style={style.descripcionLibro}>
-                    <Text style={style.title}>
-                      {libro.fields.titulo.stringValue}
-                    </Text>
-                    <Text style={style.author}>
-                      {libro.fields.autor?.stringValue || "Sin autor"}
-                    </Text>
-                  </View>
+  biblioteca.map((libro: any, index: number) => {
+    const libroId = libro.name.split("/").pop();
+    const detalle = libro.detalle;
+    const esFisico = detalle?.formato?.stringValue === "físico";
 
-                  <Pressable
-                    style={style.solicitarButton}
-                    onPress={() => handleSolicitarLibro(libro)}
-                  >
-                    <Text style={style.solicitarText}>Solicitar</Text>
-                  </Pressable>
-                </Pressable>
-              );
-            })}
+    return (
+      <Pressable key={index} style={style.card} onPress={() => handleDetails(libroId)}>
+        <Image
+          style={style.image}
+          source={{ uri: libro.fields.imagen_url.stringValue }}
+        />
+        <View style={style.descripcionLibro}>
+          <Text style={style.title}>
+            {libro.fields.titulo.stringValue}
+          </Text>
+          <Text style={style.author}>
+            {libro.fields.autor?.stringValue || "Sin autor"}
+          </Text>
+        </View>
+
+        {esFisico && (
+          <Pressable
+            style={style.solicitarButton}
+            onPress={() => handleSolicitarLibro(libro)}
+          >
+            <Text style={style.solicitarText}>Solicitar</Text>
+          </Pressable>
+        )}
+      </Pressable>
+    );
+  })}
+
         </View>
       </ScrollView>
       <Modal
-  animationType="slide"
-  transparent={true}
-  visible={modalVisible}
-  onRequestClose={() => setModalVisible(false)}
->
-  <View style={style.modalContainer}>
-    <View style={style.modalContent}>
-      <Text style={style.modalTitle}>
-        Solicitar: {libroSeleccionado?.fields.titulo.stringValue}
-      </Text>
-<View style={style.input}>
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={style.modalContainer}>
+          <View style={style.modalContent}>
+            <Text style={style.modalTitle}>
+              Solicitar: {libroSeleccionado?.fields.titulo.stringValue}
+            </Text>
+            <View style={style.input}>
+              <Picker
+                selectedValue={tiempoPrestamo}
+                onValueChange={(itemValue) => setTiempoPrestamo(itemValue)}
+              >
+                <Picker.Item label="Selecciona tiempo de préstamo" value="" />
+                <Picker.Item label="3 días" value="3" />
+                <Picker.Item label="7 días" value="7" />
+                <Picker.Item label="14 días" value="14" />
+                <Picker.Item label="30 días" value="30" />
+              </Picker>
+            </View>
 
-  <Picker
-    selectedValue={tiempoPrestamo}
-    onValueChange={(itemValue) => setTiempoPrestamo(itemValue)}
-  >
-    <Picker.Item label="Selecciona tiempo de préstamo" value="" />
-    <Picker.Item label="3 días" value="3" />
-    <Picker.Item label="7 días" value="7" />
-    <Picker.Item label="14 días" value="14" />
-    <Picker.Item label="30 días" value="30" />
-  </Picker>
-</View>
+            <TextInput
+              placeholder="Ubicación de encuentro"
+              value={ubicacionEncuentro}
+              onChangeText={setUbicacionEncuentro}
+              style={style.input}
+            />
 
+            <TextInput
+              placeholder="Mensaje opcional"
+              value={mensaje}
+              onChangeText={setMensaje}
+              style={style.input}
+            />
 
-      <TextInput
-        placeholder="Ubicación de encuentro"
-        value={ubicacionEncuentro}
-        onChangeText={setUbicacionEncuentro}
-        style={style.input}
-      />
-
-      <TextInput
-        placeholder="Mensaje opcional"
-        value={mensaje}
-        onChangeText={setMensaje}
-        style={style.input}
-      />
-
-      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-        <Button title="Cancelar" onPress={() => setModalVisible(false)} />
-        <Button
-          title="Enviar"
-          onPress={() => {
-            console.log("Solicitud enviada:", {
-              libro: libroSeleccionado,
-              tiempoPrestamo,
-              ubicacionEncuentro,
-              mensaje,
-            });
-            // Aquí podrías llamar a tu API
-            setModalVisible(false);
-            setMensaje("");
-            setTiempoPrestamo("");
-            setUbicacionEncuentro("");
-          }}
-        />
-      </View>
-    </View>
-  </View>
-</Modal>
-
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}
+            >
+              <Button title="Cancelar" onPress={() => setModalVisible(false)} />
+              <Button
+                title="Enviar"
+                onPress={() => {
+                  console.log("Solicitud enviada:", {
+                    libro: libroSeleccionado,
+                    tiempoPrestamo,
+                    ubicacionEncuentro,
+                    mensaje,
+                  });
+                  // Aquí podrías llamar a tu API
+                  setModalVisible(false);
+                  setMensaje("");
+                  setTiempoPrestamo("");
+                  setUbicacionEncuentro("");
+                }}
+              />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -267,30 +298,28 @@ const style = StyleSheet.create({
     textAlign: "center",
   },
   modalContainer: {
-  flex: 1,
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: "rgba(0,0,0,0.5)",
-},
-modalContent: {
-  backgroundColor: "white",
-  padding: 20,
-  borderRadius: 10,
-  width: "80%",
-},
-modalTitle: {
-  fontSize: 18,
-  fontWeight: "bold",
-  marginBottom: 10,
-},
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    width: "80%",
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
 
-input: {
-  borderWidth: 1,
-  borderColor: "#ccc",
-  borderRadius: 5,
-  paddingHorizontal: 10,
-  marginBottom: 10,
-},
-
-
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
 });
