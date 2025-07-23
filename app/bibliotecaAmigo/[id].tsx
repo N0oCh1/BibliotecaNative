@@ -20,6 +20,7 @@ import {
 } from "react-native";
 
 import { enviarSolicitud } from "@/api/prestarLibro";
+
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
   const id = useLocalSearchParams<{ id: string }>().id;
@@ -28,36 +29,30 @@ export default function BibliotecaAmigoScreen() {
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
  
-  useFocusEffect(
+   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
         navigation.setOptions({ title: `Biblioteca de ${usuario}` });
         const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
-
-        const detalles = await Promise.all(
-          bibliotecaAmigo.map(async (libro: any) => {
-            const libroId = libro.name.split("/").pop();
-            const detalle = await getLibroAmigo(id, libroId);
-            return { ...libro, detalle };
-          })
-        );
-        setBibilioteca(detalles);
+        setBibilioteca(bibliotecaAmigo);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
 
   console.log("Biblioteca de amigo:", biblioteca);
+  
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
     setBibilioteca(updatedBiblioteca);
     setRefresh(false);
   };
+  
   const handleDetails = (libroId: string) => {
     router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
-
   };
+  
   return (
     <SafeAreaView
       style={{

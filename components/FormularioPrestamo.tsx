@@ -38,7 +38,10 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
         mensaje: data.mensaje,
         tiempo: data.tiempo,
       };
-      await enviarSolicitud(detalleLibro.idLibro, detalleLibro.idOwner, datosFormulario);
+      console.log(datosFormulario);
+      console.log(detalleLibro)
+      await enviarSolicitud(detalleLibro.titulo,detalleLibro.idLibro, detalleLibro.idOwner, datosFormulario);
+      alert("Solicitud enviada");
       reset();
       setModalVisible(false);
     } catch (erro) {

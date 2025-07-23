@@ -18,6 +18,7 @@ import { Amigos, LibroBibliotecaDetalle, Prestamos } from "@/utils/types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getLibroAmigo } from "@/api/biblioteca";
 import { obtenerSolicitudes } from "@/api/prestarLibro";
+import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 
 export default function AmigosScreen() {
   const route = useRouter();
@@ -37,8 +38,8 @@ export default function AmigosScreen() {
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
           return await getLibroAmigo(
-            prestamo.fields.dueno_libro.stringValue,
-            prestamo.fields.libro.stringValue
+            prestamo.fields.id_dueno_libro.stringValue,
+            prestamo.fields.id_libro.stringValue
           );
         })
       );
@@ -56,14 +57,23 @@ export default function AmigosScreen() {
     const obtenerUsuario = async () => {
       const authData = await CurrentUser();
       try {
-        obtenerSolicitudYLibro();
-        setDetalleAmigos(await obtenerMisAmigos());
+        
         setUserId(authData.localId);
       } catch (err) {
         alert(err);
       }
     };
+    const obtenerLibros = async()=>{
+      try{
+        obtenerSolicitudYLibro();
+        setDetalleAmigos(await obtenerMisAmigos());
+      }
+      catch(erro){
+        alert(erro)
+      }
+    }
     obtenerUsuario();
+    obtenerLibros();
   });
 
   // Buscar amigo para agregar a amigos
@@ -78,27 +88,13 @@ export default function AmigosScreen() {
     }
     reset();
   };
-  const verBiblioteca = (id: string, username: string) => {
+
   
   const verBiblioteca = (id: string, username:string) => {
+    console.log(id, username)
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   };
-  function calcularTiempoFaltante(timestamp:string) {
-  const ahora = new Date().getTime();
-  const devolucion = new Date(timestamp).getTime();
-  const diferencia = devolucion - ahora;
 
-  if (diferencia <= 0) {
-    return "Ya venció";
-  }
-
-  const segundos = Math.floor(diferencia / 1000);
-  const minutos = Math.floor(segundos / 60) % 60;
-  const horas = Math.floor(segundos / 3600) % 24;
-  const dias = Math.floor(segundos / (3600 * 24));
-
-  return `${dias}d ${horas}h ${minutos}m`;
-}
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
@@ -154,7 +150,7 @@ export default function AmigosScreen() {
                     />
                     <Text>idPrestamo: {prestamoID}</Text>
                     <Text>Libro: {libro.titulo.stringValue}</Text>
-                    <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
+                    <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
                     <Text>
                       Estado de solicitud: {prestamo.fields.estado.stringValue}
                     </Text>
@@ -227,4 +223,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   }
-});}
+});

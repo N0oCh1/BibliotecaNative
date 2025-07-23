@@ -2,6 +2,7 @@ import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import { Prestamos } from "@/utils/types";
 import Constants from "expo-constants";
 import { nanoid } from "nanoid/non-secure";
+import { obtenerNombreUsuario } from "./usuarios";
 
 const PROJECT_ID =
   Constants.expoConfig?.extra?.PROJECT_ID ||
@@ -37,6 +38,7 @@ const obtenerPrestamosDelUsuario = async (
 };
 
 const enviarSolicitud = async (
+  titulo: string,
   idLibro: string,
   idOwner: string,
   datosFormulario: {
@@ -55,13 +57,17 @@ const enviarSolicitud = async (
   const url = `${URL_FIREBASE}/prestamos/${auth.localId}/prestamo?documentId=${id_del_prestamo}`;
   // url para actualizar la biblioteca del dueño del libro con el prestamo a enviar
   const urlToUpdate = `${URL_FIREBASE}/bibliotecas/${idOwner}/libros/${idLibro}?updateMask.fieldPaths=prestamo`;
+  try {
 
   // datos que se enviaran a prestamos
   const body = {
     fields: {
-      dueno_libro: { stringValue: idOwner },
-      libro: { stringValue: idLibro },
-      usuario: { stringValue: auth.localId },
+      id_dueno_libro: { stringValue: idOwner },
+      id_libro: { stringValue: idLibro },
+      id_usuario: { stringValue: auth.localId },
+      titulo_libro:{stringValue:titulo },
+      nombre_dueno: {stringValue: await obtenerNombreUsuario(idOwner)},
+      nombre_usuario: {stringValue: await obtenerNombreUsuario()},
       estado: { stringValue: "pendiente" },
       ubicacion: { stringValue: datosFormulario.ubicacion },
       estado_devolucion: { stringValue: "pendiente" },
@@ -91,13 +97,14 @@ const enviarSolicitud = async (
       },
     },
   };
-  try {
+
     // Verificar si el usuario ya tiene un libro prestado
     const libroPrestado = await obtenerPrestamosDelUsuario(auth.localId);
+    console.log()
     if (
       libroPrestado &&
       libroPrestado.some(
-        (prestamo: any) => prestamo.fields.libro.stringValue === idLibro
+        (prestamo: any) => prestamo.fields.id_libro?.stringValue === idLibro
       )
     ) {
       throw new Error("Ya tienes este libro prestado");
@@ -130,7 +137,7 @@ const enviarSolicitud = async (
   } catch (error) {
     throw new Error(
       error instanceof Error
-        ? error.message
+        ? "algo ocurio" + error.message
         : "Error desconocido al enviar la solicitud de préstamo"
     );
   }
@@ -147,7 +154,7 @@ const obtenerSolicitudes = async (): Promise<Prestamos[]> => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth.idToken}`,
+        "Authorization": `Bearer ${auth.idToken}`,
       },
     })
       .then((res) => res.json())
@@ -189,7 +196,7 @@ const aceptarSolicitud = async (idAmigo: string, idPrestamo: string) => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${auth.idToken}`,
+        Authorization: `Bearer ${auth.idToken}`,
       },
       body: JSON.stringify({
         fields: {
@@ -216,7 +223,7 @@ const rechazarSolicitud = async (idAmigo: string, idPrestamo: string) => {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${auth.idToken}`,
+        Authorization: `Bearer ${auth.idToken}`,
       },
       body: JSON.stringify({
         fields: {
@@ -231,5 +238,97 @@ const rechazarSolicitud = async (idAmigo: string, idPrestamo: string) => {
     throw new Error("Error al rechazar soliocitud");
   }
 };
+const volverASolicitar = async (idAmigo: string, idPrestamo: string) => {
+  const auth = await CurrentUser();
+  if (!auth) {
+    throw new Error("Usuario no autenticado");
+  }
+  try {
+    const url = `${URL_FIREBASE}/prestamos/${idAmigo}/prestamo/${idPrestamo}?updateMask.fieldPaths=estado`;
+    const response = await fetch(url, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.idToken}`,
+      },
+       body: JSON.stringify({
+        fields: {
+          estado: { stringValue: "pendiente" },
+        },
+      }),
+    }).then((res) => res.json());
+    if (response.error) {
+      throw new Error("Error");
+    }
+  } catch (erro) {
+    throw new Error("Error al rechazar soliocitud");
+  }
+};
 
-export { enviarSolicitud, obtenerPrestamosDelUsuario, obtenerSolicitudes, aceptarSolicitud, rechazarSolicitud };
+const devolverLibro = async (idPrestamo: string) => {
+  const auth = await CurrentUser();
+  try {
+    if (!auth) {
+      throw new Error("Usuario no autenticado");
+    }
+    const url = `${URL_FIREBASE}/prestamos/${auth.localId}/prestamo/${idPrestamo}`;
+
+    const infoLibro = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.idToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        return {
+          idLibro: data.fields.id_libro.stringValue,
+          idDueno: data.fields.id_dueno_libro.stringValue,
+        };
+      });
+
+    await fetch(url, {
+      method: "DELETE",
+      headers:{
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.idToken}`
+      }
+    })
+
+    const urlLibro = `${URL_FIREBASE}/bibliotecas/${infoLibro.idDueno}/libros/${infoLibro.idLibro}?updateMask.fieldPaths=prestamo`;
+    await fetch(urlLibro, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${auth.idToken}`,
+      },
+      body: JSON.stringify({
+        fields: {
+          prestamo: {
+            mapValue: {
+              fields: {
+                a_quien: { nullValue: null },
+                prestado: { booleanValue: false },
+                puede_prestarse: { booleanValue: true },
+                prestamo: { nullValue: null },
+              },
+            },
+          },
+        },
+      }),
+    });
+  } catch (error) {
+    throw new Error("Error al devolver libro");
+  }
+};
+
+export {
+  enviarSolicitud,
+  obtenerPrestamosDelUsuario,
+  obtenerSolicitudes,
+  aceptarSolicitud,
+  rechazarSolicitud,
+  volverASolicitar,
+  devolverLibro,
+};

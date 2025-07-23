@@ -88,9 +88,31 @@ const agregarAmigo = async (idAmigo:string)=>{
     throw new Error("Error al agregar amigo")
   }
 }
+const obtenerNombreUsuario = async(idAmigo?:string) => {
+  const auth = await CurrentUser()
+  const url = URL_FIREBASE + `/usuarios/${idAmigo || auth.localId}`
+  try{
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${auth.idToken}`
+      }
+    }).then(res=>res.json()).then(data=>data.fields.usuario.stringValue)
+    if(response.error){
+      console.error(response.error.message)
+      throw new Error(response.error.message)
+    }
+    return response
+  }
+    catch(err){
+      throw new Error("Error al obtener usuario")
+    }
+}
 
 export {
   agregarUsuario,
   agregarAmigo,
-  obtenerUsuario
+  obtenerUsuario,
+  obtenerNombreUsuario
 }
