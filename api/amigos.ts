@@ -21,7 +21,6 @@ const buscarAmigo = async (idAmigo: string): Promise<string[] | undefined> => {
   })
     .then((res) => res.json())
     .then((data) => {
-      console.log("Usuarios", data);
       return data.documents;
     });
   const amigo = response
@@ -74,6 +73,9 @@ const insertarAmigo = async (idAmigo: string|undefined) => {
     // Evitar duplicados
     if (!misAmigos.some((amigo) => amigo.stringValue === idAmigo)) {
       misAmigos.push({ stringValue: idAmigo });
+    }
+    else{
+      throw new Error("Ya eres amigo de este usuario");
     }
 
     // Obtener amigos del otro usuario

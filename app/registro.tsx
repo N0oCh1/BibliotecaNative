@@ -11,17 +11,11 @@ import {
 import { useRouter } from "expo-router";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  createUserWithEmailAndPassword,
-  onAuthStateChanged,
-} from "firebase/auth";
+
 import { KeyboardAvoidingView, Platform, Keyboard } from "react-native";
-import { addDoc, collection, doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/firebase";
 import { AntDesign, Fontisto, MaterialIcons } from "@expo/vector-icons";
 import { singUp } from "@/api/useSesion";
-import { setDocument } from "@/api/useFirestore";
-import { array } from "yup";
+
 import { agregarUsuario } from "@/api/usuarios";
 
 const { width, height } = Dimensions.get("window");

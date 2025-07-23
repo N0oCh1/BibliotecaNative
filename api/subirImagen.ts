@@ -35,7 +35,6 @@ const subirImagen = async(localURI: string|undefined) => {
 
     if (!response.ok) {
       const error = await response.text();
-      console.error(error);
       throw new Error(`Error al subir la imagen: ${error}`);
     }
     const storage = getStorage()
@@ -43,7 +42,6 @@ const subirImagen = async(localURI: string|undefined) => {
     const urlPublica = await getDownloadURL(red).then(url=>url)
     return urlPublica;
   } catch (err) {
-    console.error(err);
     throw new Error("Error al subir la imagen");
   }
 }
@@ -53,16 +51,15 @@ const eliminarImagen = async(nombre: string) => {
   if (!auth.currentUser) {
     throw new Error("Usuario no autenticado");
   }
-  const storage = getStorage();
-  const fileRef = ref(storage, nombre);
-
   try {
+    const storage = getStorage();
+    const fileRef = ref(storage, nombre);
     if(nombre !== "placeholder.png") {
       await deleteObject(fileRef);
     }
-    console.log("Imagen eliminada correctamente");
+    return
   } catch (error) {
-    console.error("Error al eliminar la imagen:", error);
+    return
   }
 }
 

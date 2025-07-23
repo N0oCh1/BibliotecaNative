@@ -1,97 +1,199 @@
 import { Controller, useForm } from "react-hook-form";
-import { View, Text, TextInput, Pressable, ScrollView, Button } from "react-native";
-import { AntDesign } from '@expo/vector-icons';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  Button,
+} from "react-native";
+import { Image } from "expo-image";
+import { AntDesign } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { useState } from "react";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
-import { useFocusEffect, useRouter } from "expo-router";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
-import { Amigos } from "@/utils/types";
+import { Amigos, LibroBibliotecaDetalle, Prestamos } from "@/utils/types";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { getLibroAmigo } from "@/api/biblioteca";
+import { obtenerSolicitudes } from "@/api/prestarLibro";
 
 export default function AmigosScreen() {
   const route = useRouter();
-
   const { control, handleSubmit, reset } = useForm();
   const [userId, setUserId] = useState<string>();
-  const [detalleAmigos, setDetalleAmigos] = useState<Amigos[]|undefined>();
+  const [detalleAmigos, setDetalleAmigos] = useState<Amigos[] | undefined>();
+  const [solicitudesUsuario, setSolicitudesUsuario] = useState<Prestamos[]>();
+  const [solicitudDetalle, setSolicitudDetalle] = useState<
+    LibroBibliotecaDetalle[]
+  >([]);
+  const obtenerSolicitudYLibro = async () => {
+    try {
+      const prestamos = await obtenerSolicitudes();
+      setSolicitudesUsuario(prestamos);
+
+      // Obtener detalles de cada libro relacionado al préstamo
+      const detallesLibros = await Promise.all(
+        prestamos.map(async (prestamo) => {
+          return await getLibroAmigo(
+            prestamo.fields.dueno_libro.stringValue,
+            prestamo.fields.libro.stringValue
+          );
+        })
+      );
+
+      setSolicitudDetalle(
+        detallesLibros.filter(
+          (libro) => libro !== undefined
+        ) as LibroBibliotecaDetalle[]
+      );
+    } catch (erro) {}
+  };
 
   // Obtenmer id del usuario para compartir con amigos
-  useFocusEffect(()=>{
+  useFocusEffect(() => {
     const obtenerUsuario = async () => {
       const authData = await CurrentUser();
-      try{
+      try {
+        obtenerSolicitudYLibro();
         setDetalleAmigos(await obtenerMisAmigos());
         setUserId(authData.localId);
-      }catch(err){
+      } catch (err) {
         alert(err);
       }
     };
     obtenerUsuario();
-  })
-  
+  });
+
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
-
-    try{
+    try {
       const amigos = await buscarAmigo(data.search);
       if (amigos && amigos.length > 0) {
-        await insertarAmigo(amigos[0]); 
-      } 
-    }   
-    catch(err:unknown){
+        await insertarAmigo(amigos[0]);
+      }
+    } catch (err: unknown) {
       alert((err as Error).message);
     }
     reset();
   };
-  const verBiblioteca = (id: string, username:string) => {
+  const verBiblioteca = (id: string, username: string) => {
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
+  };
+  function calcularTiempoFaltante(timestamp:string) {
+  const ahora = new Date().getTime();
+  const devolucion = new Date(timestamp).getTime();
+  const diferencia = devolucion - ahora;
+
+  if (diferencia <= 0) {
+    return "Ya venció";
   }
+
+  const segundos = Math.floor(diferencia / 1000);
+  const minutos = Math.floor(segundos / 60) % 60;
+  const horas = Math.floor(segundos / 3600) % 24;
+  const dias = Math.floor(segundos / (3600 * 24));
+
+  return `${dias}d ${horas}h ${minutos}m`;
+}
   return (
-    <View>
-      <Text>user id del usuario logiado: {userId}</Text>
-      <View style={styles.searchContainer}>
-        <Controller
-        control={control}
-        name="search"
-        render={({ field: { onChange, value } }) => (
-          <TextInput
-            placeholder="ingresa el ID del amigo"
-            inputMode="search"
-            onChangeText={onChange}
-            value={value}
-            style={styles.input}
-          />
-        )}
-        />
-        <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
-          <Text style={styles.buttonText}><AntDesign name="search1" size={24} color="white" /></Text>
-        </Pressable>
-      </View>
-      <ScrollView>
-        {detalleAmigos && detalleAmigos.length > 0 ? (
-          detalleAmigos.map((amigo, index) => (
-            <View key={index} style={{ padding: 10 }}>
-              <Text>{amigo.nombre}</Text>
-              <Button
-                title="Ver Biblioteca"
-                onPress={() => {
-                  verBiblioteca(amigo.id, amigo.nombre);
-                }}
+    <SafeAreaView
+      edges={["top", "bottom"]}
+      style={{ flex: 1, backgroundColor: "#fff" }}
+    >
+        <View style={styles.container}>
+          <View>
+            <Text>user id del usuario logiado: {userId}</Text>
+            <View style={styles.searchContainer}>
+              <Controller
+                control={control}
+                name="search"
+                render={({ field: { onChange, value } }) => (
+                  <TextInput
+                    placeholder="ingresa el ID del amigo"
+                    inputMode="search"
+                    onChangeText={onChange}
+                    value={value}
+                    style={styles.input}
+                  />
+                )}
               />
+              <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
+                <AntDesign name="search1" size={24} color="white" />
+              </Pressable>
             </View>
-          ))
-        ) : (
-          <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
-        )}
-      </ScrollView>
-    </View>
+          </View>
+          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}>
+          {detalleAmigos && detalleAmigos.length > 0 ? (
+            detalleAmigos.map((amigo, index) => (
+              <View key={index} style={{ padding: 10 }}>
+                <Text>{amigo.nombre}</Text>
+                <Button
+                  title="Ver Biblioteca"
+                  onPress={() => verBiblioteca(amigo.id, amigo.nombre)}
+                />
+              </View>
+            ))
+          ) : (
+            <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
+          )}
+
+          {solicitudesUsuario ? (
+            solicitudDetalle.map((libro, index) => {
+              const prestamo = solicitudesUsuario[index];
+              const prestamoID = prestamo.name.split("/").pop() || "";
+              if (prestamo.fields.estado.stringValue === "aceptado") {
+                return (
+                  <View key={index} style={{ padding: 10 }}>
+                    <Image
+                      source={{ uri: libro.imagen_url.stringValue }}
+                      style={{ width: 50, height: 75 }}
+                    />
+                    <Text>idPrestamo: {prestamoID}</Text>
+                    <Text>Libro: {libro.titulo.stringValue}</Text>
+                    <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
+                    <Text>
+                      Estado de solicitud: {prestamo.fields.estado.stringValue}
+                    </Text>
+                    <Text>
+                      Ubicacion: {prestamo.fields.ubicacion.stringValue}
+                    </Text>
+                    <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
+                    <Text>Tiempo faltante: {calcularTiempoFaltante(prestamo.fields.fecha_devolucion.timestampValue)}</Text>
+                  </View>
+                );
+              }
+              return null;
+            })
+          ) : (
+            <Text>No hay solicitudes</Text>
+          )}
+           </ScrollView>
+        </View>
+    </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
     padding: 20,
+  },
+  barraSuperior: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    backgroundColor: "#fff",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    //sombras
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4,
   },
   searchContainer: {
     flexDirection: "row",
@@ -116,6 +218,11 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: "#fff",
+    fontWeight: "bold",
+  },
+  barraTexto: {
+    color: "#0056b3",
+    fontSize: 18,
     fontWeight: "bold",
   },
 });

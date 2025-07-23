@@ -34,6 +34,23 @@ export type Amigos = {
   nombre: string;
 }
 
+export type Prestamos = {
+    name: string;
+    fields: {
+        usuario: { stringValue: string; };
+        estado: { stringValue: string; };
+        mensaje: { stringValue: string; };
+        estado_devolucion: { stringValue: string; };
+        libro: { stringValue: string; };
+        ubicacion: { stringValue: string; };
+        dueno_libro: { stringValue: string; };
+        fecha_solicitud: { timestampValue: string; };
+        fecha_devolucion: { timestampValue: string; };
+    };
+    createTime: string;
+    updateTime: string;
+};
+
 export type librosBiblioteca = {
   titulo: string;
   autor:string;

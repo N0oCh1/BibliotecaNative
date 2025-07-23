@@ -1,9 +1,11 @@
-import { buscarBibliotecaAmigo } from "@/api/biblioteca";
+import { buscarBibliotecaAmigo, getLibroAmigo } from "@/api/biblioteca";
 import { LibroBibliotecaDetalle } from "@/utils/types";
+
 import {
   useFocusEffect,
   useLocalSearchParams,
   useNavigation,
+  useRouter,
 } from "expo-router";
 import { useCallback, useState } from "react";
 import { Image } from "expo-image";
@@ -21,25 +23,39 @@ export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
   const id = useLocalSearchParams<{ id: string }>().id;
   const usuario = useLocalSearchParams<{ username: string }>().username;
-
+  const router = useRouter();
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
-  
-  navigation.setOptions({ title: `Biblioteca de ${usuario}` });
+ 
   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
-        setBibilioteca(await buscarBibliotecaAmigo(id));
+        navigation.setOptions({ title: `Biblioteca de ${usuario}` });
+        const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
+
+        const detalles = await Promise.all(
+          bibliotecaAmigo.map(async (libro: any) => {
+            const libroId = libro.name.split("/").pop();
+            const detalle = await getLibroAmigo(id, libroId);
+            return { ...libro, detalle };
+          })
+        );
+        setBibilioteca(detalles);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
+
   console.log("Biblioteca de amigo:", biblioteca);
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
     setBibilioteca(updatedBiblioteca);
     setRefresh(false);
+  };
+  const handleDetails = (libroId: string) => {
+    router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
+
   };
   return (
     <SafeAreaView
@@ -61,7 +77,7 @@ export default function BibliotecaAmigoScreen() {
             biblioteca.map((libro: any, index: number) => {
               const libroId = libro.name.split("/").pop();
               return (
-                <Pressable key={index} style={style.card}>
+                <Pressable key={index} style={style.card} onPress={() => handleDetails(libroId)}>
                   <Image
                     style={style.image}
                     source={{ uri: libro.fields.imagen_url.stringValue }}

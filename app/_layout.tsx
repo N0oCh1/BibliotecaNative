@@ -47,6 +47,9 @@ const [isAppReady, setIsAppReady] = useState(false);
         name="bibliotecaAmigo/[id]"
       />
       <Stack.Screen
+        name="bibliotecaAmigo/libroAmigo/[libro]"
+      />
+      <Stack.Screen
         name="(tabs)"
         options={{
           headerShown: false, // Hide the header for the tabs layout
