@@ -14,7 +14,8 @@ import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { addLibro, getLibro, getLibroAmigo, removeLibro } from "@/api/biblioteca";
 import { enviarSolicitud } from "@/api/prestarLibro";
-
+import { Picker } from "@react-native-picker/picker";
+import { Modal, TextInput } from "react-native";
 
 export default function LibroAmigoScreen() {
   const router = useRouter();
@@ -23,6 +24,12 @@ export default function LibroAmigoScreen() {
   const [loading, setLoading] = useState(true);
   const libro = useLocalSearchParams<{ libro: string}>().libro;
   const idAmigo = useLocalSearchParams<{ idAmigo: string }>().idAmigo;
+  const [modalVisible, setModalVisible] = useState(false);
+  const [libroSeleccionado, setLibroSeleccionado] = useState<any>(null);
+  const [mensaje, setMensaje] = useState("");
+  const [tiempoPrestamo, setTiempoPrestamo] = useState("");
+  const [ubicacionEncuentro, setUbicacionEncuentro] = useState("");
+
   useLayoutEffect(() => {
     if (detalle?.titulo.stringValue) {
       navigation.setOptions({ title: detalle.titulo.stringValue });
@@ -82,13 +89,36 @@ export default function LibroAmigoScreen() {
     }
   }
 
-  const handleTestPrestamos = async () => {
-    try{
-      await enviarSolicitud(libro, idAmigo);
-      alert("Solicitud de préstamo enviada");
+
+
+     const handleEnviarSolicitud = async () => {
+    if (!libroSeleccionado) return;
+    try {
+      const libroId = libroSeleccionado.name.split("/").pop();
+      const idOwner = libroSeleccionado.fields.dueno.stringValue;
+
+      await enviarSolicitud(libroId, idOwner, {
+        ubicacion: ubicacionEncuentro,
+        tiempo: tiempoPrestamo,
+        mensaje,
+      });
+
+      // Limpiar y cerrar modal
+      setModalVisible(false);
+      setMensaje("");
+      setTiempoPrestamo("");
+      setUbicacionEncuentro("");
     } catch (error) {
-      alert(error);
+      console.error("Error al enviar solicitud:", error);
+      alert(error || "Ocurrió un error al enviar la solicitud.");
     }
+  };
+
+  const cleanCancel = async ()=>{
+    setModalVisible(false);
+      setMensaje("");
+      setTiempoPrestamo("");
+      setUbicacionEncuentro("");
   }
 
   return (
@@ -106,7 +136,7 @@ export default function LibroAmigoScreen() {
         <Text style={styles.published}>Formato: {detalle.formato.stringValue}</Text>
       )}
       {detalle.formato.stringValue === "fisico" 
-        ? <Button title="Solicitar prestado" onPress={()=>{handleTestPrestamos()}}/> 
+        ? <Button title="Solicitar prestado" onPress={()=>{setModalVisible(true)}}/> 
         : <Button title="Agregar a tu biblioteca" onPress={()=>{handleAgregarBiblioteca()}}/>
       }
       <Text style={styles.published}>
@@ -117,7 +147,56 @@ export default function LibroAmigoScreen() {
           ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
           : "Sin descripción disponible."}
       </Text>
+          <Modal
+         
+  animationType="slide"
+  transparent={true}
+  visible={modalVisible}
+  onRequestClose={() => setModalVisible(false)}
+>
+  <View style={styles.modalContainer}>
+    <View style={styles.modalContent}>
+      <Text style={styles.modalTitle}>
+        Solicitar: {libroSeleccionado?.fields.titulo.stringValue}
+      </Text>
+
+      <View style={styles.solicitarButton}>
+        <Picker
+          selectedValue={tiempoPrestamo}
+          onValueChange={(itemValue) => setTiempoPrestamo(itemValue)}
+        >
+          <Picker.Item label="Selecciona tiempo de préstamo" value="" />
+          <Picker.Item label="3 días" value="3" />
+          <Picker.Item label="7 días" value="7" />
+          <Picker.Item label="14 días" value="14" />
+          <Picker.Item label="30 días" value="30" />
+        </Picker>
+      </View>
+
+      <TextInput
+        placeholder="Ubicación de encuentro"
+        value={ubicacionEncuentro}
+        onChangeText={setUbicacionEncuentro}
+        style={styles.solicitarText}
+      />
+
+      <TextInput
+        placeholder="Mensaje opcional"
+        value={mensaje}
+        onChangeText={setMensaje}
+        style={styles.solicitarText}
+      />
+
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Button title="Cancelar" onPress={() => cleanCancel()} />
+        <Button title="Enviar" onPress={handleEnviarSolicitud} />
+      </View>
+    </View>
+  </View>
+</Modal>
+
     </ScrollView>
+    
   );
 }
 const styles = StyleSheet.create({
@@ -171,4 +250,45 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     textAlign: "center",
   },
+  
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)", // fondo semitransparente
+    padding: 20,
+  },
+  modalContent: {
+    width: "100%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  solicitarButton: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    marginBottom: 15,
+    overflow: "hidden",
+  },
+  solicitarText: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 15,
+  },
+
 });
