@@ -116,8 +116,9 @@ export default function createBook() {
           name="title"
           render={({ field: { onChange, value } }) => (
             <>
+              <Text style={styles.fieldLabel}>Título del libro</Text>
               <TextInput
-                placeholder="Título"
+                placeholder="Ejemplo: El Señor de los Anillos"
                 style={getInputStyle('title')}
                 onChangeText={onChange}
                 value={value}
@@ -135,8 +136,9 @@ export default function createBook() {
           name="autor"
           render={({ field: { onChange, value } }) => (
             <>
+              <Text style={styles.fieldLabel}>Autor</Text>
               <TextInput
-                placeholder="ejemplo: J.R.R. Tolkien"
+                placeholder="Ejemplo: J.R.R. Tolkien"
                 style={getInputStyle('autor')}
                 onChangeText={onChange}
                 value={value}
@@ -154,8 +156,9 @@ export default function createBook() {
           name="descripcion"
           render={({ field: { onChange, value } }) => (
             <>
+              <Text style={styles.fieldLabel}>Descripción</Text>
               <TextInput
-                placeholder="una breve descripción del libro"
+                placeholder="Una breve descripción del libro"
                 style={[getInputStyle('descripcion'), { height: 100 }]}
                 multiline
                 onChangeText={onChange}
@@ -174,8 +177,9 @@ export default function createBook() {
           name="categoria"
           render={({ field: { onChange, value } }) => (
             <>
+              <Text style={styles.fieldLabel}>Categoría</Text>
               <TextInput
-                placeholder="ejemplo: Fantasía, Ciencia Ficción, etc."
+                placeholder="Ejemplo: Fantasía, Ciencia Ficción, Romance"
                 style={getInputStyle('categoria')}
                 onChangeText={onChange}
                 value={value}
@@ -193,6 +197,7 @@ export default function createBook() {
           name="formato"
           render={({ field: { onChange, value } }) => (
             <>
+              <Text style={styles.fieldLabel}>Formato</Text>
               <DropDownPicker
               open={open}
               value={value}
@@ -201,7 +206,7 @@ export default function createBook() {
               onChangeValue={onChange}
               setOpen={setOpen}
               setValue={onChange}
-              placeholder="selecciona el formato"
+              placeholder="Selecciona el formato del libro"
               listMode="SCROLLVIEW"
               style={[styles.input, open && styles.inputFocused]}
               />
@@ -212,7 +217,8 @@ export default function createBook() {
           )}
         />
         
-        {/* Contenedor para la imagen con sombra */}
+        {/* Sección de imagen */}
+        <Text style={styles.fieldLabel}>Imagen del libro</Text>
         {imagen && (
           <View style={styles.imageContainer}>
             <Image source={{ uri: imagen.uri }} style={styles.image} />
@@ -268,10 +274,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 20,
     color: "#0056b3",
     fontWeight: "bold",
-    padding: 5,
+    padding: 10,
   },
   input: {
     borderWidth: 1,
@@ -347,6 +353,13 @@ const styles = StyleSheet.create({
   },
   buttonSeparator: {
     marginVertical: 10,
+  },
+  fieldLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#0056b3",
+    marginBottom: 6,
+    marginTop: 5,
   },
   buttom:{
     margin: 5
