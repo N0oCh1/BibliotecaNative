@@ -191,6 +191,7 @@ const style = StyleSheet.create({
     marginLeft: 10,
     marginBottom: 10,
     marginTop: 1,
+    color: "#0056b3", // Color azul para el título
   },
   author: {
     marginTop: 5, // Espacio entre título y autor
