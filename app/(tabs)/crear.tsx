@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker"; 
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -33,6 +34,8 @@ export default function createBook() {
   const [imagen, setImagen] = useState<ImagePicker.ImagePickerAsset |null>();
   // estado de carga
   const [carga, setCarga] = useState(false);
+  // Estados para manejar el focus de los inputs
+  const [focusedInput, setFocusedInput] = useState<string | null>(null);
   //validacion Yup
   const[open, setOpen] = useState<boolean>(false)
   const[items, setItems] = useState<any>([
@@ -93,13 +96,21 @@ export default function createBook() {
     }
   };
 
+  // Función para obtener el estilo del input según el estado
+  const getInputStyle = (fieldName: string) => {
+    return [
+      styles.input,
+      focusedInput === fieldName && styles.inputFocused
+    ];
+  };
+
   return (
     <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: "#f0f8ff" }}>
         <View style={styles.barraSuperior}>
         <Text style={styles.barraTexto}>Añadir</Text>
       </View>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Agregar Nuevo Libro</Text>
+        <Text style={styles.title}>Rellena los siguientes campos para añadir un nuevo tesoro a la comunidad.</Text>
         <Controller
           control={control}
           name="title"
@@ -107,9 +118,11 @@ export default function createBook() {
             <>
               <TextInput
                 placeholder="Título"
-                style={styles.input}
+                style={getInputStyle('title')}
                 onChangeText={onChange}
                 value={value}
+                onFocus={() => setFocusedInput('title')}
+                onBlur={() => setFocusedInput(null)}
               />
               {errors.title && (
                 <Text style={styles.error}>{errors.title.message}</Text>
@@ -123,10 +136,12 @@ export default function createBook() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                placeholder="Autor"
-                style={styles.input}
+                placeholder="ejemplo: J.R.R. Tolkien"
+                style={getInputStyle('autor')}
                 onChangeText={onChange}
                 value={value}
+                onFocus={() => setFocusedInput('autor')}
+                onBlur={() => setFocusedInput(null)}
               />
               {errors.autor && (
                 <Text style={styles.error}>{errors.autor.message}</Text>
@@ -140,11 +155,13 @@ export default function createBook() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                placeholder="Descripción"
-                style={[styles.input, { height: 100 }]}
+                placeholder="una breve descripción del libro"
+                style={[getInputStyle('descripcion'), { height: 100 }]}
                 multiline
                 onChangeText={onChange}
                 value={value}
+                onFocus={() => setFocusedInput('descripcion')}
+                onBlur={() => setFocusedInput(null)}
               />
               {errors.descripcion && (
                 <Text style={styles.error}>{errors.descripcion.message}</Text>
@@ -158,10 +175,12 @@ export default function createBook() {
           render={({ field: { onChange, value } }) => (
             <>
               <TextInput
-                placeholder="Categoría"
-                style={styles.input}
+                placeholder="ejemplo: Fantasía, Ciencia Ficción, etc."
+                style={getInputStyle('categoria')}
                 onChangeText={onChange}
                 value={value}
+                onFocus={() => setFocusedInput('categoria')}
+                onBlur={() => setFocusedInput(null)}
               />
               {errors.categoria && (
                 <Text style={styles.error}>{errors.categoria.message}</Text>
@@ -184,7 +203,7 @@ export default function createBook() {
               setValue={onChange}
               placeholder="selecciona el formato"
               listMode="SCROLLVIEW"
-              style={styles.input}
+              style={[styles.input, open && styles.inputFocused]}
               />
               {errors.formato && (
                 <Text style={styles.error}>{errors.formato.message}</Text>
@@ -192,13 +211,27 @@ export default function createBook() {
             </>
           )}
         />
-        {imagen && <Image source={{ uri: imagen.uri }} style={styles.image} />}
-        <Button title="Seleccionar Imagen" onPress={pickearImagen} />
+        
+        {/* Contenedor para la imagen con sombra */}
+        {imagen && (
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: imagen.uri }} style={styles.image} />
+          </View>
+        )}
+        
+        {/* Botones personalizados */}
+        <TouchableOpacity style={styles.customButton} onPress={pickearImagen}>
+          <Text style={styles.buttonText}>Seleccionar Imagen</Text>
+        </TouchableOpacity>
+        
+        <View style={styles.buttonSeparator} />
+        
         {carga ? (
-          <ActivityIndicator size="large" color="#0077b6" />
+          <ActivityIndicator size="large" color="#0077b6" style={styles.buttonSeparator} />
         ) : (
-          
-          <Button title="Agregar Libro" onPress={handleSubmit(formSubmit)} />
+          <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit(formSubmit)}>
+            <Text style={styles.primaryButtonText}>Agregar Libro</Text>
+          </TouchableOpacity>
         )}
       </ScrollView>
     </SafeAreaView>
@@ -210,7 +243,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#f0f8ff",
   },
-    barraSuperior: {
+  barraSuperior: {
     flexDirection: "row",
     alignItems: "center",
     height: 56,
@@ -227,34 +260,93 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-      barraTexto:{
+  barraTexto:{
     color: "#0056b3",
     fontSize: 18,
     fontWeight: "bold",
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
-    color: "#0077b6",
+    fontSize: 18,
+    textAlign: "center",
+    marginBottom: 10,
+    color: "#0056b3",
     fontWeight: "bold",
+    padding: 5,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#0077b6",
+    borderColor: "#c9d0eaff",
     borderRadius: 8,
     padding: 10,
     marginBottom: 10,
     backgroundColor: "#fff",
   },
+  inputFocused: {
+    borderColor: "#0077b6",
+    borderWidth: 2,
+  },
   error: {
     color: "red",
     marginBottom: 10,
   },
+  imageContainer: {
+    alignItems: 'center',
+    marginVertical: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 8,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+    width: 180,
+    height: 240,
+    alignSelf: 'center',
+  },
   image: {
-    width: "100%",
-    height: 200,
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    resizeMode: 'cover',
+  },
+  customButton: {
+    backgroundColor: "#fff",
+    borderWidth: 2,
+    borderColor: "#0077b6",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  buttonText: {
+    color: "#0077b6",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  primaryButton: {
+    backgroundColor: "#0077b6",
+    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  primaryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  buttonSeparator: {
     marginVertical: 10,
-    borderRadius: 8,
   },
   buttom:{
     margin: 5

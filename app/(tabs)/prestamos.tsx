@@ -336,7 +336,7 @@ const style = StyleSheet.create({
   },
   contenedorBtnPrestamoSolicitud: {
     flexDirection: "row",
-    backgroundColor: "#d9dcf2ff",
+    backgroundColor: "#cbd4f7ff",
     padding: 7,
     justifyContent: "center",
     borderRadius: 8,
@@ -359,10 +359,10 @@ const style = StyleSheet.create({
     height: '100%',
   },
   btnActivo: {
-    backgroundColor: "#ebedf4ff",
+    backgroundColor: "#FCFDFF",
   },
   btnInactivo: {
-    backgroundColor: "#d9dcf2ff",
+    backgroundColor: "#ccd3eeff",
   },
   btnTexto: {
     color: "#0056b3",
