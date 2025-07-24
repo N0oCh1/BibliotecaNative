@@ -38,7 +38,7 @@ export default function TabLayout() {
         name="prestamos"
         options={{
           title: 'Prestamos',
-          headerShown:true,
+          headerShown:false,
           tabBarIcon: ({ color }) => <AntDesign size={24} name="find" color={color} />,
         }}
       />

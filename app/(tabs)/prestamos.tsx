@@ -18,7 +18,7 @@ import {
 import { Image } from "expo-image";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { View, Text, Button, ScrollView, RefreshControl } from "react-native";
+import {Pressable, View, Text, Button, ScrollView, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function PrestamosScreen() {
@@ -148,10 +148,50 @@ export default function PrestamosScreen() {
       edges={["top", "bottom"]}
       style={{ flex: 1, backgroundColor: "#fff" }}
     >
-      <View>
-        <Button title="Prestamos" onPress={() => setTabs("prestamos")} />
-        <Button title="Solicitudes" onPress={() => handleSolicitud()} />
+
+      <View  style={style.barraSuperior}>
+        <Text style={style.barraTexto}>
+          Préstamos y Solicitudes
+        </Text>
       </View>
+
+      <View style={style.contenedorBtnPrestamoSolicitud}>
+        <Pressable
+          style={[
+            style.btnTab,
+            tabs === "prestamos" ? style.btnActivo : style.btnInactivo
+          ]}
+          onPress={() => setTabs("prestamos")}
+        >
+          <Text
+            style={[
+              style.btnTexto,
+              tabs === "prestamos" && { color: "#000000ff" } // texto naranja si activo
+            ]}
+          >
+            Préstamos
+          </Text>
+        </Pressable>
+
+        <Pressable
+          style={[
+            style.btnTab,
+            tabs === "solicitudes" ? style.btnActivo : style.btnInactivo
+          ]}
+          onPress={handleSolicitud}
+        >
+          <Text
+            style={[
+              style.btnTexto,
+              tabs === "solicitudes" && { color: "#000000ff" }
+            ]}
+          >
+            Solicitudes
+          </Text>
+        </Pressable>
+      </View>
+
+
       {tabs === "prestamos" ? (
         <ScrollView
           refreshControl={
@@ -195,7 +235,7 @@ export default function PrestamosScreen() {
               return null;
             })
           ) : (
-            <Text>No hay prestamos</Text>
+            <Text style={{ textAlign: "center", fontSize: 24, fontWeight: "bold" }}>No hay prestamos</Text>
           )}
         </ScrollView>
       ) 
@@ -265,3 +305,69 @@ export default function PrestamosScreen() {
     </SafeAreaView>
   );
 }
+
+// estlos para la pantalla de prestamos
+const style = StyleSheet.create({
+
+    barraSuperior: {
+    width: "100%",
+    height: 56, // o 60, como prefieras
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fff", // Mejor blanco para sombra visible
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    marginBottom: 15,
+    // Sombra para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    // Sombra para Android
+    elevation: 4,
+  },
+    barraTexto:{
+    color: "#0056b3",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  contenedorBtnPrestamoSolicitud: {
+    flexDirection: "row",
+    backgroundColor: "#d9dcf2ff",
+    padding: 7,
+    justifyContent: "center",
+    borderRadius: 8,
+    marginBottom: 10,
+    marginHorizontal: 15,
+    height: 50,
+    //sombra para iOS
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    //sombra para Android
+    elevation: 2,
+  },
+    btnTab: {
+    flex: 1,
+    justifyContent: "center",
+    borderRadius: 4,
+    alignItems: "center",
+    height: '100%',
+  },
+  btnActivo: {
+    backgroundColor: "#ebedf4ff",
+  },
+  btnInactivo: {
+    backgroundColor: "#d9dcf2ff",
+  },
+  btnTexto: {
+    color: "#0056b3",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  
+});
