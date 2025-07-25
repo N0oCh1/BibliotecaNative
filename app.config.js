@@ -21,13 +21,12 @@ export default {
     "android": {
       "useCleartextTraffic": true,
       "package": "com.N0oCh1.BibliotecaNative",
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON ?? './google-services.json',
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package" : "com.N0oCh1.BibliotecaNative",
-      "versionCode" : 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -44,7 +43,17 @@ export default {
       }
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      "react-native-edge-to-edge",
+        [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
+        }
+      ]
     ]
   }
 }

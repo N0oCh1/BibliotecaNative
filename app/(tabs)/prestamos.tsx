@@ -1,6 +1,7 @@
 import { getLibroAmigo } from "@/api/biblioteca";
 import {
   aceptarSolicitud,
+  borrarPrestamo,
   devolverLibro,
   obtenerPrestamosDelUsuario,
   obtenerSolicitudes,
@@ -38,14 +39,14 @@ export default function PrestamosScreen() {
     try {
       const prestamos = await obtenerPrestamosDelUsuario(auth.localId);
       setPrestamosUsuario(prestamos);
-      console.log(prestamos);
 
       // Obtener detalles de cada libro relacionado al préstamo
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
+
           return await getLibroAmigo(
-            prestamo.fields.id_dueno_libro?.stringValue,
-            prestamo.fields.id_libro?.stringValue
+            prestamo.fields.id_dueno_libro.stringValue,
+            prestamo.fields.id_libro.stringValue
           );
         })
       );
@@ -55,7 +56,9 @@ export default function PrestamosScreen() {
           (libro) => libro !== undefined
         ) as LibroBibliotecaDetalle[]
       );
-    } catch (erro) {}
+    } catch (erro) {
+      console.log(erro);
+    }
   };
 
   const obtenerSolicitudYLibro = async () => {
@@ -108,10 +111,11 @@ export default function PrestamosScreen() {
   };
   const hanleRechazarSolicitud = async (
     idAmigo: string,
-    idPrestamo: string
+    idPrestamo: string,
+    idLibro: string
   ) => {
     try {
-      await rechazarSolicitud(idAmigo, idPrestamo);
+      await rechazarSolicitud(idAmigo, idPrestamo, idLibro);
       alert("Solicitud rechazada");
       handleRefresh();
     } catch (err) {
@@ -120,10 +124,11 @@ export default function PrestamosScreen() {
   };
   const handleReenviar = async(
     idAmigo: string,
-    idPrestamo: string
+    idPrestamo: string,
+    idLibro: string
   ) =>{
     try{
-      await volverASolicitar(idAmigo, idPrestamo)
+      await volverASolicitar(idAmigo, idPrestamo, idLibro)
       alert("Volviste a enviar la solicitud");
       handleRefresh();
     }
@@ -142,7 +147,18 @@ export default function PrestamosScreen() {
       alert(err);
     }
   }
-  console.log(prestamoDetalle)
+  const handleBorrarPedido = async(idPrestamo: string) =>{
+    try{
+      await borrarPrestamo(idPrestamo)
+      alert("Borraste un pedido")
+      handleRefresh()
+    }
+    catch(err){
+      alert(err);
+    }
+  }
+  console.log("Todas las solicitudes => ",solicitudesUsuario)
+  console.log("Todas los prestamos: => ",prestamosUsuario)
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
@@ -202,16 +218,15 @@ export default function PrestamosScreen() {
             
             prestamoDetalle.map((libro, index) => {
               const prestamo = prestamosUsuario[index];
-              const prestamoID = prestamo.name.split("/").pop() || "";
-              console.log(prestamo)
-              if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
+              const prestamoID = prestamo?.name?.split("/").pop() || "";
+                if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
               return (
                 <View key={index}>
                   <Image
                     source={{ uri: libro.imagen_url.stringValue }}
                     style={{ width: 50, height: 75 }}
                   />
-                  <Text>idPrestamo: {prestamoID}</Text>
+                  <Text>idPrestamo:{prestamoID}</Text>
                   <Text>Libro: {libro.titulo.stringValue}</Text>
                   <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
                   <Text>
@@ -222,7 +237,11 @@ export default function PrestamosScreen() {
                   </Text>
                   <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
                   {prestamo.fields.estado.stringValue === "rechazado" 
-                  && <Button title="Volver a pedir" onPress={()=>handleReenviar(prestamo.fields.id_usuario.stringValue, prestamoID)}/> 
+                  && 
+                  <View>
+                    <Button title="Volver a pedir" onPress={()=>handleReenviar(prestamo.fields.id_dueno_libro.stringValue, prestamoID, prestamo.fields.id_libro.stringValue)}/>
+                    <Button title="Borrar pedido" onPress={()=>handleBorrarPedido(prestamoID)}/> 
+                  </View>
                   }
                   {prestamo.fields.estado.stringValue === "aceptado" &&
                     <View>
@@ -256,7 +275,7 @@ export default function PrestamosScreen() {
               const prestamo = solicitudesUsuario[index];
               const prestamoID = prestamo.name.split("/").pop() || "";
               if (
-                prestamo.fields.estado.stringValue === "pendiente" 
+                prestamo?.fields?.estado?.stringValue === "pendiente" 
               ) {
                 return (
                   <View key={index}>
@@ -267,12 +286,8 @@ export default function PrestamosScreen() {
                     <Text>idPrestamo: {prestamoID}</Text>
                     <Text>Libro: {libro.titulo.stringValue}</Text>
                     <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
-                    <Text>
-                      Estado de solicitud: {prestamo.fields.estado.stringValue}
-                    </Text>
-                    <Text>
-                      Ubicacion: {prestamo.fields.ubicacion.stringValue}
-                    </Text>
+                    <Text>Estado de solicitud: {prestamo.fields.estado.stringValue}</Text>
+                    <Text>Ubicacion: {prestamo.fields.ubicacion.stringValue}</Text>
                     <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
                     <Button
                       title="Aceptar"
@@ -288,14 +303,15 @@ export default function PrestamosScreen() {
                       onPress={() =>
                         hanleRechazarSolicitud(
                           prestamo.fields.id_usuario.stringValue,
-                          prestamoID
+                          prestamoID,
+                          prestamo.fields.id_libro.stringValue
                         )
                       }
                     />
                   </View>
                 );
               }
-              return null;
+              return null
             })
           ) : (
             <Text>No hay solicitudes</Text>

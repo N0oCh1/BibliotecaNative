@@ -1,16 +1,46 @@
 import { Stack } from "expo-router";
 import React, { useState} from "react";
 import SplashScreen from "./splashScreen";
+import * as Notifications from "expo-notifications";
+import { useEffect } from "react";
+import { router } from "expo-router";
 
+function useNotificationObserver() {
+  useEffect(() => {
+    let isMounted = true;
 
+    function redirect(notification: Notifications.Notification) {
+      const url = notification.request.content.data?.url as string;
+      if (url) {
+        router.push(url);
+      }
+    }
+
+    Notifications.getLastNotificationResponseAsync()
+      .then(response => {
+        if (!isMounted || !response?.notification) {
+          return;
+        }
+        redirect(response?.notification);
+      });
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      redirect(response.notification);
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.remove();
+    };
+  }, []);
+}
 export default function RootLayout() {
-const [isAppReady, setIsAppReady] = useState(false);
-
-  
+  const [isAppReady, setIsAppReady] = useState(false);
+  useNotificationObserver();
   if (!isAppReady) {
     return (
         <SplashScreen
-            onFinish={(isCancelled) => !isCancelled && setIsAppReady(true)}
+            onFinish={(isCancelled:any) => !isCancelled && setIsAppReady(true)}
         />
     );
       
@@ -20,7 +50,7 @@ const [isAppReady, setIsAppReady] = useState(false);
     <Stack>
       {/* esto es lo que dice que pantalla inicia */}
       <Stack.Screen
-        name="bienvenido"
+        name="index"
         options={{
           headerShown: false, // Hide the header for the tabs layout
         }}

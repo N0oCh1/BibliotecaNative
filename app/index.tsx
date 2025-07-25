@@ -4,19 +4,19 @@ import {
   Image,
   StyleSheet,
   Pressable,
-  Dimensions,
   StatusBar,
+  Platform,
+  Button,
 } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getCredencial } from "@/utils/hooks/useCredential";
-import { auth } from "@/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
 import { singIn } from "@/api/useSesion";
 
 export default function WelcomeScreen() {
   const router = useRouter();
+
+  
   
   // obtengo la sesion de guardado en storage 
   useFocusEffect(()=>{
@@ -50,6 +50,7 @@ export default function WelcomeScreen() {
           {/* Texto de bienvenida */}
           <Text style={styles.title}>Bienvenido</Text>
         </View>
+        
         <Pressable
           onPress={() => router.replace("/login")}
           style={{ alignSelf: "flex-end", marginTop: 20 }}

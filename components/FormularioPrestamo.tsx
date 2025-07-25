@@ -1,15 +1,13 @@
 import { enviarSolicitud } from "@/api/prestarLibro";
-import { librosBiblioteca } from "@/utils/types";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Picker } from "@react-native-picker/picker";
 import React, { SetStateAction, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button, Modal, TextInput, View, StyleSheet, Text } from "react-native";
+import DropDownPicker from "react-native-dropdown-picker";
 import * as yup from "yup";
 
-
 interface FormularioPrestamoProps {
-  detalleLibro: {idLibro:string, idOwner:string, titulo:string};
+  detalleLibro: { idLibro: string; idOwner: string; titulo: string };
   modalVisible: boolean;
   setModalVisible: React.Dispatch<SetStateAction<boolean>>;
 }
@@ -22,6 +20,13 @@ const validacion = yup.object().shape({
 
 const FormularioPrestamo = (props: FormularioPrestamoProps) => {
   const { detalleLibro, modalVisible, setModalVisible } = props;
+  const [open, setOpen] = useState<boolean>(false);
+  const [items, setItems] = useState<any>([
+    { label: "3 Dias", value: "3" },
+    { label: "7 Dias", value: "7" },
+    { label: "15 Dias", value: "15" },
+    { label: "30 Dias", value: "30" },
+  ]);
   const {
     control,
     handleSubmit,
@@ -31,16 +36,19 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
     resolver: yupResolver(validacion),
   });
 
-  const solicitar = async(data:any) => {
+  const solicitar = async (data: any) => {
     try {
       const datosFormulario = {
         ubicacion: data.ubicacion,
         mensaje: data.mensaje,
         tiempo: data.tiempo,
       };
-      console.log(datosFormulario);
-      console.log(detalleLibro)
-      await enviarSolicitud(detalleLibro.titulo,detalleLibro.idLibro, detalleLibro.idOwner, datosFormulario);
+      await enviarSolicitud(
+        detalleLibro.titulo,
+        detalleLibro.idLibro,
+        detalleLibro.idOwner,
+        datosFormulario
+      );
       alert("Solicitud enviada");
       reset();
       setModalVisible(false);
@@ -67,18 +75,21 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
             name="tiempo"
             render={({ field: { onChange, value } }) => (
               <View>
-                {errors.tiempo && <Text style={{ color: "red" }}>{errors.tiempo.message}</Text>}
-                <Picker
-                  selectedValue={value}
-                  onValueChange={onChange}
+                {errors.tiempo && (
+                  <Text style={{ color: "red" }}>{errors.tiempo.message}</Text>
+                )}
+                <DropDownPicker
+                  open={open}
+                  value={value}
+                  items={items}
+                  setItems={setItems}
+                  onChangeValue={onChange}
+                  setOpen={setOpen}
+                  setValue={onChange}
+                  placeholder="selecciona el formato"
+                  listMode="SCROLLVIEW"
                   style={style.input}
-                >
-                  <Picker.Item label="Selecciona tiempo de préstamo" value="" />
-                  <Picker.Item label="3 días" value="3" />
-                  <Picker.Item label="7 días" value="7" />
-                  <Picker.Item label="14 días" value="14" />
-                  <Picker.Item label="30 días" value="30" />
-                </Picker>
+                />
               </View>
             )}
           />
@@ -87,7 +98,11 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
             name="ubicacion"
             render={({ field: { onChange, value } }) => (
               <>
-                {errors.ubicacion && <Text style={{ color: "red" }}>{errors.ubicacion.message}</Text>}
+                {errors.ubicacion && (
+                  <Text style={{ color: "red" }}>
+                    {errors.ubicacion.message}
+                  </Text>
+                )}
                 <TextInput
                   placeholder="Ubicación de encuentro"
                   value={value}
@@ -97,13 +112,15 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
               </>
             )}
           />
-          
+
           <Controller
             control={control}
             name="mensaje"
             render={({ field: { onChange, value } }) => (
               <>
-                {errors.mensaje && <Text style={{ color: "red" }}>{errors.mensaje.message}</Text>}
+                {errors.mensaje && (
+                  <Text style={{ color: "red" }}>{errors.mensaje.message}</Text>
+                )}
                 <TextInput
                   placeholder="Mensaje opcional"
                   value={value}
@@ -111,17 +128,13 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
                   style={style.input}
                 />
               </>
-
             )}
           />
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
             <Button title="Cancelar" onPress={() => setModalVisible(false)} />
-            <Button
-              title="Enviar"
-              onPress={handleSubmit(solicitar)}
-            />
+            <Button title="Enviar" onPress={handleSubmit(solicitar)} />
           </View>
         </View>
       </View>

@@ -3,13 +3,7 @@ import type { SesionResponse } from "@/utils/types";
 import Constants from "expo-constants";
 import { getAuth, signInWithEmailAndPassword, type UserCredential } from "firebase/auth";
 
-const API_KEY = Constants.expoConfig?.extra?.API_KEY || Constants.manifest2.extra.API_KEY;
-
-interface userProps {
-  email: string,
-  password: string
-}
-
+const API_KEY = Constants.expoConfig?.extra?.API_KEY || Constants.manifest2?.extra?.expoClient?.extra?.API_KEY;
 
 const singIn = async(email: string, password: string): Promise<SesionResponse> =>{
   const auth = getAuth();
