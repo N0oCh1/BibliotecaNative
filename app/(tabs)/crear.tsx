@@ -36,6 +36,7 @@ export default function createBook() {
   //validacion Yup
   const[open, setOpen] = useState<boolean>(false)
   const[items, setItems] = useState<any>([
+    {label: 'Seleccione el formato', value:null},
     {label: 'Fisico', value:"fisico"},
     {label: 'Digital', value:"digital"}
   ])
@@ -83,7 +84,8 @@ export default function createBook() {
      }
      
     await addLibro(bookData)
-      reset();
+    setImagen(null)
+    reset();
       alert("libro agregado con exitosamente");
     } catch (error) {
       console.log("Error al agregar libro:", error);

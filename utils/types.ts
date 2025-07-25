@@ -65,7 +65,14 @@ export type librosBiblioteca = {
 
 export type Credenciale = { 
   usuario: string,
-  contrasena: string
+  contrasena: string,
+  pushToken: string | null
+}
+
+export type NotificationType = {
+  to:string|undefined,
+  title:string,
+  body:string
 }
 
 export interface SesionResponse {

@@ -43,7 +43,7 @@ const registerForPushNotificationsAsync = async() => {
           projectId,
         })
       ).data;
-      console.log(token);
+      console.log("tokenPush: ", token);
     } catch (e) {
       token = `${e}`;
     }

@@ -22,6 +22,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { setCredencial } from "@/utils/hooks/useCredential";
 import Checkbox from "expo-checkbox";
 import { singIn } from "@/api/useSesion";
+import { registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
 
 
 export const options = {
@@ -36,18 +37,21 @@ export default function Login() {
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
   const [recordar, setRecordar] = useState<boolean>(false);
-
+  const [expoPushToken, setExpoPushToken] = useState('');
   // Estado para detectar si el teclado está visible
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
+    const getToken = async () => {
+      await registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+    }
     const keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', () => {
       setKeyboardVisible(true);
     });
     const keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboardVisible(false);
     });
-
+    getToken()
     return () => {
       keyboardDidHideListener?.remove();
       keyboardDidShowListener?.remove();
@@ -63,7 +67,8 @@ export default function Login() {
         recordar ? 
         setCredencial({
           usuario: email!,
-          contrasena: password!
+          contrasena: password!,
+          pushToken: expoPushToken
         })
         : null;
         router.replace("/(tabs)");

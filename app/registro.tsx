@@ -17,6 +17,8 @@ import { AntDesign, Fontisto, MaterialIcons } from "@expo/vector-icons";
 import { singUp } from "@/api/useSesion";
 
 import { agregarUsuario } from "@/api/usuarios";
+import { registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
+import { setCredencial } from "@/utils/hooks/useCredential";
 
 const { width, height } = Dimensions.get("window");
 
@@ -39,7 +41,13 @@ export default function Registro() {
   // Estado para detectar si el teclado está visible
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
+  const [expoPushToken, setExpoPushToken] = useState('');
+
   useEffect(() => {
+    const getToken = async () => {
+          await registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+        }
+    getToken()
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       () => {
@@ -62,8 +70,11 @@ export default function Registro() {
   const registrar = async () => {
     try {
       const user = await singUp(email, password);
-      const uid = user.localId;
-
+      await setCredencial({
+        usuario: email,
+        contrasena: password,
+        pushToken: expoPushToken
+      });
       if (user) {
         await agregarUsuario(usuario);
         router.replace("/(tabs)");

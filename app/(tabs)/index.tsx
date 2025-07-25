@@ -2,10 +2,10 @@ import React, { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl, Button, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { removeCredencial } from "@/utils/hooks/useCredential";
+import { getCredencial, removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
-import type {  LibroBibliotecaDetalle } from "@/utils/types";
-import { obtenerUsuario } from "@/api/usuarios";
+import type {  Credenciale, LibroBibliotecaDetalle } from "@/utils/types";
+import { obtenerNombreUsuario, obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
 import { StatusBar } from "react-native";
@@ -19,38 +19,11 @@ export default function HomeScreen() {
   const [pressed, setPressed] = useState<boolean>(false)
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>()
   const [refresh, setRefresh] = useState<boolean>(false)
-
+  const [credential, setCredential] = useState<Credenciale|null>();
 
   const route = useRouter();
   const auth = CurrentUser();
-  const [expoPushToken, setExpoPushToken] = useState('');
-  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
-  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-    undefined
-  );
-  useEffect(() => {
-    
-    registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
 
-    if (Platform.OS === 'android') {
-      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
-    }
-    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
-      setNotification(notification);
-    });
-
-    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log(response);
-    });
-
-    return () => {
-      notificationListener.remove();
-      responseListener.remove();
-    };
-  }, []);
-  console.log("expoPushToken", expoPushToken)
-  console.log("channels", channels)
-  console.log("notification", notification)
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
@@ -63,13 +36,15 @@ export default function HomeScreen() {
     useCallback(() => {
       const getUsuario = async () => {
         const authData = await auth; 
+        console.log("Error desde index autenticacion: ",authData)
         if (authData) {
-          const user = await obtenerUsuario();
-          setUsuario(user.fields.usuario.stringValue);
+          setUsuario(await obtenerNombreUsuario())
         } else {
-          console.warn("No user is currently logged in.");
         }
       };
+      const getCredential = async()=>{
+        setCredential(await getCredencial())
+      }
       const obtenerBiblioteca = async() =>{
         const auth = await CurrentUser()
         try{
@@ -79,6 +54,7 @@ export default function HomeScreen() {
           setBibilioteca([])
         }
       }
+      getCredential();
       getUsuario();
       obtenerBiblioteca();
       // Cleanup para evitar fugas de memoria
@@ -89,7 +65,7 @@ export default function HomeScreen() {
 
       setRefresh(true);
       const user = await auth;
-      setUsuario(await obtenerUsuario().then(data=>data.fields.usuario.stringValue));
+      setUsuario(await obtenerNombreUsuario());
       setBibilioteca(await getBiblioteca(user.localId))
       setRefresh(false)
 
@@ -111,6 +87,8 @@ export default function HomeScreen() {
         }
       });
     }
+    console.log("libro de biblioteca" , biblioteca)
+    console.log("credenciales del usuario: ", credential)
   return (
     <SafeAreaView
     edges={['top', 'bottom']}
@@ -157,7 +135,7 @@ export default function HomeScreen() {
                     source={{ uri: libro.fields.imagen_url.stringValue }}
                 />
                 <View style={style.descripcionLibro}>
-                  <Text style={style.title}>{libro.fields.titulo.stringValue}</Text>
+                  <Text style={style.title}>{libro.fields.titulo?.stringValue}</Text>
                   <Text style={style.author}>{libro.fields.autor?.stringValue || "Sin autor"}</Text>
                 </View>
               </Pressable>

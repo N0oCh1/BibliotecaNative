@@ -6,7 +6,7 @@ import { obtenerUsuario } from "./usuarios";
 
 const PROJECT_ID =
   Constants.expoConfig?.extra?.PROJECT_ID ||
-  Constants.manifest2.extra.PROJECT_ID;
+  Constants.manifest2?.extra?.expoClient?.extra?.PROJECT_ID;
 
 const URL_FIREBASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
@@ -151,6 +151,9 @@ const buscarBibliotecaAmigo = async (idAmigo: string) : Promise<LibroBibliotecaD
 const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBibliotecaDetalle> => {
   const auth = await CurrentUser();
   const url = URL_FIREBASE + `/bibliotecas/${idAmigo}/libros/${libroId}`;
+  if(!auth){
+    throw new Error("Usuario no autenticado")
+  }
   try {
     const response = await fetch(url,
       {
@@ -161,9 +164,7 @@ const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBi
         },
       }
     ).then(res=>res.json()).then(data=>data.fields)
-    if (!response) {
-      throw new Error("hubo un error")
-    }
+ 
     return response
   }
   catch (err) {

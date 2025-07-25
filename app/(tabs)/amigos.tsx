@@ -6,11 +6,12 @@ import {
   Pressable,
   ScrollView,
   Button,
+  RefreshControl,
 } from "react-native";
 import { Image } from "expo-image";
 import { AntDesign } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
-import { useState } from "react";
+import { use, useCallback, useState } from "react";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
@@ -29,6 +30,8 @@ export default function AmigosScreen() {
   const [solicitudDetalle, setSolicitudDetalle] = useState<
     LibroBibliotecaDetalle[]
   >([]);
+  const [refresh, setRefresh]= useState<boolean>(false)
+
   const obtenerSolicitudYLibro = async () => {
     try {
       const prestamos = await obtenerSolicitudes();
@@ -49,18 +52,20 @@ export default function AmigosScreen() {
           (libro) => libro !== undefined
         ) as LibroBibliotecaDetalle[]
       );
-    } catch (erro) {}
+    } catch (erro) {
+      alert(erro)
+    }
   };
 
   // Obtenmer id del usuario para compartir con amigos
-  useFocusEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     const obtenerUsuario = async () => {
       const authData = await CurrentUser();
       try {
-        
         setUserId(authData.localId);
       } catch (err) {
-        alert(err);
+
       }
     };
     const obtenerLibros = async()=>{
@@ -69,12 +74,11 @@ export default function AmigosScreen() {
         setDetalleAmigos(await obtenerMisAmigos());
       }
       catch(erro){
-        alert(erro)
       }
     }
     obtenerUsuario();
     obtenerLibros();
-  });
+  }, []));
 
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
@@ -88,13 +92,22 @@ export default function AmigosScreen() {
     }
     reset();
   };
+  const obtenerAmistad= async() =>{
+    setRefresh(true);
+    console.log("Me quede aqui obteniendo libro")
+    await obtenerSolicitudYLibro();
+    console.log("Me quede aqui obteniendo libro 2")
+    setRefresh(false);
+    setDetalleAmigos(await obtenerMisAmigos());
+    setRefresh(false);
+  }
 
   
   const verBiblioteca = (id: string, username:string) => {
     console.log(id, username)
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   };
-
+  console.log("solicitudes: ", solicitudesUsuario)
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
@@ -122,7 +135,9 @@ export default function AmigosScreen() {
               </Pressable>
             </View>
           </View>
-          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}
+          refreshControl={<RefreshControl refreshing={refresh} onRefresh={obtenerAmistad}/>}
+          >
           {detalleAmigos && detalleAmigos.length > 0 ? (
             detalleAmigos.map((amigo, index) => (
               <View key={index} style={{ padding: 10 }}>
@@ -137,11 +152,11 @@ export default function AmigosScreen() {
             <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
           )}
 
-          {solicitudesUsuario ? (
+          {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
             solicitudDetalle.map((libro, index) => {
               const prestamo = solicitudesUsuario[index];
-              const prestamoID = prestamo.name.split("/").pop() || "";
-              if (prestamo.fields.estado.stringValue === "aceptado") {
+              const prestamoID = prestamo?.name?.split("/").pop() || "";
+              if (prestamo?.fields?.estado?.stringValue === "aceptado") {
                 return (
                   <View key={index} style={{ padding: 10 }}>
                     <Image
@@ -162,7 +177,7 @@ export default function AmigosScreen() {
                   </View>
                 );
               }
-              return null;
+              return false;
             })
           ) : (
             <Text>No hay solicitudes</Text>
