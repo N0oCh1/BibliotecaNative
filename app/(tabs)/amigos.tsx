@@ -60,7 +60,6 @@ export default function AmigosScreen() {
         
         setUserId(authData.localId);
       } catch (err) {
-        alert(err);
       }
     };
     const obtenerLibros = async()=>{
@@ -69,7 +68,6 @@ export default function AmigosScreen() {
         setDetalleAmigos(await obtenerMisAmigos());
       }
       catch(erro){
-        alert(erro)
       }
     }
     obtenerUsuario();
