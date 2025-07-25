@@ -103,11 +103,10 @@ const enviarSolicitud = async (
 
     // Verificar si el usuario ya tiene un libro prestado
     const libroPrestado = await obtenerPrestamosDelUsuario(auth.localId);
-    console.log()
     if (
       libroPrestado &&
       libroPrestado.some(
-        (prestamo: any) => prestamo.fields.id_libro?.stringValue === idLibro
+        (prestamo: any) => prestamo?.fields?.id_libro?.stringValue === idLibro
       )
     ) {
       throw new Error("Ya tienes este libro prestado");
@@ -121,10 +120,12 @@ const enviarSolicitud = async (
       },
       body: JSON.stringify(body),
     });
+
     if (!prestamo_res.ok) {
       const error = await prestamo_res.text();
       throw new Error(`Error al enviar la solicitud de préstamo: ${error}`);
     }
+
     const update_res = await fetch(urlToUpdate, {
       method: "PATCH",
       headers: {
@@ -137,6 +138,7 @@ const enviarSolicitud = async (
       const error = await update_res.text();
       throw new Error(`Error al actualizar la biblioteca: ${error}`);
     }
+    
     await sendNotification({
       to: pushToken,
       title:`${nombreUsuario}, quiere solicitar un prestamo`,

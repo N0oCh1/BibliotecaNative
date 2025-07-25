@@ -5,12 +5,6 @@ import { getAuth, signInWithEmailAndPassword, type UserCredential } from "fireba
 
 const API_KEY = Constants.expoConfig?.extra?.API_KEY || Constants.manifest2?.extra?.expoClient?.extra?.API_KEY;
 
-interface userProps {
-  email: string,
-  password: string
-}
-
-
 const singIn = async(email: string, password: string): Promise<SesionResponse> =>{
   const auth = getAuth();
   await signInWithEmailAndPassword(auth, email, password);

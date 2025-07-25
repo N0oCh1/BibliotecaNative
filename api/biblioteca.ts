@@ -23,7 +23,7 @@ const addLibro = async (libro: librosBiblioteca, imagen?:string) => {
       categoria:{stringValue:libro.categoria},
       descripcion: { stringValue: libro.descripcion },
       formato: { stringValue: libro.formato },
-      quien_agrego: { stringValue: (await obtenerUsuario().then(data=>data.fields.usuario.stringValue))},
+      quien_agrego: { stringValue: (await obtenerUsuario().then(data=>data?.fields?.usuario?.stringValue))},
       imagen_url: { stringValue: url_imagen },
       fecha: { timestampValue: new Date().toISOString() },
       prestamo: {
@@ -50,36 +50,12 @@ const addLibro = async (libro: librosBiblioteca, imagen?:string) => {
     if (response.error) {
       throw new Error(response.error.message)
     }
-    return response
+    return true
   }
   catch (err) {
     throw new Error(`Error al agregar libro ${err}`)
   }
 };
-
-const getBiblioteca = async (userId: string) => {
-  const url = URL_FIREBASE + `/bibliotecas/${userId}/libros`;
-  const auth = await CurrentUser();
-  try {
-    const response = await fetch(url,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${auth.idToken}`,
-        },
-      }
-    ).then(res=>res.json()).then(data=>data.documents)
-    if (response.error) {
-      throw new Error(response.error.message)
-    }
-    return response
-  }
-  catch (err) {
-    throw new Error("Error al obtener biblioteca")
-
-  }
-}
 
 const getLibro = async (libroId: string) : Promise<LibroBibliotecaDetalle> => {
 
@@ -98,7 +74,7 @@ const getLibro = async (libroId: string) : Promise<LibroBibliotecaDetalle> => {
     if (response.error) {
       throw new Error(response.error.message)
     }
-    return response
+    return response || {}
   }
   catch (err) {
     throw new Error("Error al obtener biblioteca")
@@ -125,8 +101,31 @@ const removeLibro = async (libroId: string, fileName:string) => {
       return true
     } catch (error) {
       throw new Error("libro no encontrado: " + error);
-      return false
     }
+}
+
+
+const getBiblioteca = async (userId: string) => {
+  const url = URL_FIREBASE + `/bibliotecas/${userId}/libros`;
+  const auth = await CurrentUser();
+  try {
+    const response = await fetch(url,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${auth.idToken}`,
+        },
+      }
+    ).then(res=>res.json()).then(data=>data.documents)
+    if (response.error) {
+      throw new Error(response.error.message)
+    }
+    return response || []
+  }
+  catch (err) {
+    throw new Error("Error al obtener biblioteca")
+  }
 }
 
 const buscarBibliotecaAmigo = async (idAmigo: string) : Promise<LibroBibliotecaDetalle[]> => {
@@ -143,11 +142,12 @@ const buscarBibliotecaAmigo = async (idAmigo: string) : Promise<LibroBibliotecaD
     if (response.error) {
       throw new Error(response.error.message);
     }
-    return response;
+    return response || [];
   } catch (err) {
     throw new Error("Error al obtener biblioteca del amigo");
   }
 }
+
 const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBibliotecaDetalle> => {
   const auth = await CurrentUser();
   const url = URL_FIREBASE + `/bibliotecas/${idAmigo}/libros/${libroId}`;
@@ -165,7 +165,7 @@ const getLibroAmigo = async (idAmigo: string, libroId: string) : Promise<LibroBi
       }
     ).then(res=>res.json()).then(data=>data.fields)
  
-    return response
+    return response || {}
   }
   catch (err) {
     throw new Error("Error al obtener biblioteca " + err)

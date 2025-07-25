@@ -54,9 +54,7 @@ export default function BibliotecaAmigoScreen() {
     obtenerToken();
   },[])
 
-  console.log("Biblioteca de amigo:", biblioteca);
-  console.log("Token del amigo: ", tokenPush);
-  console.log("Nombre del amigo: ", amigo);
+
   
   const handleRefresh = async () => {
     setRefresh(true);

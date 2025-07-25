@@ -4,7 +4,7 @@ const URL_PUSH = "https://exp.host/--/api/v2/push/send"
 
 const sendNotification = async(body:NotificationType) => {
   console.log(body)
-  const res = await fetch(URL_PUSH, {
+  await fetch(URL_PUSH, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

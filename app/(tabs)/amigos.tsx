@@ -94,9 +94,7 @@ export default function AmigosScreen() {
   };
   const obtenerAmistad= async() =>{
     setRefresh(true);
-    console.log("Me quede aqui obteniendo libro")
     await obtenerSolicitudYLibro();
-    console.log("Me quede aqui obteniendo libro 2")
     setRefresh(false);
     setDetalleAmigos(await obtenerMisAmigos());
     setRefresh(false);
@@ -104,10 +102,8 @@ export default function AmigosScreen() {
 
   
   const verBiblioteca = (id: string, username:string) => {
-    console.log(id, username)
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   };
-  console.log("solicitudes: ", solicitudesUsuario)
   return (
     <SafeAreaView
       edges={["top", "bottom"]}

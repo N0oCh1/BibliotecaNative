@@ -73,7 +73,6 @@ export default function createBook() {
   const formSubmit = async (data: any) => {
     try {
       setCarga(true);      
-     console.log("Firestore DB:", db);
      const bookData:librosBiblioteca = {
       titulo: data.title,
       autor: data.autor,

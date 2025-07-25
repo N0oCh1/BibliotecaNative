@@ -28,7 +28,7 @@ export default function BibliotecaLibroScreen() {
   const [seleccionada, setSeleccionada] = useState("");
   const { libro } = useLocalSearchParams<{ libro: string }>();
   const router = useRouter();
-  console.log("libro", libro);
+
   const [detalle, setDetalle] = useState<LibroBibliotecaDetalle>();
   const [mensaje, setMensaje] = useState("");
   const [tiempoPrestamo, setTiempoPrestamo] = useState("");
@@ -63,7 +63,6 @@ export default function BibliotecaLibroScreen() {
     const cargarAmigos = async () => {
       try {
         const amigos = await obtenerMisAmigos();
-        console.log("Amigos obtenidos:", amigos); // 👈 debug
         setDetalleAmigos(amigos);
       } catch (error) {
         console.error("Error al obtener amigos:", error);

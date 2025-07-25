@@ -29,7 +29,7 @@ const agregarUsuario = async (usuario:string)=>{
       if(response.error){
         throw new Error(response.error.message)
       }
-      return response
+      return true
     }
     catch(err){
       throw new Error(`Error al agregar usuario ${err}`)
@@ -50,7 +50,7 @@ const obtenerUsuario = async()=>{
     if(response.error){
       throw new Error(response.error.message)
     }
-    return response
+    return response || {}
   }
     catch(err){
       throw new Error("Error al obtener usuario")
@@ -80,11 +80,10 @@ const agregarAmigo = async (idAmigo:string)=>{
       }
     })
     })
-    .then(res=>res.json())
-    if(response.error){
-      throw new Error(response.error.message)
+    if(!response.ok){
+      throw new Error("Error al agregar amigo")
     }
-    return response
+    return true
   }
   catch(err){
     throw new Error("Error al agregar amigo")
@@ -100,12 +99,12 @@ const obtenerNombreUsuario = async(idAmigo?:string) => {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${auth.idToken}`
       }
-    }).then(res=>res.json()).then(data=>data.fields.usuario.stringValue)
+    }).then(res=>res.json()).then(data=>data?.fields?.usuario?.stringValue)
     if(response.error){
       console.error(response.error.message)
       throw new Error(response.error.message)
     }
-    return response
+    return response || {}
   }
     catch(err){
       throw new Error("Error al obtener usuario")
@@ -127,7 +126,7 @@ const obtenerTokenDeAmigo = async(idAmigo?:string) => {
       console.error(response.error.message)
       throw new Error(response.error.message)
     }
-    return response
+    return response || ""
   }
     catch(err){
       throw new Error("Error al obtener usuario")

@@ -181,12 +181,12 @@ const obtenerMisAmigos = async (): Promise<Amigos[]> => {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${tokenId}`,
           },
-        }).then((res) => res.json()).then((data)=>data.fields.usuario.stringValue);
+        }).then((res) => res.json()).then((data)=>data?.fields?.usuario?.stringValue);
         
         return { id: idAmigo, nombre: details };
       })
     );
-    return amigosDetails;
+    return amigosDetails || [];
   }
   catch(err){
     throw new Error(`Error al obtener mis amigos: ${err}`);
@@ -216,12 +216,9 @@ const eliminarAmistad = async(idAmigo:string) =>{
 
     let misAmigos: { stringValue: string }[] = [];
     if (
-      misAmigosData.fields &&
-      misAmigosData.fields.amigos &&
-      misAmigosData.fields.amigos.arrayValue &&
-      misAmigosData.fields.amigos.arrayValue.values
+      misAmigosData?.fields?.amigos?.arrayValue?.arrayValue?.values
     ) {
-      misAmigos = misAmigosData.fields.amigos.arrayValue.values.filter((item: any) => item.stringValue !== idAmigo);
+      misAmigos = misAmigosData?.fields?.amigos?.arrayValue?.amigos?.arrayValue.values.filter((item: any) => item.stringValue !== idAmigo);
     }
 
 
@@ -236,10 +233,7 @@ const eliminarAmistad = async(idAmigo:string) =>{
 
     let amigos: { stringValue: string }[] = [];
     if (
-      amigosData.fields &&
-      amigosData.fields.amigos &&
-      amigosData.fields.amigos.arrayValue &&
-      amigosData.fields.amigos.arrayValue.values
+      amigosData?.fields?.amigos?.amigos?.arrayValue.values
     ) {
       amigos = amigosData.fields.amigos.arrayValue.values.filter((item: any) => item.stringValue !== auth.localId);
     }

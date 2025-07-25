@@ -43,8 +43,6 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
         mensaje: data.mensaje,
         tiempo: data.tiempo,
       };
-      console.log(datosFormulario);
-      console.log(detalleLibro);
       await enviarSolicitud(
         detalleLibro.titulo,
         detalleLibro.idLibro,

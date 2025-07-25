@@ -36,7 +36,6 @@ export default function HomeScreen() {
     useCallback(() => {
       const getUsuario = async () => {
         const authData = await auth; 
-        console.log("Error desde index autenticacion: ",authData)
         if (authData) {
           setUsuario(await obtenerNombreUsuario())
         } else {
@@ -87,8 +86,7 @@ export default function HomeScreen() {
         }
       });
     }
-    console.log("libro de biblioteca" , biblioteca)
-    console.log("credenciales del usuario: ", credential)
+
   return (
     <SafeAreaView
     edges={['top', 'bottom']}

@@ -43,7 +43,7 @@ export default function PrestamosScreen() {
       // Obtener detalles de cada libro relacionado al préstamo
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
-          console.log("prestamo desde effect", prestamo)
+
           return await getLibroAmigo(
             prestamo.fields.id_dueno_libro.stringValue,
             prestamo.fields.id_libro.stringValue
@@ -179,8 +179,7 @@ export default function PrestamosScreen() {
             prestamoDetalle.map((libro, index) => {
               const prestamo = prestamosUsuario[index];
               const prestamoID = prestamo?.name?.split("/").pop() || "";
-              console.log("prestamo dentro del prestamo " ,prestamo)
-              if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
+                if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
               return (
                 <View key={index}>
                   <Image
@@ -235,7 +234,6 @@ export default function PrestamosScreen() {
             solicitudDetalle.map((libro, index) => {
               const prestamo = solicitudesUsuario[index];
               const prestamoID = prestamo.name.split("/").pop() || "";
-              console.log("informacion: ",prestamo, libro)
               if (
                 prestamo?.fields?.estado?.stringValue === "pendiente" 
               ) {
