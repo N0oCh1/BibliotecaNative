@@ -20,7 +20,6 @@ import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
 import { addLibro, getLibro, removeLibro } from "@/api/biblioteca";
 import { AntDesign, FontAwesome, FontAwesome5 } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 import { Modal, TextInput } from "react-native";
 import { Amigos } from "@/utils/types";
 import { obtenerMisAmigos } from "@/api/amigos";
@@ -223,16 +222,7 @@ export default function BibliotecaLibroScreen() {
             )}
 
             <View style={styles.solicitarButton}>
-              <Picker
-                selectedValue={tiempoPrestamo}
-                onValueChange={(itemValue) => setTiempoPrestamo(itemValue)}
-              >
-                <Picker.Item label="Selecciona tiempo de préstamo" value="" />
-                <Picker.Item label="3 días" value="3" />
-                <Picker.Item label="7 días" value="7" />
-                <Picker.Item label="14 días" value="14" />
-                <Picker.Item label="30 días" value="30" />
-              </Picker>
+              
             </View>
 
             <TextInput

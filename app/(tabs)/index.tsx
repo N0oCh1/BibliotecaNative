@@ -1,8 +1,7 @@
 import React, { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl, Button, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
 import { removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 import type {  LibroBibliotecaDetalle } from "@/utils/types";
@@ -10,7 +9,11 @@ import { obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
 import { StatusBar } from "react-native";
-
+import * as Notifications from "expo-notifications";
+import { useEffect, useState } from "react";
+import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
+  
+NotificationMode("prod")
 export default function HomeScreen() {
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
@@ -20,13 +23,41 @@ export default function HomeScreen() {
 
   const route = useRouter();
   const auth = CurrentUser();
-  
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
+    undefined
+  );
+  useEffect(() => {
+    
+    registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
+
+    if (Platform.OS === 'android') {
+      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
+    }
+    const notificationListener = Notifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    const responseListener = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log(response);
+    });
+
+    return () => {
+      notificationListener.remove();
+      responseListener.remove();
+    };
+  }, []);
+  console.log("expoPushToken", expoPushToken)
+  console.log("channels", channels)
+  console.log("notification", notification)
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
     await removeCurrentUser()
     route.push("/login")
   }
+
   // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
@@ -66,6 +97,20 @@ export default function HomeScreen() {
   const handleDetails = (id:string) =>{
     route.push(`/bibliotecaLibro/${id}`);
   }
+    async function schedulePushNotification() {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "You've got mail! 📬",
+          body: 'Here is the notification body',
+          sound:true,
+          data: { data: 'goes here', test: { test1: 'more data' } },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 2,
+        }
+      });
+    }
   return (
     <SafeAreaView
     edges={['top', 'bottom']}
@@ -100,6 +145,7 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
+        <Button title="Schedule Notification" onPress={schedulePushNotification} />
         <View style={style.gridContainer}>
           {biblioteca && biblioteca.map((libro:any,index:number)=>{
             const libroId = libro.name.split("/").pop();
