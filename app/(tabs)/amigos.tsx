@@ -6,11 +6,12 @@ import {
   Pressable,
   ScrollView,
   Button,
+  RefreshControl,
 } from "react-native";
 import { Image } from "expo-image";
 import { AntDesign } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
-import { useState } from "react";
+import { use, useCallback, useState } from "react";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
@@ -18,6 +19,7 @@ import { Amigos, LibroBibliotecaDetalle, Prestamos } from "@/utils/types";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getLibroAmigo } from "@/api/biblioteca";
 import { obtenerSolicitudes } from "@/api/prestarLibro";
+import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 
 export default function AmigosScreen() {
   const route = useRouter();
@@ -28,6 +30,8 @@ export default function AmigosScreen() {
   const [solicitudDetalle, setSolicitudDetalle] = useState<
     LibroBibliotecaDetalle[]
   >([]);
+  const [refresh, setRefresh]= useState<boolean>(false)
+
   const obtenerSolicitudYLibro = async () => {
     try {
       const prestamos = await obtenerSolicitudes();
@@ -37,8 +41,8 @@ export default function AmigosScreen() {
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
           return await getLibroAmigo(
-            prestamo.fields.dueno_libro.stringValue,
-            prestamo.fields.libro.stringValue
+            prestamo.fields.id_dueno_libro.stringValue,
+            prestamo.fields.id_libro.stringValue
           );
         })
       );
@@ -48,23 +52,33 @@ export default function AmigosScreen() {
           (libro) => libro !== undefined
         ) as LibroBibliotecaDetalle[]
       );
-    } catch (erro) {}
+    } catch (erro) {
+      alert(erro)
+    }
   };
 
   // Obtenmer id del usuario para compartir con amigos
-  useFocusEffect(() => {
+  useFocusEffect(
+    useCallback(() => {
     const obtenerUsuario = async () => {
       const authData = await CurrentUser();
       try {
-        obtenerSolicitudYLibro();
-        setDetalleAmigos(await obtenerMisAmigos());
         setUserId(authData.localId);
       } catch (err) {
-        alert(err);
+
       }
     };
+    const obtenerLibros = async()=>{
+      try{
+        obtenerSolicitudYLibro();
+        setDetalleAmigos(await obtenerMisAmigos());
+      }
+      catch(erro){
+      }
+    }
     obtenerUsuario();
-  });
+    obtenerLibros();
+  }, []));
 
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
@@ -78,25 +92,18 @@ export default function AmigosScreen() {
     }
     reset();
   };
-  const verBiblioteca = (id: string, username: string) => {
-    route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
-  };
-  function calcularTiempoFaltante(timestamp:string) {
-  const ahora = new Date().getTime();
-  const devolucion = new Date(timestamp).getTime();
-  const diferencia = devolucion - ahora;
-
-  if (diferencia <= 0) {
-    return "Ya venció";
+  const obtenerAmistad= async() =>{
+    setRefresh(true);
+    await obtenerSolicitudYLibro();
+    setRefresh(false);
+    setDetalleAmigos(await obtenerMisAmigos());
+    setRefresh(false);
   }
 
-  const segundos = Math.floor(diferencia / 1000);
-  const minutos = Math.floor(segundos / 60) % 60;
-  const horas = Math.floor(segundos / 3600) % 24;
-  const dias = Math.floor(segundos / (3600 * 24));
-
-  return `${dias}d ${horas}h ${minutos}m`;
-}
+  
+  const verBiblioteca = (id: string, username:string) => {
+    route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
+  };
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
@@ -124,7 +131,9 @@ export default function AmigosScreen() {
               </Pressable>
             </View>
           </View>
-          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}>
+          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}
+          refreshControl={<RefreshControl refreshing={refresh} onRefresh={obtenerAmistad}/>}
+          >
           {detalleAmigos && detalleAmigos.length > 0 ? (
             detalleAmigos.map((amigo, index) => (
               <View key={index} style={{ padding: 10 }}>
@@ -139,11 +148,11 @@ export default function AmigosScreen() {
             <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
           )}
 
-          {solicitudesUsuario ? (
+          {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
             solicitudDetalle.map((libro, index) => {
               const prestamo = solicitudesUsuario[index];
-              const prestamoID = prestamo.name.split("/").pop() || "";
-              if (prestamo.fields.estado.stringValue === "aceptado") {
+              const prestamoID = prestamo?.name?.split("/").pop() || "";
+              if (prestamo?.fields?.estado?.stringValue === "aceptado") {
                 return (
                   <View key={index} style={{ padding: 10 }}>
                     <Image
@@ -152,7 +161,7 @@ export default function AmigosScreen() {
                     />
                     <Text>idPrestamo: {prestamoID}</Text>
                     <Text>Libro: {libro.titulo.stringValue}</Text>
-                    <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
+                    <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
                     <Text>
                       Estado de solicitud: {prestamo.fields.estado.stringValue}
                     </Text>
@@ -164,7 +173,7 @@ export default function AmigosScreen() {
                   </View>
                 );
               }
-              return null;
+              return false;
             })
           ) : (
             <Text>No hay solicitudes</Text>
@@ -224,5 +233,5 @@ const styles = StyleSheet.create({
     color: "#0056b3",
     fontSize: 18,
     fontWeight: "bold",
-  },
+  }
 });

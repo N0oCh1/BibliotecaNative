@@ -10,12 +10,12 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: Constants.expoConfig?.extra?.API_KEY || Constants.manifest2.extra.API_KEY,
-  authDomain: Constants.expoConfig?.extra?.AUTH_DOMAIN || Constants.manifest2.extra.AUTH_DOMAIN,
-  projectId: Constants.expoConfig?.extra?.PROJECT_ID || Constants.manifest2.extra.PROJECT_ID,
-  storageBucket: Constants.expoConfig?.extra?.STORAGE_BUCKET || Constants.manifest2.extra.STORAGE_BUCKET,
-  messagingSenderId: Constants.expoConfig?.extra?.MESSAGING_SENDER_ID || Constants.manifest2.extra.MESSAGING_SENDER_ID,
-  appId: Constants.expoConfig?.extra?.APP_ID || Constants.manifest2.extra.APP_ID
+  apiKey: Constants.expoConfig?.extra?.API_KEY || Constants.manifest2?.extra?.expoClient?.extra?.API_KEY,
+  authDomain: Constants.expoConfig?.extra?.AUTH_DOMAIN || Constants.manifest2?.extra?.expoClient?.extra?.AUTH_DOMAIN,
+  projectId: Constants.expoConfig?.extra?.PROJECT_ID || Constants.manifest2?.extra?.expoClient?.extra?.PROJECT_ID,
+  storageBucket: Constants.expoConfig?.extra?.STORAGE_BUCKET || Constants.manifest2?.extra?.expoClient?.extra?.STORAGE_BUCKET,
+  messagingSenderId: Constants.expoConfig?.extra?.MESSAGING_SENDER_ID || Constants.manifest2?.extra?.expoClient?.extra?.MESSAGING_SENDER_ID,
+  appId: Constants.expoConfig?.extra?.APP_ID || Constants.manifest2?.extra?.expoClient?.extra?.APP_ID
 };
 
 console.log("Firebase Config:", firebaseConfig);

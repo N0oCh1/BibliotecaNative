@@ -37,13 +37,16 @@ export type Amigos = {
 export type Prestamos = {
     name: string;
     fields: {
-        usuario: { stringValue: string; };
+        titulo_libro: { stringValue: string; };
+        id_usuario: { stringValue: string; };
+        nombre_usuario: {stringValue:string};
+        nombre_dueno: {stringValue:string};
         estado: { stringValue: string; };
         mensaje: { stringValue: string; };
         estado_devolucion: { stringValue: string; };
-        libro: { stringValue: string; };
+        id_libro: { stringValue: string; };
         ubicacion: { stringValue: string; };
-        dueno_libro: { stringValue: string; };
+        id_dueno_libro: { stringValue: string; };
         fecha_solicitud: { timestampValue: string; };
         fecha_devolucion: { timestampValue: string; };
     };
@@ -62,7 +65,14 @@ export type librosBiblioteca = {
 
 export type Credenciale = { 
   usuario: string,
-  contrasena: string
+  contrasena: string,
+  pushToken: string | null
+}
+
+export type NotificationType = {
+  to:string|undefined,
+  title:string,
+  body:string
 }
 
 export interface SesionResponse {

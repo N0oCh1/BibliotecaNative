@@ -102,7 +102,7 @@ export default function LibroAmigoScreen() {
         <Text style={styles.published}>Formato: {detalle.formato.stringValue}</Text>
       )}
       {detalle.formato.stringValue === "fisico" 
-        ? <Button title="Solicitar prestado" onPress={()=>{setModalVisible(true)}}/> 
+        ? detalle.prestamo.mapValue.fields.prestado.booleanValue === true ? <Button title="libro ya prestado"/> :<Button title="Solicitar prestado" onPress={()=>{setModalVisible(true)}}/> 
         : <Button title="Agregar a tu biblioteca" onPress={()=>{handleAgregarBiblioteca()}}/>
       }
       <Text style={styles.published}>

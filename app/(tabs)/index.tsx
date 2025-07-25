@@ -1,44 +1,49 @@
 import React, { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl } from "react-native";
+import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl, Button, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
-import { removeCredencial } from "@/utils/hooks/useCredential";
+import { getCredencial, removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
-import type {  LibroBibliotecaDetalle } from "@/utils/types";
-import { obtenerUsuario } from "@/api/usuarios";
+import type {  Credenciale, LibroBibliotecaDetalle } from "@/utils/types";
+import { obtenerNombreUsuario, obtenerUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
 import { Image } from "expo-image";
 import { StatusBar } from "react-native";
-
+import * as Notifications from "expo-notifications";
+import { useEffect, useState } from "react";
+import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
+  
+NotificationMode("prod")
 export default function HomeScreen() {
   const [usuario, setUsuario] = useState<string>()
   const [pressed, setPressed] = useState<boolean>(false)
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>()
   const [refresh, setRefresh] = useState<boolean>(false)
-
+  const [credential, setCredential] = useState<Credenciale|null>();
 
   const route = useRouter();
   const auth = CurrentUser();
-  
+
   const cerrarSesion = async() =>{ 
     setPressed(false); 
     await removeCredencial()
     await removeCurrentUser()
     route.push("/login")
   }
+
   // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
       const getUsuario = async () => {
         const authData = await auth; 
         if (authData) {
-          const user = await obtenerUsuario();
-          setUsuario(user.fields.usuario.stringValue);
+          setUsuario(await obtenerNombreUsuario())
         } else {
-          console.warn("No user is currently logged in.");
         }
       };
+      const getCredential = async()=>{
+        setCredential(await getCredencial())
+      }
       const obtenerBiblioteca = async() =>{
         const auth = await CurrentUser()
         try{
@@ -48,6 +53,7 @@ export default function HomeScreen() {
           setBibilioteca([])
         }
       }
+      getCredential();
       getUsuario();
       obtenerBiblioteca();
       // Cleanup para evitar fugas de memoria
@@ -58,7 +64,7 @@ export default function HomeScreen() {
 
       setRefresh(true);
       const user = await auth;
-      setUsuario(await obtenerUsuario().then(data=>data.fields.usuario.stringValue));
+      setUsuario(await obtenerNombreUsuario());
       setBibilioteca(await getBiblioteca(user.localId))
       setRefresh(false)
 
@@ -66,6 +72,21 @@ export default function HomeScreen() {
   const handleDetails = (id:string) =>{
     route.push(`/bibliotecaLibro/${id}`);
   }
+    async function schedulePushNotification() {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "You've got mail! 📬",
+          body: 'Here is the notification body',
+          sound:true,
+          data: { data: 'goes here', test: { test1: 'more data' } },
+        },
+        trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+          seconds: 2,
+        }
+      });
+    }
+
   return (
     <SafeAreaView
     edges={['top', 'bottom']}
@@ -100,6 +121,7 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
+        <Button title="Schedule Notification" onPress={schedulePushNotification} />
         <View style={style.gridContainer}>
           {biblioteca && biblioteca.map((libro:any,index:number)=>{
             const libroId = libro.name.split("/").pop();
@@ -111,7 +133,7 @@ export default function HomeScreen() {
                     source={{ uri: libro.fields.imagen_url.stringValue }}
                 />
                 <View style={style.descripcionLibro}>
-                  <Text style={style.title}>{libro.fields.titulo.stringValue}</Text>
+                  <Text style={style.title}>{libro.fields.titulo?.stringValue}</Text>
                   <Text style={style.author}>{libro.fields.autor?.stringValue || "Sin autor"}</Text>
                 </View>
               </Pressable>

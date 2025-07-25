@@ -1,11 +1,16 @@
 import { getLibroAmigo } from "@/api/biblioteca";
 import {
   aceptarSolicitud,
+  borrarPrestamo,
+  devolverLibro,
   obtenerPrestamosDelUsuario,
   obtenerSolicitudes,
   rechazarSolicitud,
+  volverASolicitar,
 } from "@/api/prestarLibro";
+import { obtenerUsuario } from "@/api/usuarios";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
+import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 import {
   LibroBibliotecaDetalle,
   librosBiblioteca,
@@ -38,9 +43,10 @@ export default function PrestamosScreen() {
       // Obtener detalles de cada libro relacionado al préstamo
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
+
           return await getLibroAmigo(
-            prestamo.fields.dueno_libro.stringValue,
-            prestamo.fields.libro.stringValue
+            prestamo.fields.id_dueno_libro.stringValue,
+            prestamo.fields.id_libro.stringValue
           );
         })
       );
@@ -50,7 +56,9 @@ export default function PrestamosScreen() {
           (libro) => libro !== undefined
         ) as LibroBibliotecaDetalle[]
       );
-    } catch (erro) {}
+    } catch (erro) {
+      console.log(erro);
+    }
   };
 
   const obtenerSolicitudYLibro = async () => {
@@ -62,12 +70,11 @@ export default function PrestamosScreen() {
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
           return await getLibroAmigo(
-            prestamo.fields.dueno_libro.stringValue,
-            prestamo.fields.libro.stringValue
+            prestamo.fields.id_dueno_libro.stringValue,
+            prestamo.fields.id_libro.stringValue
           );
         })
       );
-
       setSolicitudDetalle(
         detallesLibros.filter(
           (libro) => libro !== undefined
@@ -104,17 +111,54 @@ export default function PrestamosScreen() {
   };
   const hanleRechazarSolicitud = async (
     idAmigo: string,
-    idPrestamo: string
+    idPrestamo: string,
+    idLibro: string
   ) => {
     try {
-      await rechazarSolicitud(idAmigo, idPrestamo);
+      await rechazarSolicitud(idAmigo, idPrestamo, idLibro);
       alert("Solicitud rechazada");
       handleRefresh();
     } catch (err) {
       alert(err);
     }
   };
+  const handleReenviar = async(
+    idAmigo: string,
+    idPrestamo: string,
+    idLibro: string
+  ) =>{
+    try{
+      await volverASolicitar(idAmigo, idPrestamo, idLibro)
+      alert("Volviste a enviar la solicitud");
+      handleRefresh();
+    }
+    catch(err){
+      alert(err);
+    }
+  }
 
+  const handleDevolver = async(idPrestamo: string) =>{
+    try{
+      await devolverLibro(idPrestamo)
+      alert("Devolviste un libro")
+      handleRefresh();
+    }
+    catch(err){
+      alert(err);
+    }
+  }
+  const handleBorrarPedido = async(idPrestamo: string) =>{
+    try{
+      await borrarPrestamo(idPrestamo)
+      alert("Borraste un pedido")
+      handleRefresh()
+    }
+    catch(err){
+      alert(err);
+    }
+  }
+  console.log("Todas las solicitudes => ",solicitudesUsuario)
+  console.log("Todas los prestamos: => ",prestamosUsuario)
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
@@ -131,17 +175,18 @@ export default function PrestamosScreen() {
           }
         >
           {prestamosUsuario ? (
+            
             prestamoDetalle.map((libro, index) => {
               const prestamo = prestamosUsuario[index];
-              const prestamoID = prestamo.name.split("/").pop();
-
+              const prestamoID = prestamo?.name?.split("/").pop() || "";
+                if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
               return (
                 <View key={index}>
                   <Image
                     source={{ uri: libro.imagen_url.stringValue }}
                     style={{ width: 50, height: 75 }}
                   />
-                  <Text>idPrestamo: {prestamoID}</Text>
+                  <Text>idPrestamo:{prestamoID}</Text>
                   <Text>Libro: {libro.titulo.stringValue}</Text>
                   <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
                   <Text>
@@ -151,14 +196,30 @@ export default function PrestamosScreen() {
                     Ubicacion: {prestamo.fields.ubicacion.stringValue}
                   </Text>
                   <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
+                  {prestamo.fields.estado.stringValue === "rechazado" 
+                  && 
+                  <View>
+                    <Button title="Volver a pedir" onPress={()=>handleReenviar(prestamo.fields.id_dueno_libro.stringValue, prestamoID, prestamo.fields.id_libro.stringValue)}/>
+                    <Button title="Borrar pedido" onPress={()=>handleBorrarPedido(prestamoID)}/> 
+                  </View>
+                  }
+                  {prestamo.fields.estado.stringValue === "aceptado" &&
+                    <View>
+                      <Text>Tiempo faltante: {calcularTiempoFaltante(prestamo.fields.fecha_devolucion.timestampValue)}</Text>
+                      <Button title="Devolver el libro" onPress={()=>{handleDevolver(prestamoID)}}/>
+                    </View>
+                  }
                 </View>
-              );
+              );}
+              return null;
             })
           ) : (
             <Text>No hay prestamos</Text>
           )}
         </ScrollView>
-      ) : (
+      ) 
+      : 
+      (
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
@@ -173,7 +234,9 @@ export default function PrestamosScreen() {
             solicitudDetalle.map((libro, index) => {
               const prestamo = solicitudesUsuario[index];
               const prestamoID = prestamo.name.split("/").pop() || "";
-              if (prestamo.fields.estado.stringValue === "pendiente") {
+              if (
+                prestamo?.fields?.estado?.stringValue === "pendiente" 
+              ) {
                 return (
                   <View key={index}>
                     <Image
@@ -182,19 +245,15 @@ export default function PrestamosScreen() {
                     />
                     <Text>idPrestamo: {prestamoID}</Text>
                     <Text>Libro: {libro.titulo.stringValue}</Text>
-                    <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
-                    <Text>
-                      Estado de solicitud: {prestamo.fields.estado.stringValue}
-                    </Text>
-                    <Text>
-                      Ubicacion: {prestamo.fields.ubicacion.stringValue}
-                    </Text>
+                    <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
+                    <Text>Estado de solicitud: {prestamo.fields.estado.stringValue}</Text>
+                    <Text>Ubicacion: {prestamo.fields.ubicacion.stringValue}</Text>
                     <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
                     <Button
                       title="Aceptar"
                       onPress={() =>
                         hanleAceptarSolicitud(
-                          prestamo.fields.usuario.stringValue,
+                          prestamo.fields.id_usuario.stringValue,
                           prestamoID
                         )
                       }
@@ -203,15 +262,16 @@ export default function PrestamosScreen() {
                       title="Rechazar"
                       onPress={() =>
                         hanleRechazarSolicitud(
-                          prestamo.fields.usuario.stringValue,
-                          prestamoID
+                          prestamo.fields.id_usuario.stringValue,
+                          prestamoID,
+                          prestamo.fields.id_libro.stringValue
                         )
                       }
                     />
                   </View>
                 );
               }
-              return null;
+              return null
             })
           ) : (
             <Text>No hay solicitudes</Text>

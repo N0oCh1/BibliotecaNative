@@ -1,5 +1,5 @@
 import { buscarBibliotecaAmigo, getLibroAmigo } from "@/api/biblioteca";
-import { LibroBibliotecaDetalle } from "@/utils/types";
+import { LibroBibliotecaDetalle, NotificationType } from "@/utils/types";
 
 import {
   useFocusEffect,
@@ -7,7 +7,7 @@ import {
   useNavigation,
   useRouter,
 } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Image } from "expo-image";
 import {
   View,
@@ -17,7 +17,12 @@ import {
   SafeAreaView,
   ScrollView,
   StyleSheet,
+  Button,
 } from "react-native";
+import { obtenerNombreUsuario, obtenerTokenDeAmigo } from "@/api/usuarios";
+import { sendNotification } from "@/api/pushNotification";
+import { eliminarAmistad } from "@/api/amigos";
+
 
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
@@ -26,37 +31,63 @@ export default function BibliotecaAmigoScreen() {
   const router = useRouter();
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
+  const [tokenPush, setTokenPush] = useState<string>();
+  const [amigo, setAmigo] = useState<string>()
  
-  useFocusEffect(
+   useFocusEffect(
     useCallback(() => {
       const obtenerBibliotecaAmigo = async () => {
         navigation.setOptions({ title: `Biblioteca de ${usuario}` });
         const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
-
-        const detalles = await Promise.all(
-          bibliotecaAmigo.map(async (libro: any) => {
-            const libroId = libro.name.split("/").pop();
-            const detalle = await getLibroAmigo(id, libroId);
-            return { ...libro, detalle };
-          })
-        );
-        setBibilioteca(detalles);
+        setBibilioteca(bibliotecaAmigo);
       };
       obtenerBibliotecaAmigo();
     }, [id])
   );
+  useEffect(()=>{
+    const obtenerToken = async() =>{
+      const token = await obtenerTokenDeAmigo(id);
+      setTokenPush(token);
+      const nombreusuario = await obtenerNombreUsuario();
+        setAmigo(nombreusuario);
+    }
+    obtenerToken();
+  },[])
 
-  console.log("Biblioteca de amigo:", biblioteca);
+
+  
   const handleRefresh = async () => {
     setRefresh(true);
     const updatedBiblioteca = await buscarBibliotecaAmigo(id);
     setBibilioteca(updatedBiblioteca);
     setRefresh(false);
   };
+  
   const handleDetails = (libroId: string) => {
     router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
-
   };
+  const enviarNotificacion = async () => {
+    const body:NotificationType = {
+      to: tokenPush,
+      title: `${amigo}`,
+      body:"Te envio una notificacion"
+    }
+    try{
+      await sendNotification(body)
+    }
+    catch(e){
+      console.log(e)
+    }
+  }
+  const handleEliminarAmigo = async() =>{
+    try{
+      await eliminarAmistad(id)
+    }
+    catch(e){
+      console.log(e)
+    }
+  }
+  
   return (
     <SafeAreaView
       style={{
@@ -72,6 +103,8 @@ export default function BibliotecaAmigoScreen() {
         }
       >
         <Text>Biblioteca</Text>
+        <Button title="enviar notificacion" onPress={enviarNotificacion}/>
+        <Button title="Eliminar amigo" onPress={handleEliminarAmigo}/>
         <View style={style.gridContainer}>
           {biblioteca &&
             biblioteca.map((libro: any, index: number) => {
@@ -146,3 +179,4 @@ const style = StyleSheet.create({
     borderRadius: 10,
   },
 });
+
