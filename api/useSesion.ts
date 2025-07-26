@@ -43,7 +43,7 @@ const singUp = async(email: string, password: string): Promise<SesionResponse> =
       throw new Error(response.error.message)
     }
     const auth = getAuth();
-    await createUserWithEmailAndPassword(auth, email, password);
+    await signInWithEmailAndPassword(auth, email, password);
     setCurrentUser(response)
     return response
   }catch(err){
