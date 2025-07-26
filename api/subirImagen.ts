@@ -2,6 +2,7 @@ import { CurrentUser } from "@/utils/hooks/useAuthentication"
 import { nanoid } from "nanoid/non-secure"
 import { getDownloadURL, getStorage, ref, deleteObject } from "firebase/storage";
 import { getAuth } from "firebase/auth";
+import { app } from "@/firebase";
 
 const URL_STORAGE = "https://firebasestorage.googleapis.com/v0/b/bibliotecapty.firebasestorage.app"
 
@@ -42,12 +43,12 @@ const subirImagen = async(localURI: string|undefined) => {
     const urlPublica = await getDownloadURL(red).then(url=>url)
     return urlPublica;
   } catch (err) {
-    throw new Error("Error al subir la imagen");
+    throw new Error("Error al subir la imagen "+err);
   }
 }
 
 const eliminarImagen = async(nombre: string) => {
-  const auth = getAuth();
+  const auth = getAuth(app);
   if (!auth.currentUser) {
     throw new Error("Usuario no autenticado");
   }
