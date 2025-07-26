@@ -212,15 +212,11 @@ const eliminarAmistad = async(idAmigo:string) =>{
         "Content-Type": "application/json",
         "Authorization": `Bearer ${tokenId}`,
       },
-    }).then((res) => res.json());
-
-    let misAmigos: { stringValue: string }[] = [];
-    if (
-      misAmigosData?.fields?.amigos?.arrayValue?.arrayValue?.values
-    ) {
-      misAmigos = misAmigosData?.fields?.amigos?.arrayValue?.amigos?.arrayValue.values.filter((item: any) => item.stringValue !== idAmigo);
-    }
-
+    }).then((res) => res.json()).then(data=>data.fields.amigos.arrayValue.values);
+    
+   
+    const misnuevosAmigosData = misAmigosData.filter((item:any)=>item.stringValue !== idAmigo)
+ 
 
     // Obtener amigos del otro usuario
     const amigosData = await fetch(`${URL_FIREBASE}/usuarios/${idAmigo}`, {
@@ -229,15 +225,10 @@ const eliminarAmistad = async(idAmigo:string) =>{
         "Content-Type": "application/json",
         "Authorization": `Bearer ${tokenId}`,
       },
-    }).then((res) => res.json());
+    }).then((res) => res.json()).then(data=>data.fields.amigos.arrayValue.values);;
 
-    let amigos: { stringValue: string }[] = [];
-    if (
-      amigosData?.fields?.amigos?.amigos?.arrayValue.values
-    ) {
-      amigos = amigosData.fields.amigos.arrayValue.values.filter((item: any) => item.stringValue !== auth.localId);
-    }
-
+    const nuevosAmigosData = amigosData.filter((item:any)=>item.stringValue !== auth.localId)
+    
     // Actualizar mi lista de amigos
     await fetch(
       `${URL_FIREBASE}/usuarios/${auth.localId}?updateMask.fieldPaths=amigos`,
@@ -251,7 +242,7 @@ const eliminarAmistad = async(idAmigo:string) =>{
           fields: {
             amigos: {
               arrayValue: {
-                values: misAmigos,
+                values: misnuevosAmigosData,
               },
             },
           },
@@ -272,7 +263,7 @@ const eliminarAmistad = async(idAmigo:string) =>{
           fields: {
             amigos: {
               arrayValue: {
-                values: amigos,
+                values: nuevosAmigosData,
               },
             },
           },

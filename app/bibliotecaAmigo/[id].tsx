@@ -82,6 +82,7 @@ export default function BibliotecaAmigoScreen() {
   const handleEliminarAmigo = async() =>{
     try{
       await eliminarAmistad(id)
+      alert("Amigo eliminado")
     }
     catch(e){
       console.log(e)
@@ -104,7 +105,7 @@ export default function BibliotecaAmigoScreen() {
       >
         <Text>Biblioteca</Text>
         <Button title="enviar notificacion" onPress={enviarNotificacion}/>
-        <Button title="Eliminar amigo" onPress={handleEliminarAmigo}/>
+        <Button title="Eliminar amigo" onPress={()=>handleEliminarAmigo()}/>
         <View style={style.gridContainer}>
           {biblioteca &&
             biblioteca.map((libro: any, index: number) => {
