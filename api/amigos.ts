@@ -1,9 +1,10 @@
 import Constants from "expo-constants";
 import { auth } from "@/firebase";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
-import { Amigos } from "@/utils/types";
+import { Amigos, Prestamos } from "@/utils/types";
 import { sendNotification } from "./pushNotification";
 import { obtenerNombreUsuario, obtenerTokenDeAmigo } from "./usuarios";
+import { obtenerPrestamosDelUsuario } from "./prestarLibro";
 
 const PROJECT_ID =
   Constants.expoConfig?.extra?.PROJECT_ID ||
@@ -149,7 +150,7 @@ const insertarAmigo = async (idAmigo: string|undefined) => {
     );
     await sendNotification({
       to: pushToken,
-      title: `${nombreUsuario} te ha agregado como amigo`,
+      title: `"${nombreUsuario}" Te ha agregado como amigo !`,
       body: `Ahora eres pana de "${nombreUsuario}" 🎊`
     })
   } catch (err) {
@@ -192,11 +193,15 @@ const obtenerMisAmigos = async (): Promise<Amigos[]> => {
     throw new Error(`Error al obtener mis amigos: ${err}`);
   }
 }
+
 const eliminarAmistad = async(idAmigo:string) =>{
   const auth = await CurrentUser();
   const pushToken = await obtenerTokenDeAmigo(idAmigo)
   const nombreUsuario = await obtenerNombreUsuario()
   const tokenId = auth ? auth.idToken : "";
+  
+  const prestamosDelAmigo: Prestamos[] = await obtenerPrestamosDelUsuario(idAmigo)
+  
   if (!idAmigo) {
     throw new Error("El ID del amigo no puede ser vacío");
   }
@@ -213,11 +218,7 @@ const eliminarAmistad = async(idAmigo:string) =>{
         "Authorization": `Bearer ${tokenId}`,
       },
     }).then((res) => res.json()).then(data=>data.fields.amigos.arrayValue.values);
-    
-   
     const misnuevosAmigosData = misAmigosData.filter((item:any)=>item.stringValue !== idAmigo)
- 
-
     // Obtener amigos del otro usuario
     const amigosData = await fetch(`${URL_FIREBASE}/usuarios/${idAmigo}`, {
       method: "GET",
@@ -270,11 +271,44 @@ const eliminarAmistad = async(idAmigo:string) =>{
         }),
       }
     );
+
+    Promise.all(
+      prestamosDelAmigo.map(async(prestamo)=>{
+        if(prestamo.fields.estado.stringValue !== "aceptado"){
+          await fetch(`${URL_FIREBASE}/prestamos/${prestamo.fields.id_usuario?.stringValue}/prestamo/${prestamo.name.split("/").pop()}`,{
+            method:"DELETE",
+            headers:{
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${tokenId}`,
+            },
+          })
+          await fetch(`${URL_FIREBASE}/bibliotecas/${auth.localId}/libros/${prestamo.fields.id_libro?.stringValue}?updateMask.fieldPaths=prestamo`,{
+            method:"PATCH",
+            headers:{
+              "Content-Type" : "application/json",
+              "Authorization": `Bearer ${tokenId}`
+            },
+            body:JSON.stringify({
+              fields:{
+                mapValue:{
+                  fields:{
+                    a_quien:{nullValue:null},
+                    prestado:{booleanValue:false},
+                    puede_prestarse:{booleanValue:true},
+                    prestamo:{nullValue:null}
+                  }
+                }
+              }
+            })
+          })
+        }
+      })
+    )
     
     await sendNotification({
       to: pushToken,
       title: `Ya no eres amigo de ${nombreUsuario}`,
-      body: "Tu sabes lo que hiciste 🖕"
+      body: "Tu sabes lo que hiciste... 🖕"
     })
   } catch (err) {
     throw new Error(`Error al insertar amigo: ${err}`);

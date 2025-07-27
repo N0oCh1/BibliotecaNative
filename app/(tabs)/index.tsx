@@ -1,16 +1,14 @@
 import React, { useCallback } from "react";
 import { useFocusEffect, useRouter } from "expo-router";
-import { Pressable, Text, View,StyleSheet, ScrollView, RefreshControl, Button, Platform } from "react-native";
+import { Text, View,StyleSheet, ScrollView, RefreshControl} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCredencial, removeCredencial } from "@/utils/hooks/useCredential";
 import { CurrentUser, removeCurrentUser } from "@/utils/hooks/useAuthentication";
 import type {  Credenciale, LibroBibliotecaDetalle } from "@/utils/types";
-import { obtenerNombreUsuario, obtenerUsuario } from "@/api/usuarios";
+import { obtenerNombreUsuario } from "@/api/usuarios";
 import { getBiblioteca } from "@/api/biblioteca";
-import { Image } from "expo-image";
 import { StatusBar } from "react-native";
-import * as Notifications from "expo-notifications";
-import { useEffect, useState } from "react";
+import {  useState } from "react";
 import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
 import Alerta from "@/components/Alerta";
 import LibroPresentacion from "@/components/LibroPresentacion";
@@ -84,8 +82,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView
-    edges={['top', 'bottom']}
+    <View
     style={{
       flex: 1,
       backgroundColor: "#E8EBF7",
@@ -97,20 +94,22 @@ export default function HomeScreen() {
     backgroundColor="#fff"
     translucent={false}
     />
-
-      <View  style={style.barraSuperior}>
-        <Text style={style.barraTexto}>
-          {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
-        </Text>
-        <Boton
-          titulo="Cerrar Sesión"
-          variante="Terciario"
-          onPress={() => cerrarSesion()}
-          icon = {<Entypo name="log-out" size={24} color="#ffff" />}
-        />
-      </View>
+      <SafeAreaView edges={['top']} style={{backgroundColor:"#fff"}}>
+        <View  style={style.barraSuperior}>
+          <Text style={style.barraTexto}>
+            {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
+          </Text>
+          <Boton
+            titulo="Cerrar Sesión"
+            variante="Terciario"
+            onPress={() => cerrarSesion()}
+            icon = {<Entypo name="log-out" size={24} color="#ffff" />}
+          />
+        </View>
+      </SafeAreaView>
+      
       <ScrollView
-        style={{ width: "100%", flex: 1, paddingTop: 8, marginBottom: 10 }}
+        style={{ width: "100%", flex: 1, paddingTop: 8}}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
@@ -135,7 +134,7 @@ export default function HomeScreen() {
         mensaje={mensaje}
         onHide={() => setAlerta(false)}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 const style = StyleSheet.create({

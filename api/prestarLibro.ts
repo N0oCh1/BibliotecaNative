@@ -169,7 +169,6 @@ const obtenerSolicitudes = async (): Promise<Prestamos[]> => {
     })
       .then((res) => res.json())
       .then((data) => data.documents);
-
     const libroPrestado = libros ? libros.filter(
       (item: any) =>
         item.fields?.formato.stringValue === "fisico" &&
@@ -281,7 +280,7 @@ const rechazarSolicitud = async (idAmigo: string, idPrestamo: string, idLibro:st
     await sendNotification({
       to: pushToken,
       title:`${nombreUsuario}, Rechazo tu solicitud`,
-      body: `no`
+      body: `No, 🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿🗿`
     })
   } catch (erro) {
     throw new Error("Error al rechazar soliocitud");
@@ -405,7 +404,7 @@ const devolverLibro = async (idPrestamo: string) => {
         await sendNotification({
       to: pushToken,
       title:`${nombreUsuario}, Te devolvio el libro ${infoLibro.titulo}`,
-      body: `Gracias por campartirlo ahi de lo devuelvo`
+      body: `Gracias por campartirlo ahi de lo devuelvo 📫`
     })
   } catch (error) {
     throw new Error("Error al devolver libro");

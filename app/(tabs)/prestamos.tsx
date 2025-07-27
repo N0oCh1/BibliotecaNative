@@ -9,6 +9,7 @@ import {
   volverASolicitar,
 } from "@/api/prestarLibro";
 import { obtenerUsuario } from "@/api/usuarios";
+import Boton from "@/components/Boton";
 import CartaSolicitud from "@/components/CartaSolicitud";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
@@ -18,10 +19,22 @@ import {
   Prestamos,
 } from "@/utils/types";
 import { Image } from "expo-image";
-import { useFocusEffect } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import {Pressable, View, Text, Button, ScrollView, RefreshControl, StyleSheet } from "react-native";
+import {
+  Pressable,
+  View,
+  Text,
+  Button,
+  ScrollView,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Entypo from "@expo/vector-icons/Entypo";
+import Alerta from "@/components/Alerta";
+import SuccesModal from "@/components/SuccesModal";
 
 export default function PrestamosScreen() {
   const [prestamosUsuario, setPrestamosUsuario] = useState<Prestamos[]>();
@@ -34,6 +47,19 @@ export default function PrestamosScreen() {
   >([]);
   const [refresh, setRefresh] = useState<boolean>(false);
   const [tabs, setTabs] = useState<"prestamos" | "solicitudes">("prestamos");
+  const [loadingBoton, setLoadingBoton] = useState<boolean>(false);
+
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<string>("");
+  const [varianteAlerta, setVarianteAlerta] = useState<
+    "Informante" | "Exitoso" | "Advertencia"
+  >("Informante");
+
+  const [modal, setModal] = useState<boolean>(false);
+  const [mensajeModal, setMensajeModal] = useState<string>("");
+  const [funcion, setFuncion] = useState<() => void>();
+
+  const router = useRouter();
 
   const obtenerPrestamosYLibros = async () => {
     const auth = await CurrentUser();
@@ -44,7 +70,6 @@ export default function PrestamosScreen() {
       // Obtener detalles de cada libro relacionado al préstamo
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
-
           return await getLibroAmigo(
             prestamo.fields?.id_dueno_libro.stringValue,
             prestamo.fields?.id_libro.stringValue
@@ -108,7 +133,9 @@ export default function PrestamosScreen() {
   const hanleAceptarSolicitud = async (idAmigo: string, idPrestamo: string) => {
     try {
       await aceptarSolicitud(idAmigo, idPrestamo);
-      alert("Solicitud aceptada");
+      setAlerta(true);
+      setMensaje("Solicitud aceptada");
+      setVarianteAlerta("Exitoso");
       handleRefresh();
     } catch (err) {
       alert(err);
@@ -121,73 +148,70 @@ export default function PrestamosScreen() {
   ) => {
     try {
       await rechazarSolicitud(idAmigo, idPrestamo, idLibro);
-      alert("Solicitud rechazada");
+      setAlerta(true);
+      setMensaje("Solicitud rechazada");
+      setVarianteAlerta("Exitoso");
       handleRefresh();
     } catch (err) {
       alert(err);
     }
   };
-  const handleReenviar = async(
+  const handleReenviar = async (
     idAmigo: string,
     idPrestamo: string,
     idLibro: string
-  ) =>{
-    try{
-      await volverASolicitar(idAmigo, idPrestamo, idLibro)
-      alert("Volviste a enviar la solicitud");
+  ) => {
+    try {
+      await volverASolicitar(idAmigo, idPrestamo, idLibro);
+      setAlerta(true);
+      setMensaje("Volviste a enviar la solicitud");
+      setVarianteAlerta("Exitoso");
       handleRefresh();
-    }
-    catch(err){
+    } catch (err) {
       alert(err);
     }
-  }
+  };
 
-  const handleDevolver = async(idPrestamo: string) =>{
-    try{
-      await devolverLibro(idPrestamo)
-      alert("Devolviste un libro")
+  const handleDevolver = async (idPrestamo: string) => {
+    try {
+      await devolverLibro(idPrestamo);
+      alert("Devolviste un libro");
       handleRefresh();
-    }
-    catch(err){
+    } catch (err) {
       alert(err);
     }
-  }
-  const handleBorrarPedido = async(idPrestamo: string) =>{
-    try{
-      await borrarPrestamo(idPrestamo)
-      alert("Borraste un pedido")
+  };
+  const handleBorrarPedido = async (idPrestamo: string) => {
+    try {
+      await borrarPrestamo(idPrestamo);
+      alert("Borraste un pedido");
       handleRefresh();
-    }
-    catch(err){
+    } catch (err) {
       alert(err);
     }
-  }
-  console.log("Todas las solicitudes => ",solicitudesUsuario)
-  console.log("Todas los prestamos: => ",prestamosUsuario)
+  };
+  console.log("Todas las solicitudes => ", solicitudesUsuario);
+  console.log("Todas los prestamos: => ", prestamosUsuario);
   return (
     <SafeAreaView
-      edges={["top", "bottom"]}
-      style={{ flex: 1, backgroundColor: "#E8EBF7" }}
+      style={{ flex: 1, backgroundColor: "#E8EBF7", position: "relative" }}
     >
-
-      <View  style={style.barraSuperior}>
-        <Text style={style.barraTexto}>
-          Préstamos y Solicitudes
-        </Text>
+      <View style={style.barraSuperior}>
+        <Text style={style.barraTexto}>Préstamos y Solicitudes</Text>
       </View>
 
       <View style={style.contenedorBtnPrestamoSolicitud}>
         <Pressable
           style={[
             style.btnTab,
-            tabs === "prestamos" ? style.btnActivo : style.btnInactivo
+            tabs === "prestamos" ? style.btnActivo : style.btnInactivo,
           ]}
           onPress={() => setTabs("prestamos")}
         >
           <Text
             style={[
               style.btnTexto,
-              tabs === "prestamos" && { color: "#000000ff" } // texto naranja si activo
+              tabs === "prestamos" && { color: "#000000ff" }, // texto naranja si activo
             ]}
           >
             Préstamos
@@ -197,14 +221,14 @@ export default function PrestamosScreen() {
         <Pressable
           style={[
             style.btnTab,
-            tabs === "solicitudes" ? style.btnActivo : style.btnInactivo
+            tabs === "solicitudes" ? style.btnActivo : style.btnInactivo,
           ]}
           onPress={handleSolicitud}
         >
           <Text
             style={[
               style.btnTexto,
-              tabs === "solicitudes" && { color: "#000000ff" }
+              tabs === "solicitudes" && { color: "#000000ff" },
             ]}
           >
             Solicitudes
@@ -212,120 +236,254 @@ export default function PrestamosScreen() {
         </Pressable>
       </View>
 
-
       {tabs === "prestamos" ? (
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
           }
         >
-          {prestamosUsuario ? (
-            
-            prestamoDetalle.map((libro, index) => {
-              const prestamo = prestamosUsuario[index];
-              const prestamoID = prestamo?.name?.split("/").pop() || "";
-              const tiempoFaltante = prestamo.fields?.estado?.stringValue === "aceptado" 
-              ? calcularTiempoFaltante(prestamo.fields?.fecha_devolucion?.timestampValue)
-              : null;
-                if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
-              return (
-                <View key={index}>
-                  <CartaSolicitud
-                    imagen={libro.imagen_url.stringValue}
-                    titulo_libro={prestamo.fields.titulo_libro.stringValue}
-                    quien={prestamo.fields.nombre_usuario.stringValue}
-                    mensaje={prestamo.fields.mensaje.stringValue}
-                    estado={prestamo.fields.estado.stringValue}
-                    tiempo={tiempoFaltante}
-                  />
-                  {prestamo.fields.estado.stringValue === "rechazado" 
-                  && 
-                  <View>
-                    <Button title="Volver a pedir" onPress={()=>handleReenviar(prestamo.fields.id_dueno_libro.stringValue, prestamoID, prestamo.fields.id_libro.stringValue)}/>
-                    <Button title="Borrar pedido" onPress={()=>handleBorrarPedido(prestamoID)}/> 
-                  </View>
-                  }
-                  {prestamo.fields.estado.stringValue === "aceptado" 
-                  && 
-                  <View>
-                    <Button title="Devolver libro" onPress={()=>handleDevolver(prestamoID)}/>
-                  </View>
-                  }
-                </View>
-              );}
-              return null;
-            })
-          ) : (
-            <Text style={{ textAlign: "center", fontSize: 24, fontWeight: "bold" }}>No hay prestamos</Text>
-          )}
+          <View style={style.container_card}>
+            {prestamosUsuario ? (
+              prestamoDetalle.map((libro, index) => {
+                const prestamo = prestamosUsuario[index];
+                const prestamoID = prestamo?.name?.split("/").pop() || "";
+                const rechazado =
+                  prestamo.fields?.estado?.stringValue === "rechazado";
+
+                const pendiente_devolucion =
+                  prestamo.fields?.estado_devolucion?.stringValue ===
+                  "pendiente";
+                const pendiente =
+                  prestamo.fields?.estado?.stringValue === "pendiente";
+
+                const aceptado =
+                  prestamo.fields?.estado?.stringValue === "aceptado";
+
+                const tiempoFaltante = aceptado
+                  ? calcularTiempoFaltante(
+                      prestamo.fields?.fecha_devolucion?.timestampValue
+                    )
+                  : null;
+                if (pendiente_devolucion) {
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        style.cartaPrestamos,
+                        {
+                          borderColor: rechazado
+                            ? "#fcc5c5ff"
+                            : pendiente
+                            ? "#999999"
+                            : "#a8ffa8",
+                          borderWidth: 4,
+                        },
+                      ]}
+                    >
+                      <CartaSolicitud
+                        imagen={libro.imagen_url.stringValue}
+                        titulo_libro={prestamo.fields.titulo_libro.stringValue}
+                        dueno={prestamo.fields.nombre_dueno.stringValue}
+                        mensaje={prestamo.fields.mensaje.stringValue}
+                        estado={prestamo.fields.estado.stringValue}
+                        tiempo={tiempoFaltante}
+                      />
+                      {rechazado && (
+                        <View style={style.container_boton}>
+                          <Boton
+                            loading={loadingBoton}
+                            titulo="Solicitar"
+                            variante="Primario"
+                            icon={
+                              <Entypo name="back" size={24} color="white" />
+                            }
+                            onPress={() => {
+                              setModal(true);
+                              setMensajeModal(
+                                "Tas seguro que quieres volver a solicitar el libro"
+                              );
+                              setFuncion(() => () => {
+                                handleReenviar(
+                                  prestamo.fields.id_dueno_libro.stringValue,
+                                  prestamoID,
+                                  prestamo.fields.id_libro.stringValue
+                                );
+                              });
+                            }}
+                          />
+                          <Boton
+                            loading={loadingBoton}
+                            titulo="Borrar Pedido"
+                            variante="Terciario"
+                            icon={
+                              <Entypo name="cross" size={24} color="white" />
+                            }
+                            onPress={() => {
+                              setModal(true);
+                              setMensajeModal(
+                                "Estas Seguro de Borrar el pedido, tendras que volover a pedirlo en la bilioteca del amigo"
+                              );
+                              setFuncion(() => () => {
+                                handleBorrarPedido(prestamoID);
+                              });
+                            }}
+                          />
+                        </View>
+                      )}
+                      {aceptado && (
+                        <View style={style.container_boton}>
+                          <Boton
+                            titulo="Devolver libro"
+                            variante="Secundario"
+                            icon={
+                              <FontAwesome
+                                name="send"
+                                size={24}
+                                color="#0077b6"
+                              />
+                            }
+                            onPress={() => {
+                              setModal(true);
+                              setMensajeModal(
+                                "Aun estas a tiempo, quieres devolver el libro?"
+                              );
+                              setFuncion(() => () => {
+                                handleDevolver(prestamoID);
+                              });
+                            }}
+                          />
+                        </View>
+                      )}
+                    </View>
+                  );
+                }
+                return null;
+              })
+            ) : (
+              <Text
+                style={{
+                  textAlign: "center",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}
+              >
+                No hay prestamos
+              </Text>
+            )}
+          </View>
         </ScrollView>
-      ) 
-      : 
-      (
+      ) : (
         <ScrollView
           refreshControl={
             <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
           }
         >
-          <Text
-            style={{ textAlign: "center", fontSize: 24, fontWeight: "bold" }}
-          >
-            Solicitudes
-          </Text>
-          {solicitudesUsuario ? (
-            solicitudDetalle.map((libro, index) => {
-              const prestamo = solicitudesUsuario[index];
-              const prestamoID = prestamo?.name?.split("/").pop() || "";
-              if (
-                prestamo?.fields?.estado?.stringValue === "pendiente" 
-              ) {
-                return (
-                  <View key={index}>
-                    <CartaSolicitud
-                      imagen={libro.imagen_url.stringValue}
-                      titulo_libro={libro.titulo.stringValue}
-                      quien={prestamo.fields.nombre_usuario.stringValue}
-                      mensaje={prestamo.fields.mensaje.stringValue}
-                      estado={prestamo.fields.estado.stringValue}
-                      estadoSolicitud={prestamo.fields.estado_devolucion.stringValue}
-                    />
-                    <Button
-                      title="Aceptar"
-                      onPress={() =>
-                        hanleAceptarSolicitud(
-                          prestamo.fields.id_usuario.stringValue,
-                          prestamoID
-                        )
-                      }
-                    />
-                    <Button
-                      title="Rechazar"
-                      onPress={() =>
-                        hanleRechazarSolicitud(
-                          prestamo.fields.id_usuario.stringValue,
-                          prestamoID,
-                          prestamo.fields.id_libro.stringValue
-                        )
-                      }
-                    />
-                  </View>
-                );
-              }
-              return null
-            })
-          ) : (
-            <Text>No hay solicitudes</Text>
-          )}
+          <View style={style.container_card}>
+            {solicitudesUsuario ? (
+              solicitudDetalle.map((libro, index) => {
+                const prestamo = solicitudesUsuario[index];
+                const prestamoID = prestamo?.name?.split("/").pop() || "";
+                const rechazado =
+                  prestamo.fields?.estado?.stringValue === "rechazado";
+
+                const pendiente =
+                  prestamo.fields?.estado?.stringValue === "pendiente";
+
+                if (pendiente) {
+                  return (
+                    <View
+                      key={index}
+                      style={[
+                        style.cartaPrestamos,
+                        {
+                          borderColor: rechazado
+                            ? "#fcc5c5ff"
+                            : pendiente
+                            ? "#999999"
+                            : "#a8ffa8",
+                          borderWidth: 4,
+                        },
+                      ]}
+                    >
+                      <CartaSolicitud
+                        imagen={libro.imagen_url.stringValue}
+                        titulo_libro={libro.titulo.stringValue}
+                        quien={prestamo.fields.nombre_usuario.stringValue}
+                        mensaje={prestamo.fields.mensaje.stringValue}
+                        estado={prestamo.fields.estado.stringValue}
+                        ubicacion={prestamo.fields.ubicacion.stringValue}
+                        estadoSolicitud={
+                          prestamo.fields.estado_devolucion.stringValue
+                        }
+                      />
+                      <Boton
+                        titulo="Aceptar"
+                        variante="Primario"
+                        onPress={() => {
+                          setModal(true);
+                          setMensajeModal(
+                            "Estas seguro que quieres aceptar la solicitud?"
+                          );
+                          setFuncion(
+                            () => () =>
+                              hanleAceptarSolicitud(
+                                prestamo.fields.id_usuario.stringValue,
+                                prestamoID
+                              )
+                          );
+                        }}
+                      />
+                      <Boton
+                        titulo="Rechazar"
+                        variante="Terciario"
+                        onPress={() => {
+                          setModal(true);
+                          setMensajeModal(
+                            "Estas seguro que quieres rechazar la solicitud?"
+                          );
+                          setFuncion(
+                            () => () =>
+                              hanleRechazarSolicitud(
+                                prestamo.fields.id_usuario.stringValue,
+                                prestamoID,
+                                prestamo.fields.id_libro.stringValue
+                              )
+                          );
+                        }}
+                      />
+                    </View>
+                  );
+                }
+                return null;
+              })
+            ) : (
+              <Text>No hay solicitudes</Text>
+            )}
+          </View>
         </ScrollView>
       )}
+      <Alerta
+        visible={alerta}
+        variante={varianteAlerta}
+        mensaje={mensaje}
+        onHide={() => setAlerta(false)}
+      />
+      <SuccesModal
+        visible={modal}
+        mensaje={mensajeModal}
+        rechazar={() => setModal(false)}
+        aceptar={() => {
+          setModal(false);
+          funcion?.();
+        }}
+      />
     </SafeAreaView>
   );
 }
 
 // estlos para la pantalla de prestamos
 const style = StyleSheet.create({
-
-    barraSuperior: {
+  barraSuperior: {
     width: "100%",
     height: 56, // o 60, como prefieras
     flexDirection: "row",
@@ -345,7 +503,7 @@ const style = StyleSheet.create({
     // Sombra para Android
     elevation: 4,
   },
-    barraTexto:{
+  barraTexto: {
     color: "#0056b3",
     fontSize: 18,
     fontWeight: "bold",
@@ -367,12 +525,12 @@ const style = StyleSheet.create({
     //sombra para Android
     elevation: 2,
   },
-    btnTab: {
+  btnTab: {
     flex: 1,
     justifyContent: "center",
     borderRadius: 4,
     alignItems: "center",
-    height: '100%',
+    height: "100%",
   },
   btnActivo: {
     backgroundColor: "#FCFDFF",
@@ -385,5 +543,23 @@ const style = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
-  
+  cartaPrestamos: {
+    padding: 20,
+    backgroundColor: "#ffff",
+    borderRadius: 16,
+  },
+  container_card: {
+    padding: 10,
+    gap: 10,
+  },
+  container_boton: {
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginTop: 12,
+    borderTopColor: "gray",
+    borderTopWidth: 1,
+    padding: 10,
+  },
 });

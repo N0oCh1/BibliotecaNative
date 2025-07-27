@@ -7,8 +7,8 @@ import {
   ScrollView,
   Button,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
-import { Image } from "expo-image";
 import { AntDesign } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { use, useCallback, useState } from "react";
@@ -17,13 +17,14 @@ import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
 import { Amigos, LibroBibliotecaDetalle, Prestamos } from "@/utils/types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getLibroAmigo } from "@/api/biblioteca";
+import { getLibro, getLibroAmigo } from "@/api/biblioteca";
 import { obtenerSolicitudes } from "@/api/prestarLibro";
 import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 import * as Clipboard from "expo-clipboard";
 import Toast from "@/components/Toast";
 import Boton from "@/components/Boton";
 import CartaSolicitud from "@/components/CartaSolicitud";
+import Alerta from "@/components/Alerta";
 
 export default function AmigosScreen() {
   const route = useRouter();
@@ -37,19 +38,24 @@ export default function AmigosScreen() {
   const [refresh, setRefresh] = useState<boolean>(false);
 
   const [toast, setToast] = useState<boolean>(false);
-  const [toastMensaje, setMensaje] = useState<string>("");
+  const [toastMensaje, setMensajeToast] = useState<string>("");
+
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<string>("");
+  const [varianteAlerta, setVarianteAlerta]=useState<"Informante" | "Exitoso" | "Advertencia">("Informante")
+
+  const [cargando, setCargando] = useState<boolean>(false);
+
 
   const obtenerSolicitudYLibro = async () => {
     try {
       const prestamos = await obtenerSolicitudes();
       setSolicitudesUsuario(prestamos);
-
       // Obtener detalles de cada libro relacionado al préstamo
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
-          return await getLibroAmigo(
-            prestamo.fields.id_dueno_libro.stringValue,
-            prestamo.fields.id_libro.stringValue
+          return await getLibro(
+            prestamo.fields?.id_libro?.stringValue
           );
         })
       );
@@ -67,6 +73,9 @@ export default function AmigosScreen() {
   // Obtenmer id del usuario para compartir con amigos
   useFocusEffect(
     useCallback(() => {
+      setSolicitudDetalle([]);
+      setDetalleAmigos([]);
+      setSolicitudesUsuario([]);
       const obtenerUsuario = async () => {
         const authData = await CurrentUser();
         try {
@@ -87,16 +96,28 @@ export default function AmigosScreen() {
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
     try {
+      setCargando(true);
       const amigos = await buscarAmigo(data.search);
       if (amigos && amigos.length > 0) {
         await insertarAmigo(amigos[0]);
       }
+      setCargando(false);
+      setMensaje("Amigo agregado");
+      setVarianteAlerta("Exitoso")
+      setAlerta(true);
+
     } catch (err: unknown) {
-      alert((err as Error).message);
+      setCargando(false);
+      setMensaje((err as Error).message);
+      setVarianteAlerta("Advertencia")
+      setAlerta(true);
     }
     reset();
   };
   const obtenerAmistad = async () => {
+    setSolicitudDetalle([]);
+    setDetalleAmigos([]);
+    setSolicitudesUsuario([]);
     setRefresh(true);
     await obtenerSolicitudYLibro();
     setRefresh(false);
@@ -108,7 +129,7 @@ export default function AmigosScreen() {
     if (text) {
       setToast(true);
       await Clipboard.setStringAsync(text);
-      setMensaje("Codigo copiado al portapapeles");
+      setMensajeToast("Codigo copiado al portapapeles");
     }
   };
 
@@ -133,6 +154,7 @@ export default function AmigosScreen() {
               control={control}
               name="search"
               render={({ field: { onChange, value } }) => (
+                
                 <TextInput
                   placeholder="ingresa el ID del amigo"
                   inputMode="search"
@@ -142,9 +164,13 @@ export default function AmigosScreen() {
                 />
               )}
             />
+
             <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
-              <AntDesign name="search1" size={24} color="white" />
+              {cargando ? 
+                <ActivityIndicator size="small" color="#ffffff" />
+                :<AntDesign name="search1" size={24} color="white" />}
             </Pressable>
+          
           </View>
         </View>
         <ScrollView
@@ -158,7 +184,7 @@ export default function AmigosScreen() {
           >
             <Text
               style={{
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: "bold",
                 padding: 10,
                 color: "#0056b3",
@@ -195,13 +221,13 @@ export default function AmigosScreen() {
           <View style={{ padding: 10, backgroundColor: "#fff", borderRadius: 8 }}>
             <Text
               style={{
-                fontSize: 24,
+                fontSize: 20,
                 fontWeight: "bold",
                 padding: 10,
                 color: "#0056b3",
               }}
             >
-              Tu lista de solicitudes
+              Listas de pendiente a devolver
             </Text>
             {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
               solicitudDetalle.map((libro, index) => {
@@ -216,6 +242,7 @@ export default function AmigosScreen() {
                       quien={prestamo.fields.nombre_usuario.stringValue}
                       imagen={libro.imagen_url.stringValue}
                       titulo_libro={libro.titulo.stringValue}
+                      ubicacion={prestamo.fields.ubicacion.stringValue}
                       mensaje={prestamo.fields.mensaje.stringValue}
                       tiempo={tiempoFaltante}
                     />
@@ -233,6 +260,12 @@ export default function AmigosScreen() {
         visible={toast}
         message={toastMensaje}
         onHide={() => setToast(false)}
+      />
+      <Alerta
+        visible={alerta}
+        variante={varianteAlerta}
+        mensaje={mensaje}
+        onHide={() => setAlerta(false)}
       />
     </SafeAreaView>
   );
