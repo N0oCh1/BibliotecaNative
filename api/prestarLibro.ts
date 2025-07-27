@@ -24,7 +24,7 @@ const obtenerPrestamosDelUsuario = async (
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${auth.idToken}`,
+        "Authorization": `Bearer ${auth.idToken}`,
       },
     });
     if (!response.ok) {
@@ -172,8 +172,8 @@ const obtenerSolicitudes = async (): Promise<Prestamos[]> => {
 
     const libroPrestado = libros ? libros.filter(
       (item: any) =>
-        item.fields.formato.stringValue === "fisico" &&
-        item.fields.prestamo.mapValue.fields.prestado.booleanValue === true
+        item.fields?.formato.stringValue === "fisico" &&
+        item.fields?.prestamo.mapValue.fields.prestado.booleanValue === true
     ) : [];
     const informacionPrestamo = await Promise.all(
       libroPrestado.map(async (item: any) => {

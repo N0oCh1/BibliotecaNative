@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,41 +6,33 @@ import {
   ScrollView,
   StyleSheet,
   Button,
-  TouchableOpacity,
 } from "react-native";
 import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ObtenerLibroPorId } from "@/api/obtenerLibros";
 import type {
-  Libro,
   LibroBibliotecaDetalle,
-  librosBiblioteca,
 } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
-import { addLibro, getLibro, removeLibro } from "@/api/biblioteca";
-import { AntDesign, FontAwesome, FontAwesome5 } from "@expo/vector-icons";
-import { Modal, TextInput } from "react-native";
-import { Amigos } from "@/utils/types";
-import { obtenerMisAmigos } from "@/api/amigos";
+import { getLibro, removeLibro } from "@/api/biblioteca";
+
+import Alerta from "@/components/Alerta";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BibliotecaLibroScreen() {
-  const [seleccionada, setSeleccionada] = useState("");
-  const { libro } = useLocalSearchParams<{ libro: string }>();
   const router = useRouter();
-
+  const { libro } = useLocalSearchParams<{ libro: string }>();
+  
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<string>("");
+  
   const [detalle, setDetalle] = useState<LibroBibliotecaDetalle>();
-  const [mensaje, setMensaje] = useState("");
-  const [tiempoPrestamo, setTiempoPrestamo] = useState("");
-  const [ubicacionEncuentro, setUbicacionEncuentro] = useState("");
-
-  const [detalleAmigos, setDetalleAmigos] = useState<Amigos[] | undefined>();
+  
 
   const navigation = useNavigation();
-  const [modalVisible, setModalVisible] = useState(false);
 
   useLayoutEffect(() => {
-    if (detalle?.titulo.stringValue) {
+    if (detalle?.titulo?.stringValue) {
       navigation.setOptions({ title: detalle.titulo.stringValue });
     }
   }, [detalle]);
@@ -58,20 +50,6 @@ export default function BibliotecaLibroScreen() {
 
     obtener();
   }, [libro]);
-
-  useEffect(() => {
-    const cargarAmigos = async () => {
-      try {
-        const amigos = await obtenerMisAmigos();
-        setDetalleAmigos(amigos);
-      } catch (error) {
-        console.error("Error al obtener amigos:", error);
-        setDetalleAmigos([]);
-      }
-    };
-
-    cargarAmigos();
-  }, []);
 
   if (loading)
     return (
@@ -92,162 +70,63 @@ export default function BibliotecaLibroScreen() {
     const nombreImagen = nombreArchivo.split("?")[0]; // Extraer el nombre del archivo sin parámetros de consulta
     const result = await removeLibro(libro, nombreImagen);
     if (result) {
-      alert("Libro eliminado de la biblioteca");
-      router.back();
+      setAlerta(true);
+      setMensaje("Libro eliminado de la biblioteca");
     } else {
-      alert("Error al eliminar el libro");
+      setMensaje("Error al eliminar el libro");
     }
   };
-
-  const handleCompartir = async () => {};
-  // const handleAgregar = async() =>{
-  //   const body: librosBiblioteca = {
-  //     titulo: detalle.titulo,
-  //     autor: detalle.autor[0],
-  //     descripcion: detalle.descripcion || "sin descripción",
-  //     categoria: detalle.categoria[0],
-  //     formato: "digital",
-  //     imagen: detalle.imagen,
-  //   }
-  //   console.log("libro a agregar" , body)
-  //   try{
-  //     await addLibro(body, detalle.imagen)
-  //     alert("se agrego el libro")
-  //   }
-  //   catch(e){
-  //     console.log(e);
-  //   }
-  // }
-
-  const cleanCancel = async () => {
-    setModalVisible(false);
-    setMensaje("");
-    setTiempoPrestamo("");
-    setUbicacionEncuentro("");
-    setSeleccionada(""); 
-  };
-
-  console.log("detalle", detalle);
-
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>{detalle.titulo.stringValue} </Text>
-
-      <Text style={styles.authors}>
-        Autor(es): {detalle.autor.stringValue || "Desconocido"}{" "}
-      </Text>
-
-      {detalle.imagen_url.stringValue && (
-        <Image
-          source={{ uri: detalle.imagen_url.stringValue }}
-          style={styles.image}
-        />
-      )}
-      {detalle.formato.stringValue && (
-        <Text style={styles.published}>
-          Formato: {detalle.formato.stringValue}
+    <SafeAreaView edges={['top', 'bottom']} style={{position:"relative", flex:1, backgroundColor:"#fdfdfd"}}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>{detalle.titulo.stringValue} </Text>
+        <Text style={styles.authors}>
+          Autor(es): {detalle.autor.stringValue || "Desconocido"}{" "}
         </Text>
-      )}
-      <View
-        style={{
-          flexDirection: "row",
-          gap: 7,
-          alignItems: "center",
-          margin: 10,
-        }}
-      >
-        <Button
-          title="Borrar de la biblioteca"
-          onPress={() => handleDeleted(libro)}
-        />
-        <AntDesign
-          name="sharealt"
-          size={24}
-          color="grey"
-          onPress={() => {
-            setModalVisible(true);
+
+        {detalle.imagen_url.stringValue && (
+          <Image
+            source={{ uri: detalle.imagen_url.stringValue }}
+            style={styles.image}
+          />
+        )}
+        {detalle.formato.stringValue && (
+          <Text style={styles.published}>
+            Formato: {detalle.formato.stringValue}
+          </Text>
+        )}
+        <View
+          style={{
+            flexDirection: "row",
+            gap: 7,
+            alignItems: "center",
+            margin: 10,
+          }}
+        >
+          <Button
+            title="Borrar de la biblioteca"
+            onPress={() => handleDeleted(libro)}
+          />
+        </View>
+
+        <Text style={styles.published}>Descripcion</Text>
+        <Text style={styles.description}>
+          {detalle.descripcion.stringValue
+            ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
+            : "Sin descripción disponible."}
+        </Text>
+        <Alerta
+          variante={"Exitoso"}
+          mensaje={mensaje}
+          visible={alerta}
+          onHide={() => {
+            setAlerta(false);
+            router.back();
           }}
         />
-      </View>
+      </ScrollView>
+    </SafeAreaView>
 
-      <Text style={styles.published}>Descripcion</Text>
-      <Text style={styles.description}>
-        {detalle.descripcion.stringValue
-          ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
-          : "Sin descripción disponible."}
-      </Text>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Prestar: {detalle.titulo.stringValue}
-            </Text>
-
-            {detalleAmigos && detalleAmigos.length > 0 ? (
-              detalleAmigos.map((amigo, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    marginBottom: 10,
-                  }}
-                  onPress={() =>
-                    setSeleccionada(
-                      seleccionada === amigo.nombre ? "" : amigo.nombre
-                    )
-                  }
-                >
-                  <AntDesign
-                    name={
-                      seleccionada === amigo.nombre
-                        ? "checksquare"
-                        : "checksquareo"
-                    }
-                    size={24}
-                    color={seleccionada === amigo.nombre ? "#007AFF" : "#ccc"}
-                  />
-                  <Text style={{ marginLeft: 10 }}>{amigo.nombre}</Text>
-                </TouchableOpacity>
-              ))
-            ) : (
-              <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
-            )}
-
-            <View style={styles.solicitarButton}>
-              
-            </View>
-
-            <TextInput
-              placeholder="Ubicación de encuentro"
-              value={ubicacionEncuentro}
-              onChangeText={setUbicacionEncuentro}
-              style={styles.solicitarText}
-            />
-
-            <TextInput
-              placeholder="Mensaje opcional"
-              value={mensaje}
-              onChangeText={setMensaje}
-              style={styles.solicitarText}
-            />
-
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}
-            >
-              <Button title="Cancelar" onPress={() => cleanCancel()} />
-              <Button title="Enviar" />
-            </View>
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
   );
 }
 const styles = StyleSheet.create({

@@ -113,6 +113,8 @@ const obtenerNombreUsuario = async(idAmigo?:string) => {
 
 const obtenerTokenDeAmigo = async(idAmigo?:string) => {
   const auth = await CurrentUser()
+  console.log("ID del amigo=> ", idAmigo)
+  console.log("ID del usuario=> ", auth.localId)
   const url = URL_FIREBASE + `/usuarios/${idAmigo || auth.localId}`
   try{
     const response = await fetch(url, {
@@ -132,11 +134,39 @@ const obtenerTokenDeAmigo = async(idAmigo?:string) => {
       throw new Error("Error al obtener usuario")
     }
 }
+const actualizarToken = async()=>{
+  const credenciales = await getCredencial()
+  const auth = await CurrentUser()
+  const url = URL_FIREBASE+`/usuarios/${auth.localId}?updateMask.fieldPaths=pushToken`
+  const body = {
+      fields:{
+        pushToken:{stringValue:credenciales?.pushToken || ""}
+      }
+      }
+    try{
+      const response = await fetch(url, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${auth.idToken}`,
+        },
+        body: JSON.stringify(body),
+      }).then(res=>res.json())
+      if(response.error){
+        throw new Error("Error al actualizar token" + response.error.message)
+      }
+      return true
+    }
+    catch(err){
+      throw new Error(`Error al agregar usuario ${err}`)
+    }
+}
 
 export {
   agregarUsuario,
   agregarAmigo,
   obtenerUsuario,
   obtenerNombreUsuario,
-  obtenerTokenDeAmigo
+  obtenerTokenDeAmigo,
+  actualizarToken
 }

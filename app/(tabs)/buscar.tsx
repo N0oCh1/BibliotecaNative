@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, RefreshControl } from "react-native";
 import { Image } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LibroPresentacion from "@/components/LibroPresentacion";
 
 export default function BuscarScreen() {
   const router = useRouter()
@@ -63,23 +64,13 @@ export default function BuscarScreen() {
           <Text style={style.textoh1}>Descubre nuevos libros</Text>
           <View style={style.libroContainer}>
             {data.map((libro) => (
-              <Pressable key={libro.id} style={style.libro} onPress={() => handlePress(libro.id)}>
-                <View style={{ width: "100%", height: 190, justifyContent: "center", alignItems: "center" }}>
-                  {loadingImages[libro.id] && (
-                    <ActivityIndicator size="large" color="#000" style={{ position: "absolute", zIndex: 1 }} />
-                  )}
-                  <Image
-                    style={style.imagen}
-                    source={{ uri: libro.imagen }}
-                    onLoadStart={() => handleLoadStart(libro.id)}
-                    onLoadEnd={() => handleLoadEnd(libro.id)}
-                  />
-                </View>
-                <View style={style.descripcionLibro}>
-                  <Text style={style.titulo}>{libro.titulo}</Text>
-                  <Text style={style.autor}>{libro.autor || "Sin autor"}</Text>
-                </View>
-              </Pressable>
+              <LibroPresentacion
+                key={libro.id}
+                imagen={libro.imagen}
+                titulo={libro.titulo}
+                autor={libro.autor}
+                onPress={()=>handlePress(libro.id)}
+              />
             ))}
           </View>
         </ScrollView>
@@ -91,7 +82,7 @@ export default function BuscarScreen() {
 const style = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#E8EBF7",
   },
   barraSuperior: {
     flexDirection: "row",

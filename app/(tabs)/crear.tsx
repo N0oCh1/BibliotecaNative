@@ -1,25 +1,25 @@
-import React, {  useState } from "react";
+import React, {  use, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, set } from "react-hook-form";
 import {
   View,
   Text,
   TextInput,
-  Button,
   Image,
-  ActivityIndicator,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker"; 
 import { yupResolver } from "@hookform/resolvers/yup";
-import { db } from "@/firebase";
 import * as yup from "yup";
 import { grantPermission } from "@/utils/hooks/usePermission";
 import { librosBiblioteca } from "@/utils/types";
 import { addLibro } from "@/api/biblioteca";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Boton from "@/components/Boton";
+import Entypo from '@expo/vector-icons/Entypo';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import Alerta from "@/components/Alerta";
 
 const validacion = yup.object().shape({
   title: yup.string().required("Titulo requerido"),
@@ -43,6 +43,7 @@ export default function createBook() {
     {label: 'Fisico', value:"fisico"},
     {label: 'Digital', value:"digital"}
   ])
+  const [cargaImagen, setCargaImagen] = useState<boolean>(false);
   const {
     control,
     handleSubmit,
@@ -52,23 +53,39 @@ export default function createBook() {
     resolver: yupResolver(validacion),
   });
 
+  const[alerta, setAlerta] = useState<boolean>(false)
+  const[variante, setVariante] = useState<"Informante" | "Exitoso" | "Advertencia">("Informante")
+  const[mensaje, setMensaje] = useState<string>("")
+
+
   //image picker
   const pickearImagen = async () => {
     try{
+      setCargaImagen(true)
       await grantPermission()
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         quality: 1,
       });
       if(result.canceled){
-        alert('No selecciono ninguna imagen')
+        setMensaje('No selecciono ninguna imagen')
+        setVariante('Informante')
+        setAlerta(true)
+
+        setCargaImagen(false)
         return
       }
-      alert('Imagen seleccionada')
+      setMensaje('Imagen seleccionada')
+      setVariante('Exitoso')
+      setAlerta(true)
       setImagen(result.assets ? result.assets[0]:null)
+      setCargaImagen(false)
     }
     catch(e){
-      alert('Error al seleccionar imagen')
+      setCargaImagen(false)
+      setMensaje('Error al seleccionar imagen')
+      setVariante('Advertencia')
+      setAlerta(true)
       console.log(e);
     }
   };
@@ -88,9 +105,14 @@ export default function createBook() {
     await addLibro(bookData)
     setImagen(null)
     reset();
-      alert("libro agregado con exitosamente");
+      setVariante("Exitoso")
+      setMensaje("Libro agregado exitosamente 🎊");
+      setAlerta(true);
     } catch (error) {
       console.log("Error al agregar libro:", error);
+      setVariante("Advertencia")
+      setMensaje("Error al agregar libro");
+      setAlerta(true);
       alert("Error al agregar libro");
     } finally {
       setCarga(false);
@@ -106,7 +128,7 @@ export default function createBook() {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: "#f0f8ff" }}>
+    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: "#f0f8ff", position:"relative" }}>
         <View style={styles.barraSuperior}>
         <Text style={styles.barraTexto}>Añadir</Text>
       </View>
@@ -225,22 +247,31 @@ export default function createBook() {
             <Image source={{ uri: imagen.uri }} style={styles.image} />
           </View>
         )}
-        
-        {/* Botones personalizados */}
-        <TouchableOpacity style={styles.customButton} onPress={pickearImagen}>
-          <Text style={styles.buttonText}>Seleccionar Imagen</Text>
-        </TouchableOpacity>
-        
-        <View style={styles.buttonSeparator} />
-        
-        {carga ? (
-          <ActivityIndicator size="large" color="#0077b6" style={styles.buttonSeparator} />
-        ) : (
-          <TouchableOpacity style={styles.primaryButton} onPress={handleSubmit(formSubmit)}>
-            <Text style={styles.primaryButtonText}>Agregar Libro</Text>
-          </TouchableOpacity>
-        )}
+        <View style={{flexDirection:"column", gap:30}}>
+          {/* Botones personalizados */}
+          <Boton
+            titulo="Seleccionar Imagen"
+            onPress={pickearImagen}
+            variante="Secundario"
+            loading={cargaImagen}
+            icon={<Entypo name="image" size={24} color="#0077b6" />}
+          />
+          <Boton
+            titulo="Subir Imagen"
+            onPress={handleSubmit(formSubmit)}
+            variante="Primario"
+            loading={carga}
+            icon={<FontAwesome name="pencil-square-o" size={24} color="#fff" />}
+          />
+        </View>
       </ScrollView>
+
+      <Alerta
+        visible={alerta}
+        variante={variante}
+        mensaje={mensaje}
+        onHide={() => setAlerta(false)}
+      />
     </SafeAreaView>
   );
 }

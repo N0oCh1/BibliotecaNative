@@ -11,8 +11,9 @@ const registerForPushNotificationsAsync = async() => {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
-      sound: undefined,
+      sound: "default",
       vibrationPattern: [0, 250, 250, 250],
+      groupId:"default",
       lightColor: '#FF231F7C',
     });
   }

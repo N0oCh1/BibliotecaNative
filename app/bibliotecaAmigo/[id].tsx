@@ -22,6 +22,7 @@ import {
 import { obtenerNombreUsuario, obtenerTokenDeAmigo } from "@/api/usuarios";
 import { sendNotification } from "@/api/pushNotification";
 import { eliminarAmistad } from "@/api/amigos";
+import LibroPresentacion from "@/components/LibroPresentacion";
 
 
 export default function BibliotecaAmigoScreen() {
@@ -111,20 +112,13 @@ export default function BibliotecaAmigoScreen() {
             biblioteca.map((libro: any, index: number) => {
               const libroId = libro.name.split("/").pop();
               return (
-                <Pressable key={index} style={style.card} onPress={() => handleDetails(libroId)}>
-                  <Image
-                    style={style.image}
-                    source={{ uri: libro.fields.imagen_url.stringValue }}
-                  />
-                  <View style={style.descripcionLibro}>
-                    <Text style={style.title}>
-                      {libro.fields.titulo.stringValue}
-                    </Text>
-                    <Text style={style.author}>
-                      {libro.fields.autor?.stringValue || "Sin autor"}
-                    </Text>
-                  </View>
-                </Pressable>
+                <LibroPresentacion
+                  key={index}
+                  imagen={libro.fields.imagen_url?.stringValue}
+                  titulo={libro.fields.titulo?.stringValue}
+                  autor={libro.fields.autor?.stringValue}
+                  onPress={() => handleDetails(libroId)}
+                />
               );
             })}
         </View>

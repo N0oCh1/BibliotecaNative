@@ -12,7 +12,11 @@ import { StatusBar } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useEffect, useState } from "react";
 import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
-  
+import Alerta from "@/components/Alerta";
+import LibroPresentacion from "@/components/LibroPresentacion";
+import Boton from "@/components/Boton";
+import Entypo from '@expo/vector-icons/Entypo';
+
 NotificationMode("prod")
 export default function HomeScreen() {
   const [usuario, setUsuario] = useState<string>()
@@ -20,6 +24,10 @@ export default function HomeScreen() {
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>()
   const [refresh, setRefresh] = useState<boolean>(false)
   const [credential, setCredential] = useState<Credenciale|null>();
+
+  const [alerta, setAlerta] = useState<boolean>(false)
+  const [mensaje, setMensaje] = useState<string>("")
+
 
   const route = useRouter();
   const auth = CurrentUser();
@@ -34,6 +42,7 @@ export default function HomeScreen() {
   // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
+      
       const getUsuario = async () => {
         const authData = await auth; 
         if (authData) {
@@ -42,6 +51,7 @@ export default function HomeScreen() {
         }
       };
       const getCredential = async()=>{
+        await registerForPushNotificationsAsync().then((token) => {console.log("Token del usuario", token)})
         setCredential(await getCredencial())
       }
       const obtenerBiblioteca = async() =>{
@@ -72,27 +82,14 @@ export default function HomeScreen() {
   const handleDetails = (id:string) =>{
     route.push(`/bibliotecaLibro/${id}`);
   }
-    async function schedulePushNotification() {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "You've got mail! 📬",
-          body: 'Here is the notification body',
-          sound:true,
-          data: { data: 'goes here', test: { test1: 'more data' } },
-        },
-        trigger: {
-          type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-          seconds: 2,
-        }
-      });
-    }
 
   return (
     <SafeAreaView
     edges={['top', 'bottom']}
     style={{
       flex: 1,
-      backgroundColor: "#fff",
+      backgroundColor: "#E8EBF7",
+      position:"relative"
     }}
     >
     <StatusBar
@@ -105,50 +102,46 @@ export default function HomeScreen() {
         <Text style={style.barraTexto}>
           {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
         </Text>
-        <Pressable
-          style={[
-            style.Button,
-            { backgroundColor: pressed ? "white" : "#0056b3" }
-          ]}
-          onPressIn={() => setPressed(true)}
-          onPressOut={() => cerrarSesion()}
-        >
-          <Text style={{ color: pressed ? "#0056b3" : "#ffffff", fontWeight: "bold" }}>LogOut</Text>
-        </Pressable>
+        <Boton
+          titulo="Cerrar Sesión"
+          variante="Terciario"
+          onPress={() => cerrarSesion()}
+          icon = {<Entypo name="log-out" size={24} color="#ffff" />}
+        />
       </View>
       <ScrollView
         style={{ width: "100%", flex: 1, paddingTop: 8, marginBottom: 10 }}
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
-        <Button title="Schedule Notification" onPress={schedulePushNotification} />
         <View style={style.gridContainer}>
           {biblioteca && biblioteca.map((libro:any,index:number)=>{
             const libroId = libro.name.split("/").pop();
             return(
-              <Pressable key={index} onPress={()=>handleDetails(libroId)} style={style.card}>
-                <Image
-                    style={style.image}
-                    contentFit="contain"
-                    source={{ uri: libro.fields.imagen_url.stringValue }}
-                />
-                <View style={style.descripcionLibro}>
-                  <Text style={style.title}>{libro.fields.titulo?.stringValue}</Text>
-                  <Text style={style.author}>{libro.fields.autor?.stringValue || "Sin autor"}</Text>
-                </View>
-              </Pressable>
-
+              <LibroPresentacion
+                key={index}
+                imagen={libro.fields.imagen_url?.stringValue}
+                titulo={libro.fields.titulo?.stringValue}
+                autor={libro.fields.autor?.stringValue}
+                onPress={()=>handleDetails(libroId)}
+              />
             )
           })}
         </View>
       </ScrollView>
+      <Alerta
+        variante="Exitoso"
+        visible={alerta}
+        mensaje={mensaje}
+        onHide={() => setAlerta(false)}
+      />
     </SafeAreaView>
   );
 }
 const style = StyleSheet.create({
   barraSuperior: {
     width: "100%",
-    height: 56, // o 60, como prefieras
+    height: 60, // o 60, como prefieras
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -229,7 +222,7 @@ const style = StyleSheet.create({
   },
   barraTexto:{
     color: "#0056b3",
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   }
 

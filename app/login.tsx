@@ -23,6 +23,7 @@ import { setCredencial } from "@/utils/hooks/useCredential";
 import Checkbox from "expo-checkbox";
 import { singIn } from "@/api/useSesion";
 import { registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
+import { actualizarToken } from "@/api/usuarios";
 
 
 export const options = {
@@ -71,10 +72,11 @@ export default function Login() {
           pushToken: expoPushToken
         })
         : null;
+        await actualizarToken();
         router.replace("/(tabs)");
       }
     } catch (error) {
-      console.error("Error signing in:", error);
+      console.log(error);
       setError("Correo o contraseña incorrectos");
     }
   };

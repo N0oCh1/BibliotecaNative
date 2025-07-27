@@ -97,7 +97,6 @@ const removeLibro = async (libroId: string, fileName:string) => {
       if (!response.ok) {
         throw new Error("Error al eliminar el libro");
       }
-      alert("Libro eliminado de la biblioteca");
       return true
     } catch (error) {
       throw new Error("libro no encontrado: " + error);
@@ -105,9 +104,9 @@ const removeLibro = async (libroId: string, fileName:string) => {
 }
 
 
-const getBiblioteca = async (userId: string) => {
-  const url = URL_FIREBASE + `/bibliotecas/${userId}/libros`;
+const getBiblioteca = async (userId?: string) => {
   const auth = await CurrentUser();
+  const url = URL_FIREBASE + `/bibliotecas/${userId || auth.localId}/libros`;
   try {
     const response = await fetch(url,
       {

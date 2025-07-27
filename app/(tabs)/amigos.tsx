@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form";
+import { Controller, set, useForm } from "react-hook-form";
 import {
   View,
   Text,
@@ -20,6 +20,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { getLibroAmigo } from "@/api/biblioteca";
 import { obtenerSolicitudes } from "@/api/prestarLibro";
 import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
+import * as Clipboard from "expo-clipboard";
+import Toast from "@/components/Toast";
+import Boton from "@/components/Boton";
+import CartaSolicitud from "@/components/CartaSolicitud";
 
 export default function AmigosScreen() {
   const route = useRouter();
@@ -30,7 +34,10 @@ export default function AmigosScreen() {
   const [solicitudDetalle, setSolicitudDetalle] = useState<
     LibroBibliotecaDetalle[]
   >([]);
-  const [refresh, setRefresh]= useState<boolean>(false)
+  const [refresh, setRefresh] = useState<boolean>(false);
+
+  const [toast, setToast] = useState<boolean>(false);
+  const [toastMensaje, setMensaje] = useState<string>("");
 
   const obtenerSolicitudYLibro = async () => {
     try {
@@ -53,32 +60,29 @@ export default function AmigosScreen() {
         ) as LibroBibliotecaDetalle[]
       );
     } catch (erro) {
-      alert(erro)
+      alert(erro);
     }
   };
 
   // Obtenmer id del usuario para compartir con amigos
   useFocusEffect(
     useCallback(() => {
-    const obtenerUsuario = async () => {
-      const authData = await CurrentUser();
-      try {
-        setUserId(authData.localId);
-      } catch (err) {
-
-      }
-    };
-    const obtenerLibros = async()=>{
-      try{
-        obtenerSolicitudYLibro();
-        setDetalleAmigos(await obtenerMisAmigos());
-      }
-      catch(erro){
-      }
-    }
-    obtenerUsuario();
-    obtenerLibros();
-  }, []));
+      const obtenerUsuario = async () => {
+        const authData = await CurrentUser();
+        try {
+          setUserId(authData.localId);
+        } catch (err) {}
+      };
+      const obtenerLibros = async () => {
+        try {
+          obtenerSolicitudYLibro();
+          setDetalleAmigos(await obtenerMisAmigos());
+        } catch (erro) {}
+      };
+      obtenerUsuario();
+      obtenerLibros();
+    }, [])
+  );
 
   // Buscar amigo para agregar a amigos
   const onSubmit = async (data: any) => {
@@ -92,94 +96,144 @@ export default function AmigosScreen() {
     }
     reset();
   };
-  const obtenerAmistad= async() =>{
+  const obtenerAmistad = async () => {
     setRefresh(true);
     await obtenerSolicitudYLibro();
     setRefresh(false);
     setDetalleAmigos(await obtenerMisAmigos());
     setRefresh(false);
-  }
+  };
 
-  
-  const verBiblioteca = (id: string, username:string) => {
+  const copiarCodigo = async (text: string | undefined) => {
+    if (text) {
+      setToast(true);
+      await Clipboard.setStringAsync(text);
+      setMensaje("Codigo copiado al portapapeles");
+    }
+  };
+
+  const verBiblioteca = (id: string, username: string) => {
     route.push({ pathname: `/bibliotecaAmigo/${id}`, params: { username } });
   };
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
-      style={{ flex: 1, backgroundColor: "#fff" }}
+      style={{ flex: 1, backgroundColor: "#E8EBF7", position: "relative" }}
     >
-        <View style={styles.container}>
-          <View>
-            <Text>user id del usuario logiado: {userId}</Text>
-            <View style={styles.searchContainer}>
-              <Controller
-                control={control}
-                name="search"
-                render={({ field: { onChange, value } }) => (
-                  <TextInput
-                    placeholder="ingresa el ID del amigo"
-                    inputMode="search"
-                    onChangeText={onChange}
-                    value={value}
-                    style={styles.input}
-                  />
-                )}
-              />
-              <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
-                <AntDesign name="search1" size={24} color="white" />
-              </Pressable>
-            </View>
-          </View>
-          <ScrollView contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 }}
-          refreshControl={<RefreshControl refreshing={refresh} onRefresh={obtenerAmistad}/>}
-          >
-          {detalleAmigos && detalleAmigos.length > 0 ? (
-            detalleAmigos.map((amigo, index) => (
-              <View key={index} style={{ padding: 10 }}>
-                <Text>{amigo.nombre}</Text>
-                <Button
-                  title="Ver Biblioteca"
-                  onPress={() => verBiblioteca(amigo.id, amigo.nombre)}
+      <View style={styles.container}>
+        <View>
+          <Boton
+            titulo="Copia Codigo"
+            variante="Secundario"
+            icon={<AntDesign name="copy1" size={24} color="#0077b6" />}
+            onPress={() => copiarCodigo(userId)}
+          />
+          <View style={styles.searchContainer}>
+            <Controller
+              control={control}
+              name="search"
+              render={({ field: { onChange, value } }) => (
+                <TextInput
+                  placeholder="ingresa el ID del amigo"
+                  inputMode="search"
+                  onChangeText={onChange}
+                  value={value}
+                  style={styles.input}
                 />
-              </View>
-            ))
-          ) : (
-            <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
-          )}
-
-          {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
-            solicitudDetalle.map((libro, index) => {
-              const prestamo = solicitudesUsuario[index];
-              const prestamoID = prestamo?.name?.split("/").pop() || "";
-              if (prestamo?.fields?.estado?.stringValue === "aceptado") {
-                return (
-                  <View key={index} style={{ padding: 10 }}>
-                    <Image
-                      source={{ uri: libro.imagen_url.stringValue }}
-                      style={{ width: 50, height: 75 }}
-                    />
-                    <Text>idPrestamo: {prestamoID}</Text>
-                    <Text>Libro: {libro.titulo.stringValue}</Text>
-                    <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
-                    <Text>
-                      Estado de solicitud: {prestamo.fields.estado.stringValue}
-                    </Text>
-                    <Text>
-                      Ubicacion: {prestamo.fields.ubicacion.stringValue}
-                    </Text>
-                    <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
-                    <Text>Tiempo faltante: {calcularTiempoFaltante(prestamo.fields.fecha_devolucion.timestampValue)}</Text>
-                  </View>
-                );
-              }
-              return false;
-            })
-          ) : (
-            <Text>No hay solicitudes</Text>
-          )}
-           </ScrollView>
+              )}
+            />
+            <Pressable onPress={handleSubmit(onSubmit)} style={styles.button}>
+              <AntDesign name="search1" size={24} color="white" />
+            </Pressable>
+          </View>
         </View>
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 2, paddingBottom: 100 ,gap:10}}
+          refreshControl={
+            <RefreshControl refreshing={refresh} onRefresh={obtenerAmistad} />
+          }
+        >
+          <View
+            style={{ padding: 10, backgroundColor: "#fff", borderRadius: 8 }}
+          >
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "bold",
+                padding: 10,
+                color: "#0056b3",
+              }}
+            >
+              Tu lista de amigos
+            </Text>
+            {detalleAmigos && detalleAmigos.length > 0 ? (
+              detalleAmigos.map((amigo, index) => (
+                <View
+                  key={index}
+                  style={{
+                    padding: 10,
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                    {amigo.nombre}
+                  </Text>
+
+                  <Boton
+                    titulo="Ver biblioteca"
+                    variante="Secundario"
+                    onPress={() => verBiblioteca(amigo.id, amigo.nombre)}
+                  />
+                </View>
+              ))
+            ) : (
+              <Text style={{ padding: 10 }}>No tienes amigos agregados.</Text>
+            )}
+          </View>
+          <View style={{ padding: 10, backgroundColor: "#fff", borderRadius: 8 }}>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: "bold",
+                padding: 10,
+                color: "#0056b3",
+              }}
+            >
+              Tu lista de solicitudes
+            </Text>
+            {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
+              solicitudDetalle.map((libro, index) => {
+                const prestamo = solicitudesUsuario[index];
+                const tiempoFaltante = calcularTiempoFaltante(
+                  prestamo.fields.fecha_devolucion.timestampValue
+                );
+                if (prestamo?.fields?.estado?.stringValue === "aceptado") {
+                  return (
+                    <CartaSolicitud
+                      key={index}
+                      quien={prestamo.fields.nombre_usuario.stringValue}
+                      imagen={libro.imagen_url.stringValue}
+                      titulo_libro={libro.titulo.stringValue}
+                      mensaje={prestamo.fields.mensaje.stringValue}
+                      tiempo={tiempoFaltante}
+                    />
+                  );
+                }
+                return false;
+              })
+            ) : (
+              <Text>No hay solicitudes</Text>
+            )}
+          </View>
+        </ScrollView>
+      </View>
+      <Toast
+        visible={toast}
+        message={toastMensaje}
+        onHide={() => setToast(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -233,5 +287,5 @@ const styles = StyleSheet.create({
     color: "#0056b3",
     fontSize: 18,
     fontWeight: "bold",
-  }
+  },
 });

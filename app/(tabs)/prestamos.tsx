@@ -9,6 +9,7 @@ import {
   volverASolicitar,
 } from "@/api/prestarLibro";
 import { obtenerUsuario } from "@/api/usuarios";
+import CartaSolicitud from "@/components/CartaSolicitud";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
 import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 import {
@@ -45,8 +46,8 @@ export default function PrestamosScreen() {
         prestamos.map(async (prestamo) => {
 
           return await getLibroAmigo(
-            prestamo.fields.id_dueno_libro.stringValue,
-            prestamo.fields.id_libro.stringValue
+            prestamo.fields?.id_dueno_libro.stringValue,
+            prestamo.fields?.id_libro.stringValue
           );
         })
       );
@@ -70,8 +71,8 @@ export default function PrestamosScreen() {
       const detallesLibros = await Promise.all(
         prestamos.map(async (prestamo) => {
           return await getLibroAmigo(
-            prestamo.fields.id_dueno_libro.stringValue,
-            prestamo.fields.id_libro.stringValue
+            prestamo.fields?.id_dueno_libro.stringValue,
+            prestamo.fields?.id_libro.stringValue
           );
         })
       );
@@ -92,6 +93,10 @@ export default function PrestamosScreen() {
 
   const handleRefresh = async () => {
     setRefresh(true);
+    setPrestamosUsuario(undefined);
+    setSolicitudesUsuario(undefined);
+    setPrestamoDetalle([]);
+    setSolicitudDetalle([]);
     await obtenerPrestamosYLibros();
     await obtenerSolicitudYLibro();
     setRefresh(false);
@@ -151,7 +156,7 @@ export default function PrestamosScreen() {
     try{
       await borrarPrestamo(idPrestamo)
       alert("Borraste un pedido")
-      handleRefresh()
+      handleRefresh();
     }
     catch(err){
       alert(err);
@@ -162,7 +167,7 @@ export default function PrestamosScreen() {
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
-      style={{ flex: 1, backgroundColor: "#fff" }}
+      style={{ flex: 1, backgroundColor: "#E8EBF7" }}
     >
 
       <View  style={style.barraSuperior}>
@@ -219,23 +224,20 @@ export default function PrestamosScreen() {
             prestamoDetalle.map((libro, index) => {
               const prestamo = prestamosUsuario[index];
               const prestamoID = prestamo?.name?.split("/").pop() || "";
+              const tiempoFaltante = prestamo.fields?.estado?.stringValue === "aceptado" 
+              ? calcularTiempoFaltante(prestamo.fields?.fecha_devolucion?.timestampValue)
+              : null;
                 if(prestamo.fields.estado_devolucion.stringValue === "pendiente"){
               return (
                 <View key={index}>
-                  <Image
-                    source={{ uri: libro.imagen_url.stringValue }}
-                    style={{ width: 50, height: 75 }}
+                  <CartaSolicitud
+                    imagen={libro.imagen_url.stringValue}
+                    titulo_libro={prestamo.fields.titulo_libro.stringValue}
+                    quien={prestamo.fields.nombre_usuario.stringValue}
+                    mensaje={prestamo.fields.mensaje.stringValue}
+                    estado={prestamo.fields.estado.stringValue}
+                    tiempo={tiempoFaltante}
                   />
-                  <Text>idPrestamo:{prestamoID}</Text>
-                  <Text>Libro: {libro.titulo.stringValue}</Text>
-                  <Text>Usuario: {libro.quien_agrego.stringValue}</Text>
-                  <Text>
-                    Estado de solicitud: {prestamo.fields.estado.stringValue}
-                  </Text>
-                  <Text>
-                    Ubicacion: {prestamo.fields.ubicacion.stringValue}
-                  </Text>
-                  <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
                   {prestamo.fields.estado.stringValue === "rechazado" 
                   && 
                   <View>
@@ -243,11 +245,11 @@ export default function PrestamosScreen() {
                     <Button title="Borrar pedido" onPress={()=>handleBorrarPedido(prestamoID)}/> 
                   </View>
                   }
-                  {prestamo.fields.estado.stringValue === "aceptado" &&
-                    <View>
-                      <Text>Tiempo faltante: {calcularTiempoFaltante(prestamo.fields.fecha_devolucion.timestampValue)}</Text>
-                      <Button title="Devolver el libro" onPress={()=>{handleDevolver(prestamoID)}}/>
-                    </View>
+                  {prestamo.fields.estado.stringValue === "aceptado" 
+                  && 
+                  <View>
+                    <Button title="Devolver libro" onPress={()=>handleDevolver(prestamoID)}/>
+                  </View>
                   }
                 </View>
               );}
@@ -273,22 +275,20 @@ export default function PrestamosScreen() {
           {solicitudesUsuario ? (
             solicitudDetalle.map((libro, index) => {
               const prestamo = solicitudesUsuario[index];
-              const prestamoID = prestamo.name.split("/").pop() || "";
+              const prestamoID = prestamo?.name?.split("/").pop() || "";
               if (
                 prestamo?.fields?.estado?.stringValue === "pendiente" 
               ) {
                 return (
                   <View key={index}>
-                    <Image
-                      source={{ uri: libro.imagen_url.stringValue }}
-                      style={{ width: 50, height: 75 }}
+                    <CartaSolicitud
+                      imagen={libro.imagen_url.stringValue}
+                      titulo_libro={libro.titulo.stringValue}
+                      quien={prestamo.fields.nombre_usuario.stringValue}
+                      mensaje={prestamo.fields.mensaje.stringValue}
+                      estado={prestamo.fields.estado.stringValue}
+                      estadoSolicitud={prestamo.fields.estado_devolucion.stringValue}
                     />
-                    <Text>idPrestamo: {prestamoID}</Text>
-                    <Text>Libro: {libro.titulo.stringValue}</Text>
-                    <Text>Usuario: {prestamo.fields.nombre_usuario.stringValue}</Text>
-                    <Text>Estado de solicitud: {prestamo.fields.estado.stringValue}</Text>
-                    <Text>Ubicacion: {prestamo.fields.ubicacion.stringValue}</Text>
-                    <Text>Mensajes: {prestamo.fields.mensaje.stringValue}</Text>
                     <Button
                       title="Aceptar"
                       onPress={() =>

@@ -69,6 +69,9 @@ export default function RootLayout() {
         />
       <Stack.Screen
         name="libro/[libro]"
+        options={{
+          title: "Libro"
+        }}
       />
       <Stack.Screen
         name="bibliotecaLibro/[libro]"

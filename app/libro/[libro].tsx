@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,15 +13,23 @@ import { ObtenerLibroPorId } from "@/api/obtenerLibros";
 import type { Libro, librosBiblioteca } from "@/utils/types";
 import { useNavigation } from "expo-router";
 import { useLayoutEffect } from "react";
-import { addLibro } from "@/api/biblioteca";
+import { addLibro, getBiblioteca } from "@/api/biblioteca";
+import Alerta from "@/components/Alerta";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Boton from "@/components/Boton";
+import AntDesign from '@expo/vector-icons/AntDesign';
+
 
 
 export default function DetalleLibro() {
   const { libro } = useLocalSearchParams<{ libro: string }>();
   const router = useRouter();
 
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [variante, setVariante] = useState<"Informante" | "Exitoso" | "Advertencia">("Informante")
   const [detalle, setDetalle] = useState<Libro | null>(null);
-
+  const [mensaje, setMensaje] = useState<string>("")
+  const [cargando, setCargando] = useState<boolean>(false);
   const navigation = useNavigation();
   useLayoutEffect(() => {
     if (detalle?.titulo) {
@@ -54,25 +62,37 @@ export default function DetalleLibro() {
   }
   
   const handleAgregar = async() =>{
+    
     const body: librosBiblioteca = {
-      titulo: detalle.titulo,
-      autor: detalle.autor[0],
+      titulo: detalle.titulo ? detalle.titulo : "sin titulo",
+      autor: detalle.autor ? detalle.autor[0] : "sin autor",
       descripcion: detalle.descripcion ? detalle.descripcion : "sin descripcion",
-      categoria: detalle.categoria[0],
+      categoria: detalle.categoria ? detalle.categoria[0] : "sin categoria",
       formato: "digital",
       imagen: detalle.imagen,
     }
-    console.log("libro a agregar" , body)
     try{
+      const miBiblioteca = await getBiblioteca()
+      miBiblioteca.map((libro:any)=>{
+        if(libro.fields.titulo.stringValue === detalle.titulo){
+          throw new Error("El libro ya se encuentra en la biblioteca")
+        }
+      })
       await addLibro(body, detalle.imagen)
-      alert("se agrego el libro")
+      setVariante("Exitoso")
+      setMensaje("Libro agregado a la biblioteca exitosamente")
+      setAlerta(true);
     }
     catch(e){
-      console.log(e);
+      setVariante("Informante")
+      setMensaje(e instanceof Error ? e.message : "Error al agregar el libro")
+      setAlerta(true);
     }
   }
 
   return (
+    <SafeAreaView edges={['top', 'bottom']} style={{position:"relative", flex:1, backgroundColor:"#fdfdfd"}}>
+
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>{detalle.titulo}</Text>
       <Text style={styles.authors}>Autor(es): {detalle.autor || "Desconocido"}</Text>
@@ -82,23 +102,39 @@ export default function DetalleLibro() {
         <Image
           source={{ uri: detalle.imagen }}
           style={styles.image}
-          resizeMode="contain"
+          contentFit="contain"
         />
         
       )}
-      <Button title="agregar a biblioteca" onPress={()=>handleAgregar()}/>
+      <Boton
+        titulo="Agrega a biblioteca"
+        variante="Cuaternario"
+        onPress={() => handleAgregar()}
+        icon={<AntDesign name="plus" size={24} color="#ffff" />}
+      />
       <Text style={styles.description}>
         {detalle.descripcion
           ? detalle.descripcion.replace(/<[^>]+>/g, "")
           : "Sin descripción disponible."}
       </Text>
+      
+      <Alerta
+        variante={variante!}
+        mensaje={mensaje}
+        visible={alerta}
+        onHide={() => {setAlerta(false)}}
+      />
+
     </ScrollView>
+  </SafeAreaView>
+
   );
 }
 const styles = StyleSheet.create({
   container: {
-    padding: 24,
     backgroundColor: "#fdfdfd",
+    padding:24,
+    justifyContent: "center",
     alignItems: "center",
   },
   title: {

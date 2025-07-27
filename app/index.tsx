@@ -12,6 +12,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { getCredencial } from "@/utils/hooks/useCredential";
 import { singIn } from "@/api/useSesion";
+import { actualizarToken } from "@/api/usuarios";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -25,6 +26,7 @@ export default function WelcomeScreen() {
       if(session){
         const user = await singIn(session.usuario, session.contrasena)
         if(user){
+          await actualizarToken();
           router.replace("/(tabs)")
         }
       }
