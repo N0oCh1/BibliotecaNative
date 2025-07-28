@@ -35,6 +35,7 @@ import FontAwesome from "@expo/vector-icons/FontAwesome";
 import Entypo from "@expo/vector-icons/Entypo";
 import Alerta from "@/components/Alerta";
 import SuccesModal from "@/components/SuccesModal";
+import { set } from "react-hook-form";
 
 export default function PrestamosScreen() {
   const [prestamosUsuario, setPrestamosUsuario] = useState<Prestamos[]>();
@@ -174,20 +175,31 @@ export default function PrestamosScreen() {
 
   const handleDevolver = async (idPrestamo: string) => {
     try {
+      setLoadingBoton(true);
       await devolverLibro(idPrestamo);
-      alert("Devolviste un libro");
+      setAlerta(true);
+      setMensaje("Devolviste un libro");
+      setVarianteAlerta("Exitoso");
       handleRefresh();
+      setLoadingBoton(false);
     } catch (err) {
-      alert(err);
+      setAlerta(true);
+      setMensaje((err as Error).message);
+      setVarianteAlerta("Advertencia");
+      setLoadingBoton(false);
     }
   };
   const handleBorrarPedido = async (idPrestamo: string) => {
     try {
       await borrarPrestamo(idPrestamo);
-      alert("Borraste un pedido");
+      setAlerta(true);
+      setMensaje("Borraste un pedido");
+      setVarianteAlerta("Exitoso");
       handleRefresh();
     } catch (err) {
-      alert(err);
+      setAlerta(true)
+      setMensaje((err as Error).message);
+      setVarianteAlerta("Advertencia");
     }
   };
   console.log("Todas las solicitudes => ", solicitudesUsuario);
@@ -312,7 +324,6 @@ export default function PrestamosScreen() {
                             }}
                           />
                           <Boton
-                            loading={loadingBoton}
                             titulo="Borrar Pedido"
                             variante="Terciario"
                             icon={
@@ -333,6 +344,7 @@ export default function PrestamosScreen() {
                       {aceptado && (
                         <View style={style.container_boton}>
                           <Boton
+                            loading={loadingBoton}
                             titulo="Devolver libro"
                             variante="Secundario"
                             icon={

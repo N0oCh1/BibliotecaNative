@@ -1,23 +1,22 @@
-import { Controller, set, useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import {
   View,
   Text,
   TextInput,
   Pressable,
   ScrollView,
-  Button,
   RefreshControl,
   ActivityIndicator,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
-import { use, useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { CurrentUser } from "@/utils/hooks/useAuthentication";
-import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
 import { buscarAmigo, insertarAmigo, obtenerMisAmigos } from "@/api/amigos";
 import { Amigos, LibroBibliotecaDetalle, Prestamos } from "@/utils/types";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getLibro, getLibroAmigo } from "@/api/biblioteca";
+import { getLibro } from "@/api/biblioteca";
 import { obtenerSolicitudes } from "@/api/prestarLibro";
 import calcularTiempoFaltante from "@/utils/hooks/useTiempoFaltante";
 import * as Clipboard from "expo-clipboard";
@@ -65,8 +64,8 @@ export default function AmigosScreen() {
           (libro) => libro !== undefined
         ) as LibroBibliotecaDetalle[]
       );
-    } catch (erro) {
-      alert(erro);
+    }catch(e)  {
+      console.log(e)
     }
   };
 
@@ -233,8 +232,9 @@ export default function AmigosScreen() {
               solicitudDetalle.map((libro, index) => {
                 const prestamo = solicitudesUsuario[index];
                 const tiempoFaltante = calcularTiempoFaltante(
-                  prestamo.fields.fecha_devolucion.timestampValue
+                  prestamo.fields?.fecha_devolucion?.timestampValue
                 );
+                console.log("prestmaos = >" , prestamo)
                 if (prestamo?.fields?.estado?.stringValue === "aceptado") {
                   return (
                     <CartaSolicitud

@@ -8,22 +8,21 @@ import {
   useRouter,
 } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Image } from "expo-image";
 import {
   View,
-  Text,
-  Pressable,
   RefreshControl,
-  SafeAreaView,
   ScrollView,
+  Text,
   StyleSheet,
-  Button,
 } from "react-native";
 import { obtenerNombreUsuario, obtenerTokenDeAmigo } from "@/api/usuarios";
-import { sendNotification } from "@/api/pushNotification";
 import { eliminarAmistad } from "@/api/amigos";
 import LibroPresentacion from "@/components/LibroPresentacion";
-
+import { SafeAreaView } from "react-native-safe-area-context";
+import Alerta from "@/components/Alerta";
+import SuccesModal from "@/components/SuccesModal";
+import Boton from "@/components/Boton";
+import AntDesign from "@expo/vector-icons/AntDesign";
 
 export default function BibliotecaAmigoScreen() {
   const navigation = useNavigation();
@@ -32,11 +31,23 @@ export default function BibliotecaAmigoScreen() {
   const router = useRouter();
   const [biblioteca, setBibilioteca] = useState<LibroBibliotecaDetalle[]>();
   const [refresh, setRefresh] = useState<boolean>(false);
-  const [tokenPush, setTokenPush] = useState<string>();
-  const [amigo, setAmigo] = useState<string>()
- 
-   useFocusEffect(
+
+  // estado para manejar las alertas
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<string>("");
+  const [variante, setVariante] = useState<
+    "Informante" | "Exitoso" | "Advertencia"
+  >("Informante");
+  // estado para manejar el modal
+  const [modal, setModal] = useState<boolean>(false);
+  const [mensajeModal, setMensajeModal] = useState<string>("");
+  const [funcion, setFuncion] = useState<() => void>();
+  // estado para el boton cargando
+  const [carga, setCargando] = useState<boolean>(false);
+
+  useFocusEffect(
     useCallback(() => {
+      setBibilioteca([]);
       const obtenerBibliotecaAmigo = async () => {
         navigation.setOptions({ title: `Biblioteca de ${usuario}` });
         const bibliotecaAmigo = await buscarBibliotecaAmigo(id);
@@ -45,84 +56,111 @@ export default function BibliotecaAmigoScreen() {
       obtenerBibliotecaAmigo();
     }, [id])
   );
-  useEffect(()=>{
-    const obtenerToken = async() =>{
-      const token = await obtenerTokenDeAmigo(id);
-      setTokenPush(token);
-      const nombreusuario = await obtenerNombreUsuario();
-        setAmigo(nombreusuario);
-    }
-    obtenerToken();
-  },[])
 
-
-  
   const handleRefresh = async () => {
-    setRefresh(true);
-    const updatedBiblioteca = await buscarBibliotecaAmigo(id);
-    setBibilioteca(updatedBiblioteca);
-    setRefresh(false);
+    try {
+      setRefresh(true);
+      setBibilioteca([]);
+      const updatedBiblioteca = await buscarBibliotecaAmigo(id);
+      setBibilioteca(updatedBiblioteca);
+      setRefresh(false);
+    } catch {
+      setRefresh(false);
+      setBibilioteca([]);
+    }
   };
-  
+
   const handleDetails = (libroId: string) => {
-    router.push({ pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`, params: { idAmigo: id } });
+    router.push({
+      pathname: `/bibliotecaAmigo/libroAmigo/${libroId}`,
+      params: { idAmigo: id },
+    });
   };
-  const enviarNotificacion = async () => {
-    const body:NotificationType = {
-      to: tokenPush,
-      title: `${amigo}`,
-      body:"Te envio una notificacion"
+  const handleEliminarAmigo = async () => {
+    try {
+      setCargando(true);
+      await eliminarAmistad(id);
+      setAlerta(true);
+      setVariante("Exitoso");
+      setMensaje("Amigo eliminado");
+      setCargando(false);
+    } catch {
+      setAlerta(true);
+      setVariante("Advertencia");
+      setMensaje("Error al eliminar amigo");
+      setCargando(false);
     }
-    try{
-      await sendNotification(body)
-    }
-    catch(e){
-      console.log(e)
-    }
-  }
-  const handleEliminarAmigo = async() =>{
-    try{
-      await eliminarAmistad(id)
-      alert("Amigo eliminado")
-    }
-    catch(e){
-      console.log(e)
-    }
-  }
-  
+  };
+  console.log(biblioteca);
   return (
     <SafeAreaView
+      edges={["bottom"]}
       style={{
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: "#E8EBF7",
+        position: "relative",
       }}
     >
-      <ScrollView
-        style={{ width: "100%", height: "100%", flex: 1, marginTop: 60 }}
-        refreshControl={
-          <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
-        }
-      >
-        <Text>Biblioteca</Text>
-        <Button title="enviar notificacion" onPress={enviarNotificacion}/>
-        <Button title="Eliminar amigo" onPress={()=>handleEliminarAmigo()}/>
-        <View style={style.gridContainer}>
-          {biblioteca &&
-            biblioteca.map((libro: any, index: number) => {
-              const libroId = libro.name.split("/").pop();
-              return (
-                <LibroPresentacion
-                  key={index}
-                  imagen={libro.fields.imagen_url?.stringValue}
-                  titulo={libro.fields.titulo?.stringValue}
-                  autor={libro.fields.autor?.stringValue}
-                  onPress={() => handleDetails(libroId)}
-                />
-              );
-            })}
+      <Boton
+        titulo="Eliminar amigo"
+        variante="Terciario"
+        onPress={() => {
+          setMensajeModal(`Esta seguro de eliminar a ${usuario}`);
+          setModal(true);
+          setFuncion(() => () => handleEliminarAmigo());
+        }}
+        loading={carga}
+        icon={<AntDesign name="deleteuser" size={24} color="white" />}
+      />
+      {biblioteca && biblioteca?.length > 0 ? (
+        <ScrollView
+          style={{ width: "100%", height: "100%" }}
+          refreshControl={
+            <RefreshControl refreshing={refresh} onRefresh={handleRefresh} />
+          }
+        >
+          <View style={style.gridContainer}>
+            {biblioteca &&
+              biblioteca.map((libro: any, index: number) => {
+                const libroId = libro.name.split("/").pop();
+                return (
+                  <LibroPresentacion
+                    key={index}
+                    imagen={libro.fields.imagen_url?.stringValue}
+                    titulo={libro.fields.titulo?.stringValue}
+                    autor={libro.fields.autor?.stringValue}
+                    onPress={() => handleDetails(libroId)}
+                  />
+                );
+              })}
+          </View>
+        </ScrollView>
+      ) : (
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <Text>Tu amigo aun no tiene libros en su biblioteca</Text>
         </View>
-      </ScrollView>
+      )}
+
+      <Alerta
+        variante={variante}
+        visible={alerta}
+        mensaje={mensaje}
+        onHide={() => {
+          setAlerta(false);
+          router.back();
+        }}
+      />
+      <SuccesModal
+        visible={modal}
+        mensaje={mensajeModal}
+        rechazar={() => setModal(false)}
+        aceptar={() => {
+          funcion?.();
+          setModal(false);
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -174,4 +212,3 @@ const style = StyleSheet.create({
     borderRadius: 10,
   },
 });
-

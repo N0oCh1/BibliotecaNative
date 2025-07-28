@@ -71,13 +71,13 @@ const getLibro = async (libroId: string) : Promise<LibroBibliotecaDetalle> => {
         },
       }
     ).then(res=>res.json()).then(data=>data.fields)
-    if (response.error) {
+    if (response?.error) {
       throw new Error(response.error.message)
     }
     return response || {}
   }
   catch (err) {
-    throw new Error("Error al obtener biblioteca")
+    throw new Error("Error al obtener biblioteca " + err)
 
   }
 }
@@ -123,7 +123,7 @@ const getBiblioteca = async (userId?: string) => {
     return response || []
   }
   catch (err) {
-    throw new Error("Error al obtener biblioteca")
+    throw new Error("Error al obtener biblioteca " + err)
   }
 }
 

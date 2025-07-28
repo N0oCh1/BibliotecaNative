@@ -28,8 +28,8 @@ const SuccesModal: React.FC<ModalProps> = ({
         <Text style={{fontSize:20, fontWeight:"bold", textAlign:"center", color:"#0056b3"}}>Quieres continuar ?</Text>
         {mensaje ? <Text>{mensaje}</Text> : null}
         <View style={{flexDirection:"row"}}>
-          <Boton titulo="Aceptar" variante="Primario" onPress={aceptar} />
-          <Boton titulo="Rechazar" variante="Terciario" onPress={rechazar} />
+          <Boton titulo="Continuar" variante="Primario" onPress={aceptar} />
+          <Boton titulo="Cancelar" variante="Terciario" onPress={rechazar} />
         </View>
       </View>
       </View>
@@ -49,7 +49,7 @@ const style = StyleSheet.create({
     backgroundColor:"#0000006c"
   },
   modal:{
-    padding:12,
+    padding:24,
     width:"80%",
     height:"30%",
     borderRadius:8,

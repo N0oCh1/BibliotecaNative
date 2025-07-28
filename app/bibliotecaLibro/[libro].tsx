@@ -17,7 +17,11 @@ import { useLayoutEffect } from "react";
 import { getLibro, removeLibro } from "@/api/biblioteca";
 
 import Alerta from "@/components/Alerta";
-import { SafeAreaView } from "react-native-safe-area-context";
+import Boton from "@/components/Boton";
+import Entypo from '@expo/vector-icons/Entypo';
+import SuccesModal from "@/components/SuccesModal";
+import { Colors } from "react-native/Libraries/NewAppScreen";
+
 
 export default function BibliotecaLibroScreen() {
   const router = useRouter();
@@ -28,12 +32,15 @@ export default function BibliotecaLibroScreen() {
   
   const [detalle, setDetalle] = useState<LibroBibliotecaDetalle>();
   
+  const [modal, setModal] = useState<boolean>(false);
+  const [mensajeModal, setMensajeModal] = useState<string>("");
+  const [funcion, setFuncion] = useState<() => void>();
 
   const navigation = useNavigation();
 
   useLayoutEffect(() => {
     if (detalle?.titulo?.stringValue) {
-      navigation.setOptions({ title: detalle.titulo.stringValue });
+      navigation.setOptions({ title: detalle.titulo.stringValue,});
     }
   }, [detalle]);
 
@@ -77,13 +84,13 @@ export default function BibliotecaLibroScreen() {
     }
   };
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{position:"relative", flex:1, backgroundColor:"#fdfdfd"}}>
+    <View  style={{position:"relative", flex:1, backgroundColor:"#E8EBF7"}}>
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>{detalle.titulo.stringValue} </Text>
         <Text style={styles.authors}>
           Autor(es): {detalle.autor.stringValue || "Desconocido"}{" "}
         </Text>
-
+        <View style={{backgroundColor:"white", padding:20, borderRadius:8, width:"100%", alignItems:"center"}}>
         {detalle.imagen_url.stringValue && (
           <Image
             source={{ uri: detalle.imagen_url.stringValue }}
@@ -103,18 +110,34 @@ export default function BibliotecaLibroScreen() {
             margin: 10,
           }}
         >
-          <Button
-            title="Borrar de la biblioteca"
-            onPress={() => handleDeleted(libro)}
+          <Boton
+          icon={<Entypo name="erase" size={24} color="#ffffffff" />}
+            titulo="Borrar libro"
+            variante="Terciario"
+            onPress={() => {
+              setModal(true);
+              setMensajeModal("Estas seguro que quieres borrar el libro?");
+              setFuncion(() => () => handleDeleted(libro))}}
           />
         </View>
 
-        <Text style={styles.published}>Descripcion</Text>
-        <Text style={styles.description}>
-          {detalle.descripcion.stringValue
-            ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
-            : "Sin descripción disponible."}
-        </Text>
+          <Text style={styles.published}>Descripcion</Text>
+          <Text style={styles.description}>
+            {detalle.descripcion.stringValue
+              ? detalle.descripcion.stringValue.replace(/<[^>]+>/g, "")
+              : "Sin descripción disponible."}
+          </Text>
+        </View>
+              
+        <SuccesModal
+          visible={modal}
+          mensaje={mensajeModal}
+          rechazar={() => setModal(false)}
+          aceptar={() => {
+            funcion?.();
+            setModal(false);
+          }}
+        />
         <Alerta
           variante={"Exitoso"}
           mensaje={mensaje}
@@ -125,20 +148,19 @@ export default function BibliotecaLibroScreen() {
           }}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
 
   );
 }
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    backgroundColor: "#fdfdfd",
     alignItems: "center",
   },
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    color: "#1a1a1a",
+    color: "#0056b3",
     textAlign: "center",
     marginBottom: 12,
   },
