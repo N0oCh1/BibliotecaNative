@@ -128,7 +128,7 @@ export default function createBook() {
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} style={{ flex: 1, backgroundColor: "#f0f8ff", position:"relative" }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1, backgroundColor: "#ffffff", position:"relative" }}>
         <View style={styles.barraSuperior}>
         <Text style={styles.barraTexto}>Añadir</Text>
       </View>
@@ -279,7 +279,7 @@ export default function createBook() {
 const styles = StyleSheet.create({
   container: {
     padding: 10,
-    backgroundColor: "#f0f8ff",
+    backgroundColor: "#E8EBF7",
   },
   barraSuperior: {
     flexDirection: "row",

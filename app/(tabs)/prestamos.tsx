@@ -255,7 +255,7 @@ export default function PrestamosScreen() {
           }
         >
           <View style={style.container_card}>
-            {prestamosUsuario ? (
+            {prestamosUsuario && prestamosUsuario.length > 0 ? (
               prestamoDetalle.map((libro, index) => {
                 const prestamo = prestamosUsuario[index];
                 const prestamoID = prestamo?.name?.split("/").pop() || "";
@@ -391,7 +391,7 @@ export default function PrestamosScreen() {
           }
         >
           <View style={style.container_card}>
-            {solicitudesUsuario ? (
+            {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
               solicitudDetalle.map((libro, index) => {
                 const prestamo = solicitudesUsuario[index];
                 const prestamoID = prestamo?.name?.split("/").pop() || "";
@@ -469,7 +469,12 @@ export default function PrestamosScreen() {
                 return null;
               })
             ) : (
-              <Text>No hay solicitudes</Text>
+              <Text
+              style={{
+                  textAlign: "center",
+                  fontSize: 24,
+                  fontWeight: "bold",
+                }}>No hay solicitudes</Text>
             )}
           </View>
         </ScrollView>

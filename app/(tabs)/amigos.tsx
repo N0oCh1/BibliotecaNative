@@ -137,7 +137,7 @@ export default function AmigosScreen() {
   };
   return (
     <SafeAreaView
-      edges={["top", "bottom"]}
+      edges={[ "bottom"]}
       style={{ flex: 1, backgroundColor: "#E8EBF7", position: "relative" }}
     >
       <View style={styles.container}>
@@ -294,8 +294,10 @@ const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    marginBottom: 10,
+    marginTop: 10,
     padding: 10,
   },
   input: {
@@ -303,7 +305,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
     borderTopLeftRadius: 4,
     borderWidth: 2,
-    borderColor: "#ccc",
+    borderColor: "#007bff",
     padding: 10,
   },
   button: {
