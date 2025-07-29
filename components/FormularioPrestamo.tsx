@@ -1,15 +1,12 @@
 import { enviarSolicitud } from "@/api/prestarLibro";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { Controller, useForm } from "react-hook-form";
+import { Controller, set, useForm } from "react-hook-form";
 import { Button, Modal, TextInput, View, StyleSheet, Text } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import * as yup from "yup";
-import * as Location from 'expo-location';
-import MapView, { Marker } from 'react-native-maps';
 import React, { useState, useEffect, SetStateAction } from "react";
-
-
-
+import Boton from "./Boton";
+import Alerta from "./Alerta";
 
 interface FormularioPrestamoProps {
   detalleLibro: { idLibro: string; idOwner: string; titulo: string };
@@ -32,6 +29,12 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
     { label: "15 Dias", value: "15" },
     { label: "30 Dias", value: "30" },
   ]);
+  const [alerta, setAlerta] = useState<boolean>(false);
+  const [mensaje, setMensaje] = useState<string>("");
+  const [variante, setVariante] = useState<"Informante" | "Exitoso" | "Advertencia">("Informante");
+
+  const [cargando, setCargando] = useState<boolean>(false);
+
   const {
     control,
     handleSubmit,
@@ -41,12 +44,9 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
     resolver: yupResolver(validacion),
   });
 
-  
-const [location, setLocation] = useState(null);
-const [region, setRegion] = useState(null);
-
   const solicitar = async (data: any) => {
     try {
+      setCargando(true);
       const datosFormulario = {
         ubicacion: data.ubicacion,
         mensaje: data.mensaje,
@@ -58,11 +58,15 @@ const [region, setRegion] = useState(null);
         detalleLibro.idOwner,
         datosFormulario
       );
-      alert("Solicitud enviada");
-      reset();
-      setModalVisible(false);
+      setMensaje("Solicitud enviada");
+      setVariante("Exitoso");
+      setAlerta(true);
+      setCargando(false);
     } catch (erro) {
-      alert(erro);
+      setMensaje((erro as Error).message);
+      setVariante("Advertencia");
+      setAlerta(true);
+      setCargando(false);
     }
   };
 
@@ -142,11 +146,30 @@ const [region, setRegion] = useState(null);
           <View
             style={{ flexDirection: "row", justifyContent: "space-between" }}
           >
-            <Button title="Cancelar" onPress={() => setModalVisible(false)} />
-            <Button title="Enviar" onPress={handleSubmit(solicitar)} />
+            <Boton
+              titulo="Cancelar"
+              onPress={() => setModalVisible(false)}
+              variante="Secundario"
+            />
+            <Boton
+              titulo="Enviar"
+              onPress={handleSubmit(solicitar)}
+              variante="Primario"
+              loading={cargando}
+            />
           </View>
         </View>
       </View>
+      <Alerta
+        visible={alerta}
+        variante={variante}
+        mensaje={mensaje}
+        onHide={() => {
+          reset();
+          setModalVisible(false);
+          setAlerta(false)
+        }}
+      />
     </Modal>
   );
 };

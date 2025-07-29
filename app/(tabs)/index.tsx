@@ -15,6 +15,7 @@ import { Alert } from 'react-native';
 import LibroPresentacion from "@/components/LibroPresentacion";
 import Boton from "@/components/Boton";
 import Entypo from '@expo/vector-icons/Entypo';
+import SuccesModal from "@/components/SuccesModal";
 
 NotificationMode("prod")
 export default function HomeScreen() {
@@ -27,34 +28,18 @@ export default function HomeScreen() {
   const [alerta, setAlerta] = useState<boolean>(false)
   const [mensaje, setMensaje] = useState<string>("")
 
+  const [modal, setModal] = useState<boolean>(false)
+  const [mensajeModal, setMensajeModal] = useState<string>("")
+  const [funcion, setFuncion] = useState<() => void>()
 
   const route = useRouter();
   const auth = CurrentUser();
 
  const cerrarSesion = async () => {
-     // Mostrar la alerta de confirmación
-     Alert.alert(
-         "Cerrar sesión", // Título de la alerta
-         "¿Estás seguro de que deseas cerrar sesión?", // Mensaje de la alerta
-         [
-             {
-                 text: "Cancelar", // Botón para cancelar
-                 onPress: () => console.log("Cierre de sesión cancelado"), // Acción de cancelar
-                 style: "cancel", // Estilo del botón de cancelar
-             },
-             {
-                 text: "Cerrar sesión", // Botón para confirmar
-                 onPress: async () => {
-                     // Si el usuario confirma
-                     setPressed(false); // Resetear estado de presionado
-                     await removeCredencial(); // Eliminar las credenciales
-                     await removeCurrentUser(); // Eliminar el usuario actual
-                     route.push("/login"); // Redirigir al login
-                 },
-             },
-         ],
-         { cancelable: false } // Deshabilita cerrar la alerta tocando fuera de ella
-     );
+    setPressed(false);
+    await removeCredencial(); 
+    await removeCurrentUser(); 
+    route.push("/login"); 
  };
   // cargar datos al focucear la pagina principal
     useFocusEffect(
@@ -121,7 +106,10 @@ export default function HomeScreen() {
           <Boton
             titulo="Cerrar Sesión"
             variante="Terciario"
-            onPress={() => cerrarSesion()}
+            onPress={() => {
+              setModal(true)
+              setMensajeModal("Estas seguro que quieres cerrar sesion?")
+              setFuncion(()=>()=>cerrarSesion())}}
             icon = {<Entypo name="log-out" size={24} color="#ffff" />}
           />
         </View>
@@ -152,6 +140,15 @@ export default function HomeScreen() {
         visible={alerta}
         mensaje={mensaje}
         onHide={() => setAlerta(false)}
+      />
+      <SuccesModal
+        visible={modal}
+        mensaje={mensajeModal}
+        rechazar={() => setModal(false)}
+        aceptar={() => {
+          setModal(false);
+          funcion?.();
+        }}
       />
     </View>
   );
