@@ -1,10 +1,15 @@
 import { enviarSolicitud } from "@/api/prestarLibro";
 import { yupResolver } from "@hookform/resolvers/yup";
-import React, { SetStateAction, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { Button, Modal, TextInput, View, StyleSheet, Text } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import * as yup from "yup";
+import * as Location from 'expo-location';
+import MapView, { Marker } from 'react-native-maps';
+import React, { useState, useEffect, SetStateAction } from "react";
+
+
+
 
 interface FormularioPrestamoProps {
   detalleLibro: { idLibro: string; idOwner: string; titulo: string };
@@ -35,6 +40,10 @@ const FormularioPrestamo = (props: FormularioPrestamoProps) => {
   } = useForm({
     resolver: yupResolver(validacion),
   });
+
+  
+const [location, setLocation] = useState(null);
+const [region, setRegion] = useState(null);
 
   const solicitar = async (data: any) => {
     try {
