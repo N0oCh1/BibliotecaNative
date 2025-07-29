@@ -70,9 +70,16 @@ export default function Login() {
     const router = useRouter();
 
     const signIn = async () => {
+        // Validar si los campos están vacíos
+        if (!email || !password) {
+            setError("Por favor ingresa tanto el correo como la contraseña.");
+            return; // No continuar con la lógica de inicio de sesión
+        }
+
         try {
-            const user = await singIn(email!, password!);
+            const user = await singIn(email!, password!); // Aquí llamas a tu función de inicio de sesión
             if (user) {
+                // Si se desea recordar las credenciales
                 recordar
                     ? setCredencial({
                           usuario: email!,
@@ -80,14 +87,16 @@ export default function Login() {
                           pushToken: expoPushToken,
                       })
                     : null;
+
                 await actualizarToken();
-                router.replace("/(tabs)");
+                router.replace("/(tabs)"); // Redirigir a la siguiente página
             }
         } catch (error) {
             console.log(error);
             setError("Correo o contraseña incorrectos");
         }
     };
+
 
     // Función para el restablecimiento de contraseña
     const handleForgotPassword = () => {
