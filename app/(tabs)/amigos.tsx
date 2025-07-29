@@ -142,13 +142,14 @@ export default function AmigosScreen() {
     >
       <View style={styles.container}>
         <View>
-          <Boton
-            titulo="Copia Codigo"
+         
+          <View style={styles.searchContainer}>
+             <Boton
+            titulo="Mi ID"
             variante="Secundario"
             icon={<AntDesign name="copy1" size={24} color="#0077b6" />}
             onPress={() => copiarCodigo(userId)}
           />
-          <View style={styles.searchContainer}>
             <Controller
               control={control}
               name="search"
@@ -189,7 +190,7 @@ export default function AmigosScreen() {
                 color: "#0056b3",
               }}
             >
-              Tu lista de amigos
+               Amigos
             </Text>
             {detalleAmigos && detalleAmigos.length > 0 ? (
               detalleAmigos.map((amigo, index) => (
@@ -226,7 +227,7 @@ export default function AmigosScreen() {
                 color: "#0056b3",
               }}
             >
-              Listas de pendiente a devolver
+            Prestados
             </Text>
             {solicitudesUsuario && solicitudesUsuario.length > 0 ? (
               solicitudDetalle.map((libro, index) => {
@@ -251,7 +252,7 @@ export default function AmigosScreen() {
                 return false;
               })
             ) : (
-              <Text>No hay solicitudes</Text>
+              <Text>No hay prestamos</Text>
             )}
           </View>
         </ScrollView>

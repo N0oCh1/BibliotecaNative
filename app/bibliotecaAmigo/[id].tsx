@@ -103,17 +103,7 @@ export default function BibliotecaAmigoScreen() {
         position: "relative",
       }}
     >
-      <Boton
-        titulo="Eliminar amigo"
-        variante="Terciario"
-        onPress={() => {
-          setMensajeModal(`Esta seguro de eliminar a ${usuario}`);
-          setModal(true);
-          setFuncion(() => () => handleEliminarAmigo());
-        }}
-        loading={carga}
-        icon={<AntDesign name="deleteuser" size={24} color="white" />}
-      />
+      
       {biblioteca && biblioteca?.length > 0 ? (
         <ScrollView
           style={{ width: "100%", height: "100%" }}
@@ -136,6 +126,17 @@ export default function BibliotecaAmigoScreen() {
                 );
               })}
           </View>
+          <Boton
+        titulo="Eliminar amigo"
+        variante="Terciario"
+        onPress={() => {
+          setMensajeModal(`Esta seguro de eliminar a ${usuario}`);
+          setModal(true);
+          setFuncion(() => () => handleEliminarAmigo());
+        }}
+        loading={carga}
+        icon={<AntDesign name="deleteuser" size={24} color="white" />}
+      />
         </ScrollView>
       ) : (
         <View style={{ justifyContent: "center", alignItems: "center" }}>
@@ -170,6 +171,7 @@ const style = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
     paddingHorizontal: "2%",
+    paddingTop: "5%"
   },
   card: {
     width: "48%",

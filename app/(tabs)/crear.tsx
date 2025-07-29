@@ -257,7 +257,7 @@ export default function createBook() {
             icon={<Entypo name="image" size={24} color="#0077b6" />}
           />
           <Boton
-            titulo="Subir Imagen"
+            titulo="Subir Libro"
             onPress={handleSubmit(formSubmit)}
             variante="Primario"
             loading={carga}
