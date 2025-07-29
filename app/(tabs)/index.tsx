@@ -11,6 +11,7 @@ import { StatusBar } from "react-native";
 import {  useState } from "react";
 import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
 import Alerta from "@/components/Alerta";
+import { Alert } from 'react-native'; 
 import LibroPresentacion from "@/components/LibroPresentacion";
 import Boton from "@/components/Boton";
 import Entypo from '@expo/vector-icons/Entypo';
@@ -30,13 +31,31 @@ export default function HomeScreen() {
   const route = useRouter();
   const auth = CurrentUser();
 
-  const cerrarSesion = async() =>{ 
-    setPressed(false); 
-    await removeCredencial()
-    await removeCurrentUser()
-    route.push("/login")
-  }
-
+ const cerrarSesion = async () => {
+     // Mostrar la alerta de confirmación
+     Alert.alert(
+         "Cerrar sesión", // Título de la alerta
+         "¿Estás seguro de que deseas cerrar sesión?", // Mensaje de la alerta
+         [
+             {
+                 text: "Cancelar", // Botón para cancelar
+                 onPress: () => console.log("Cierre de sesión cancelado"), // Acción de cancelar
+                 style: "cancel", // Estilo del botón de cancelar
+             },
+             {
+                 text: "Cerrar sesión", // Botón para confirmar
+                 onPress: async () => {
+                     // Si el usuario confirma
+                     setPressed(false); // Resetear estado de presionado
+                     await removeCredencial(); // Eliminar las credenciales
+                     await removeCurrentUser(); // Eliminar el usuario actual
+                     route.push("/login"); // Redirigir al login
+                 },
+             },
+         ],
+         { cancelable: false } // Deshabilita cerrar la alerta tocando fuera de ella
+     );
+ };
   // cargar datos al focucear la pagina principal
     useFocusEffect(
     useCallback(() => {
