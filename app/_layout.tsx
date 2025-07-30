@@ -70,17 +70,42 @@ export default function RootLayout() {
       <Stack.Screen
         name="libro/[libro]"
         options={{
-          title: "Libro"
+          title: "Libro",
+          headerShown: true,
+          headerTitleStyle:{
+            color:"#0056b3"
+          }
         }}
       />
       <Stack.Screen
         name="bibliotecaLibro/[libro]"
+         options={{
+          title: "Libro",
+          headerShown: true,
+          headerTitleStyle:{
+            color:"#0056b3"
+          }
+        }}
       />
       <Stack.Screen
         name="bibliotecaAmigo/[id]"
+        options={{
+          title: "Biblioteca",
+          headerShown: true,
+          headerTitleStyle:{
+            color:"#0056b3"
+          }
+        }}
       />
       <Stack.Screen
         name="bibliotecaAmigo/libroAmigo/[libro]"
+        options={{
+          title: "Biblioteca",
+          headerShown: true,
+          headerTitleStyle:{
+            color:"#0056b3"
+          }
+        }}
       />
       <Stack.Screen
         name="(tabs)"

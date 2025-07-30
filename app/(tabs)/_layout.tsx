@@ -23,6 +23,9 @@ export default function TabLayout() {
         options={{
           title: 'Amigos',
           headerShown:true,
+          headerTitleStyle:{
+            color:"#0056b3"
+          },
           tabBarIcon: ({ color }) => <FontAwesome size={28} name="users" color={color} />,
         }}
       />
