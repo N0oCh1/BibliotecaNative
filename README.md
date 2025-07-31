@@ -1,38 +1,93 @@
-# Guia de inicializacion
+# 📚 BibliotecaNative
 
-1. clonar el repositorio
-2. npm install en la terminal de vs
-   (si da error asegurese de tener node js instalado)
-3. una vez intalado todas las dependencia npm start
+**BibliotecaNative** es una aplicación móvil desarrollada en **React Native con Expo** que permite a los usuarios gestionar su propia biblioteca de libros físicos y digitales, prestar libros, compartir bibliotecas con amigos y recibir notificaciones en tiempo real. Utiliza **Firebase Realtime Database** como backend, integrándose mediante la REST API sin depender del SDK oficial.
 
-le saldra un codigo QR lo escanean con la app de expo go para el telefono, asegurase de que su telefono y computadora este en la misma red
+---
 
-# Guia para abrirlo desde el emulador
+## 🚀 Características principales
 
-1. tener android studio instalado
-2. tener instaldo un SDK el mas reciente
-3. si al abrir el android studio habre en el proyecto
-   3.1. se van a la pestaña tuperior en la amburguesa
-   3.2. abrir file -> close proyect
-4. al cerra aparecera esto
+- 📖 Agrega libros propios o desde una API pública.
+- 🔄 Préstamo de libros físicos entre usuarios.
+- 👥 Compartición de biblioteca con amigos.
+- 🔔 Notificaciones push sobre préstamos y actividad.
+- 🔐 Autenticación segura mediante Firebase.
+- 📦 Almacenamiento en la nube con Firebase Realtime Database.
 
-![image](https://github.com/user-attachments/assets/cb6b3f94-652c-42d5-b1fc-8cd9ee81af32)
-   
-se van a SDK manager y si no tienen descargado, descargarse el SDK de 15 superior se van a SDK tools e instalen esto
+---
 
-![image](https://github.com/user-attachments/assets/5f64ae4f-931e-4102-a5b3-dd3f1b80cb74)
+## 🏗️ Arquitectura general
 
-una vez intalado todo se copian esta url
-![image](https://github.com/user-attachments/assets/1928f3a6-708d-4e01-8696-50f5680eff29)
+- **Cliente móvil:** React Native + Expo + TypeScript.
+- **Backend:** Firebase Realtime Database accedido vía REST API.
+- **Autenticación:** Firebase Authentication (email/password).
+- **Notificaciones:** Expo Notifications con tokens almacenados por usuario.
 
-5. nos vamos a variables de entorno
+### Estructura de rutas en Firebase:
 
-![456109691-5ac2f5eb-2c6e-49ed-9f14-694ddc199ef4](https://github.com/user-attachments/assets/acdde22b-a842-4e3d-95f5-4007a262cc61)
+```
+/usuarios/{userId}
+/libros/{userId}/libro/{libroId}
+/prestamos/{userId}/prestamo/{prestamoId}
+/amigos/{userId}/{amigoId}
+/tokens/{userId}
+/bibliotecasCompartidas/{userId}
+```
+---
 
-y agregamos una variable de systema nuevo 
-el nombre de la varible sera <ANDROID_HOME>
-y el valor sera el path que copiaron del android studio
+## 🧰 Tecnologías utilizadas
 
-a la hora de ejecutar nuevamente el <npm start> con el emulador abierto se tendra que descarga el expo go para el emulador 
+- React Native (Expo)
+- TypeScript
+- Firebase Realtime Database (REST API)
+- Firebase Authentication
+- Expo Notifications
+- AsyncStorage
 
+---
 
+## 📁 Estructura del proyecto
+
+```
+BibliotecaNative/
+├── app/ # Rutas y pantallas (Expo Router)
+├── api/ # Funciones que acceden a Firebase vía fetch
+├── components/ # Componentes reutilizables de interfaz
+├── utils/ # Funciones auxiliares (tokens, validaciones, etc.)
+├── assets/ # Recursos gráficos (imágenes, íconos)
+├── firebase.ts # Configuración del endpoint de Firebase
+├── app.config.js # Configuración de Expo
+└── tsconfig.json # Configuración de TypeScript
+```
+
+---
+
+## ⚙️ Instalación y ejecución
+
+1. Clona el repositorio:
+
+```
+git clone https://github.com/N0oCh1/BibliotecaNative.git
+cd BibliotecaNative
+```
+
+2. Instala las dependencias:
+```
+npm install
+```
+3. Ejecuta la app con Expo:
+```
+npm start
+```
+4. Escanea el código QR con Expo Go o corre en un emulador Android/iOS.
+
+---
+### 🧪 Mejoras futuras
+ Agregar pruebas unitarias y de integración.
+
+ Control global de errores HTTP.
+
+ Buscador de libros en bibliotecas compartidas.
+
+ Filtros y ordenamiento de préstamos y libros.
+
+ Rol administrativo para gestionar usuarios/libros. 
