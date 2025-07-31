@@ -2,8 +2,7 @@ import { ObtenerLibro } from "@/api/obtenerLibros";
 import type { Libro } from "@/utils/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TextInput, ActivityIndicator, Pressable, RefreshControl } from "react-native";
-import { Image } from "expo-image";
+import { View, Text, ScrollView, StyleSheet, TextInput, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import LibroPresentacion from "@/components/LibroPresentacion";
 
@@ -11,7 +10,6 @@ export default function BuscarScreen() {
   const router = useRouter()
   const [data, setData] = useState<Libro[]>();
   const [busqueda, setBusqueda] = useState<string>();
-  const [loadingImages, setLoadingImages] = useState<{ [id: string]: boolean }>({});
   const [refresh, setRefresh] = useState<boolean>(false);
 
   // obtengo los libros de la api y cuando se escribe se busca
@@ -21,15 +19,6 @@ export default function BuscarScreen() {
     }
     fetchData();
   }, [setData, busqueda]);
-
-
-  const handleLoadStart = (id: string) => {
-    setLoadingImages((prev) => ({ ...prev, [id]: true }));
-  };
-
-  const handleLoadEnd = (id: string) => {
-    setLoadingImages((prev) => ({ ...prev, [id]: false }));
-  };
 
   const handlePress = (id:string) => {
    router.push(`/libro/${id}`);
@@ -122,6 +111,7 @@ const style = StyleSheet.create({
     backgroundColor: "#fff", // Fondo gris claro para contraste
   },
   busqueda: {
+    color:"#000000",
     width: "90%",
     borderWidth: 1,
     borderColor: "#005cb3",

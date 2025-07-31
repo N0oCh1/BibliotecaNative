@@ -79,6 +79,7 @@ export default function Login() {
         try {
             const user = await singIn(email!, password!); // Aquí llamas a tu función de inicio de sesión
             if (user) {
+                await actualizarToken();
                 // Si se desea recordar las credenciales
                 recordar
                     ? setCredencial({
@@ -87,8 +88,6 @@ export default function Login() {
                           pushToken: expoPushToken,
                       })
                     : null;
-
-                await actualizarToken();
                 router.replace("/(tabs)"); // Redirigir a la siguiente página
             }
         } catch (error) {

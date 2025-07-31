@@ -19,6 +19,7 @@ import Alerta from "@/components/Alerta";
 import SuccesModal from "@/components/SuccesModal";
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 
@@ -109,7 +110,9 @@ export default function LibroAmigoScreen() {
 
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    
+    <ScrollView >
+      <SafeAreaView style={styles.container}>
       <Text style={styles.title}>{detalle.titulo.stringValue}</Text>
       <Text style={styles.authors}>Autor(es): {detalle.autor.stringValue || "Desconocido"}</Text>
       <View style={styles.libroContainer}>
@@ -180,15 +183,16 @@ export default function LibroAmigoScreen() {
           setModal(false);
         }}
       />
+          </SafeAreaView>
+
     </ScrollView>
-    
   );
 }
 const styles = StyleSheet.create({
   container: {
     position: "relative",
+    padding:24,
     flex: 1,
-    padding: 24,
     backgroundColor: "#E8EBF7",
     alignItems: "center",
   },
