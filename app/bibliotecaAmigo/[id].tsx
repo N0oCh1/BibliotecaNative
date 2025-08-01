@@ -15,7 +15,6 @@ import {
   Text,
   StyleSheet,
 } from "react-native";
-import { obtenerNombreUsuario, obtenerTokenDeAmigo } from "@/api/usuarios";
 import { eliminarAmistad } from "@/api/amigos";
 import LibroPresentacion from "@/components/LibroPresentacion";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -84,10 +83,10 @@ export default function BibliotecaAmigoScreen() {
       setVariante("Exitoso");
       setMensaje("Amigo eliminado");
       setCargando(false);
-    } catch {
+    } catch(e) {
       setAlerta(true);
       setVariante("Advertencia");
-      setMensaje("Error al eliminar amigo");
+      setMensaje("Error al eliminar amigo" + e);
       setCargando(false);
     }
   };
@@ -126,7 +125,14 @@ export default function BibliotecaAmigoScreen() {
                 );
               })}
           </View>
-          <Boton
+
+        </ScrollView>
+      ) : (
+        <View style={{ justifyContent: "center", alignItems: "center" }}>
+          <Text>Tu amigo aun no tiene libros en su biblioteca</Text>
+        </View>
+      )}
+                <Boton
         titulo="Eliminar amigo"
         variante="Terciario"
         onPress={() => {
@@ -137,12 +143,6 @@ export default function BibliotecaAmigoScreen() {
         loading={carga}
         icon={<AntDesign name="deleteuser" size={24} color="white" />}
       />
-        </ScrollView>
-      ) : (
-        <View style={{ justifyContent: "center", alignItems: "center" }}>
-          <Text>Tu amigo aun no tiene libros en su biblioteca</Text>
-        </View>
-      )}
 
       <Alerta
         variante={variante}

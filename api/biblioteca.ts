@@ -46,9 +46,9 @@ const addLibro = async (libro: librosBiblioteca, imagen?:string) => {
         "Authorization": `Bearer ${auth.idToken}`,
       },
       body: JSON.stringify(body),
-    }).then(res => res.json());
-    if (response.error) {
-      throw new Error(response.error.message)
+    });
+    if (!response.ok) {
+      throw new Error("hubo un problema grave")
     }
     return true
   }

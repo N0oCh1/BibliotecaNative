@@ -11,7 +11,6 @@ import { StatusBar } from "react-native";
 import {  useState } from "react";
 import { NotificationMode, registerForPushNotificationsAsync } from "@/utils/hooks/useNotification";
 import Alerta from "@/components/Alerta";
-import { Alert } from 'react-native'; 
 import LibroPresentacion from "@/components/LibroPresentacion";
 import Boton from "@/components/Boton";
 import Entypo from '@expo/vector-icons/Entypo';
@@ -103,15 +102,6 @@ export default function HomeScreen() {
           <Text style={style.barraTexto}>
             {usuario === undefined ? "Cargando..." : `Bienvenido, ${usuario}`}
           </Text>
-          <Boton
-            titulo="Cerrar Sesión"
-            variante="Terciario"
-            onPress={() => {
-              setModal(true)
-              setMensajeModal("Estas seguro que quieres cerrar sesion?")
-              setFuncion(()=>()=>cerrarSesion())}}
-            icon = {<Entypo name="log-out" size={24} color="#ffff" />}
-          />
         </View>
       </SafeAreaView>
       
@@ -120,6 +110,15 @@ export default function HomeScreen() {
         refreshControl={<RefreshControl refreshing={refresh} onRefresh={handleRefresh} />}
       >
         <Text style={style.tituloH1}>Tu Biblioteca</Text>
+        <Boton
+            titulo="Cerrar Sesión"
+            variante="Terciario"
+            onPress={() => {
+              setModal(true)
+              setMensajeModal("Estas seguro que quieres cerrar sesion?")
+              setFuncion(()=>()=>cerrarSesion())}}
+            icon = {<Entypo name="log-out" size={24} color="#ffff" />}
+          />
         <View style={style.gridContainer}>
           {biblioteca && biblioteca.map((libro:any,index:number)=>{
             const libroId = libro.name.split("/").pop();
